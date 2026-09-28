@@ -33,7 +33,6 @@ DB_PATH = DATA_DIR / "marketplace.db"
 DATA_DIR.mkdir(exist_ok=True)
 STATIC_DIR.mkdir(exist_ok=True)
 
-# Роли в чате
 ALLOWED_ROLES = ("seller", "buyer")
 MAX_MESSAGE_LENGTH = 1000
 
@@ -41,7 +40,6 @@ MAX_MESSAGE_LENGTH = 1000
 # ==================== БАЗА ДАННЫХ ====================
 
 def init_db():
-    """Создаёт таблицы, если их нет."""
     conn = sqlite3.connect(DB_PATH)
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS products (
@@ -74,7 +72,6 @@ def init_db():
     """)
     conn.commit()
 
-    # Миграция: добавить buyerOwnerId, если её нет
     try:
         cols = [r[1] for r in conn.execute("PRAGMA table_info(products)").fetchall()]
         if "buyerOwnerId" not in cols:
@@ -188,7 +185,7 @@ async def get_products():
                 "custom": bool(r["custom"]),
                 "image": r["image"],
                 "icon": None,
-                "ownerId": r["ownerId"] if "ownerId" in r.keys() else None,
+                "ownerId": r["ownerId"],
             })
         return result
     except Exception as e:
@@ -297,13 +294,6 @@ async def delete_product(product_id: int, request: Request):
 
 @app.post("/api/chats/{product_id}/join")
 async def join_chat(product_id: int, request: Request):
-    """
-    Проверяет, может ли пользователь зайти в чат по товару.
-    Роли:
-      - seller — владелец карточки (ownerId)
-      - buyer — первый, кто открыл чат
-    Никто третий зайти не может.
-    """
     try:
         body = await request.json()
         owner_id = body.get("ownerId")
@@ -327,11 +317,9 @@ async def join_chat(product_id: int, request: Request):
             seller_id = row["ownerId"]
             buyer_id = row["buyerOwnerId"]
 
-            # Продавец — всегда пускаем
             if seller_id and owner_id == seller_id:
                 return {"allowed": True, "role": "seller"}
 
-            # Ещё нет покупателя — регистрируем
             if not buyer_id:
                 conn.execute(
                     "UPDATE products SET buyerOwnerId = ? WHERE id = ?",
@@ -341,11 +329,9 @@ async def join_chat(product_id: int, request: Request):
                 print(f"👤 Новый покупатель для товара #{product_id}: {owner_id}")
                 return {"allowed": True, "role": "buyer"}
 
-            # Этот же покупатель — пускаем
             if buyer_id == owner_id:
                 return {"allowed": True, "role": "buyer"}
 
-            # Другой человек — отказ
             return {
                 "allowed": False,
                 "reason": "Этот чат уже ведётся другим покупателем"
@@ -448,7 +434,6 @@ async def websocket_chat(ws: WebSocket):
 
             msg_type = data.get("type")
 
-            # --- JOIN ---
             if msg_type == "join":
                 pid = data.get("productId")
                 try:
@@ -458,7 +443,6 @@ async def websocket_chat(ws: WebSocket):
                 except (ValueError, TypeError):
                     pass
 
-            # --- LEAVE ---
             elif msg_type == "leave":
                 pid = data.get("productId")
                 try:
@@ -466,7 +450,6 @@ async def websocket_chat(ws: WebSocket):
                 except (ValueError, TypeError):
                     pass
 
-            # --- MESSAGE ---
             elif msg_type == "message":
                 pid = data.get("productId")
                 role = data.get("role")
@@ -538,7 +521,7 @@ async def root():
     if index.exists():
         return FileResponse(index)
     return JSONResponse(
-        {"error": "index.html не найден"},
+        {"error": "index.html не найден. Положите файл в static/index.html"},
         status_code=404
     )
 
