@@ -58,10 +58,8 @@
   header::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -30%;
-    width: 30%;
-    height: 100%;
+    top: 0; left: -30%;
+    width: 30%; height: 100%;
     background: linear-gradient(100deg,
       transparent 0%, rgba(144, 238, 144, 0.06) 40%,
       rgba(255, 255, 255, 0.14) 50%, rgba(144, 238, 144, 0.06) 60%,
@@ -416,10 +414,7 @@
     margin-bottom: 26px;
   }
 
-  .hint-text .accent {
-    color: #90ee90;
-    font-weight: 700;
-  }
+  .hint-text .accent { color: #90ee90; font-weight: 700; }
 
   .hint-btn {
     padding: 12px 32px;
@@ -433,8 +428,6 @@
     font-family: inherit;
     box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
   }
-
-  .hint-btn:hover { transform: translateY(-2px); }
 
   .network-stats {
     max-width: 1200px;
@@ -540,8 +533,6 @@
     position: relative;
     z-index: 5;
   }
-
-  .builder-toggle:hover { transform: translateY(-2px); }
 
   .builder-toggle.open {
     background: rgba(255,255,255,0.1);
@@ -1420,6 +1411,29 @@
     white-space: nowrap;
   }
 
+  .chat-role-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 3px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .chat-role-badge.seller {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.5);
+  }
+
+  .chat-role-badge.buyer {
+    background: rgba(16, 185, 129, 0.2);
+    color: #90ee90;
+    border: 1px solid rgba(16, 185, 129, 0.5);
+  }
+
   .chat-header-actions { display: flex; align-items: center; gap: 6px; }
 
   .chat-clear-btn {
@@ -1464,9 +1478,9 @@
   }
 
   /* ============================================
-     СООБЩЕНИЯ В ЧАТЕ — КАК В МЕССЕНДЖЕРАХ
-     Свои — СЛЕВА (зелёные)
-     Собеседника — СПРАВА (синие)
+     СООБЩЕНИЯ ЧАТА — КАК В МЕССЕНДЖЕРАХ
+     Свои — СПРАВА (зелёные)
+     Собеседника — СЛЕВА (синие)
      ============================================ */
   .msg {
     max-width: 75%;
@@ -1487,31 +1501,30 @@
     text-align: right;
   }
 
-  /* ТВОИ сообщения — слева, зелёные */
+  /* СВОИ сообщения — СПРАВА, зелёные */
   .msg.me {
-    align-self: flex-start;
+    align-self: flex-end;
     background: linear-gradient(135deg, #10b981, #059669);
     color: #fff;
-    border-bottom-left-radius: 4px;
-    margin-right: auto;
-    margin-left: 0;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-  }
-
-  /* СОБЕСЕДНИКА — справа, синие */
-  .msg.unit {
-    align-self: flex-end;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(29, 78, 216, 0.75));
-    border: 1px solid rgba(59, 130, 246, 0.6);
-    color: #f0f8ff;
     border-bottom-right-radius: 4px;
     margin-left: auto;
     margin-right: 0;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+
+  /* СОБЕСЕДНИКА — СЛЕВА, синие */
+  .msg.unit {
+    align-self: flex-start;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(29, 78, 216, 0.75));
+    border: 1px solid rgba(59, 130, 246, 0.6);
+    color: #f0f8ff;
+    border-bottom-left-radius: 4px;
+    margin-right: auto;
+    margin-left: 0;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   }
 
   .msg.unit::before {
-    content: 'Собеседник';
     display: block;
     font-size: 10px;
     color: #93c5fd;
@@ -1519,6 +1532,14 @@
     margin-bottom: 3px;
     letter-spacing: 0.6px;
     text-transform: uppercase;
+  }
+
+  .msg.unit.from-seller::before {
+    content: 'Продавец';
+  }
+
+  .msg.unit.from-buyer::before {
+    content: 'Покупатель';
   }
 
   .chat-input-area {
@@ -1595,38 +1616,30 @@
     border-top: 1px solid rgba(144, 238, 144, 0.15);
   }
 
-  .offline-badge {
+  .offline-badge, .loading-badge {
     position: fixed;
     top: 80px;
     right: 20px;
     padding: 8px 14px;
-    background: rgba(239, 68, 68, 0.9);
-    color: #fff;
     border-radius: 8px;
     font-size: 12px;
     font-weight: 600;
     z-index: 999;
     display: none;
+    color: #fff;
+  }
+
+  .offline-badge {
+    background: rgba(239, 68, 68, 0.9);
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
   }
 
-  .offline-badge.visible { display: block; }
-
   .loading-badge {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    padding: 8px 14px;
     background: rgba(16, 185, 129, 0.9);
-    color: #fff;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    z-index: 999;
-    display: none;
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
   }
 
+  .offline-badge.visible,
   .loading-badge.visible { display: block; }
 
   @media (max-width: 900px) {
@@ -1808,7 +1821,8 @@
       <button class="chat-back-btn" id="chatBack" type="button">←</button>
       <div class="chat-product-img" id="chatProductImg">🏪</div>
       <div class="chat-seller-info">
-        <div class="chat-product-title" id="chatProductTitle">Unit Seller</div>
+        <div class="chat-product-title" id="chatProductTitle">Чат</div>
+        <div id="chatRoleBadge" class="chat-role-badge"></div>
       </div>
       <div class="chat-header-actions">
         <button class="chat-clear-btn" id="chatClearBtn" type="button">Очистить</button>
@@ -2037,10 +2051,10 @@ var CATEGORY_SYNONYMS = {
   'домашняя работа': 'dz', 'homework': 'dz', 'hw': 'dz'
 };
 
-var STORAGE_KEY = 'marketplace_custom_cards_v11';
-var STORAGE_ID_KEY = 'marketplace_next_id_v11';
+var STORAGE_KEY = 'marketplace_custom_cards_v12';
+var STORAGE_ID_KEY = 'marketplace_next_id_v12';
 var ACTIVITY_KEY = 'marketplace_activity_v1';
-var CHATS_KEY = 'marketplace_chats_by_product_v1';
+var CHATS_KEY = 'marketplace_chats_by_product_v2';
 
 /* ============ СОСТОЯНИЕ ============ */
 var products = [];
@@ -2051,6 +2065,7 @@ var state = { category: 'all', search: '', sort: 'default', cart: [] };
 
 var chatsByProduct = {};
 var currentChatProductId = null;
+var currentChatRole = null; // 'seller' | 'buyer'
 
 var activity = { viewed: [], carted: [] };
 
@@ -2121,9 +2136,9 @@ function saveChatsLocal() {
   try { SafeStorage.set(CHATS_KEY, JSON.stringify({ chats: chatsByProduct })); } catch (e) {}
 }
 
-function addMessageLocal(pid, from, text) {
+function addMessageLocal(pid, role, text) {
   if (!chatsByProduct[pid]) chatsByProduct[pid] = [];
-  chatsByProduct[pid].push({ from: from, text: text, time: Date.now() });
+  chatsByProduct[pid].push({ from: role, text: text, time: Date.now() });
   if (chatsByProduct[pid].length > 200) {
     chatsByProduct[pid].splice(0, chatsByProduct[pid].length - 200);
   }
@@ -2241,13 +2256,10 @@ function createSimpleSocket() {
   var handlers = {};
 
   ws.onopen = function() {
-    console.log('WebSocket: соединение установлено');
     if (handlers.connect) handlers.connect();
   };
 
-  ws.onclose = function() {
-    console.warn('WebSocket: соединение закрыто');
-  };
+  ws.onclose = function() {};
 
   ws.onerror = function(err) {
     console.error('WebSocket error:', err);
@@ -2278,7 +2290,7 @@ function createSimpleSocket() {
         ws.send(JSON.stringify({
           type: 'message',
           productId: data.productId,
-          from: data.from,
+          role: data.role,
           text: data.text
         }));
       }
@@ -2394,6 +2406,7 @@ var chatClearBtn = $('chatClearBtn');
 var chatBack = $('chatBack');
 var chatProductImg = $('chatProductImg');
 var chatProductTitle = $('chatProductTitle');
+var chatRoleBadge = $('chatRoleBadge');
 
 var heroTitle = $('heroTitle');
 var hintModal = $('hintModal');
@@ -3163,9 +3176,49 @@ function emptyChatHtml() {
     '</div>';
 }
 
+function updateChatRoleBadge() {
+  if (!chatRoleBadge) return;
+  if (currentChatRole === 'seller') {
+    chatRoleBadge.textContent = '🏪 Вы — Продавец';
+    chatRoleBadge.className = 'chat-role-badge seller';
+  } else if (currentChatRole === 'buyer') {
+    chatRoleBadge.textContent = '👤 Вы — Покупатель';
+    chatRoleBadge.className = 'chat-role-badge buyer';
+  } else {
+    chatRoleBadge.textContent = '';
+    chatRoleBadge.className = 'chat-role-badge';
+  }
+}
+
 async function openChat(productId) {
   var p = findProduct(productId);
   if (!p) { showToast('❌ Товар не найден', true); return; }
+
+  // Проверяем доступ
+  if (MODE === 'server') {
+    try {
+      var joinRes = await fetch('/api/chats/' + productId + '/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ownerId: MY_OWNER_ID })
+      });
+      var joinData = await joinRes.json();
+
+      if (!joinData.allowed) {
+        showToast('🚫 ' + (joinData.reason || 'Доступ запрещён'), true);
+        return;
+      }
+
+      currentChatRole = joinData.role; // 'seller' | 'buyer'
+    } catch (err) {
+      console.error('Ошибка проверки доступа:', err);
+      showToast('❌ Не удалось проверить доступ', true);
+      return;
+    }
+  } else {
+    // Локальный режим — определяем по isMyCard
+    currentChatRole = isMyCard(p) ? 'seller' : 'buyer';
+  }
 
   currentChatProductId = productId;
 
@@ -3173,6 +3226,8 @@ async function openChat(productId) {
     ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
     : (p.icon || '🆕');
   chatProductTitle.textContent = p.title;
+
+  updateChatRoleBadge();
 
   chatModal.classList.add('open');
   chatBody.innerHTML = '<div class="chat-placeholder"><p>Загрузка...</p></div>';
@@ -3207,9 +3262,19 @@ function renderMessagesFromArray(messages) {
   for (var i = 0; i < messages.length; i++) {
     var m = messages[i];
     if (!m || !m.text) continue;
-    var cls = m.from === 'me' ? 'me' : 'unit';
+
+    // Своё ли это сообщение?
+    var isMine = (m.from === currentChatRole);
+    var cls = isMine ? 'me' : 'unit';
+
+    // Метка для чужих сообщений
+    var extraCls = '';
+    if (!isMine) {
+      extraCls = (m.from === 'seller') ? ' from-seller' : ' from-buyer';
+    }
+
     html +=
-      '<div class="msg ' + cls + '">' +
+      '<div class="msg ' + cls + extraCls + '">' +
         '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span>' +
         '<span class="msg-time">' + formatChatTime(m.time) + '</span>' +
       '</div>';
@@ -3222,9 +3287,15 @@ function appendMessageToUI(m) {
   var placeholder = chatBody.querySelector('.chat-placeholder');
   if (placeholder) placeholder.remove();
 
-  var cls = m.from === 'me' ? 'me' : 'unit';
+  var isMine = (m.from === currentChatRole);
+  var cls = isMine ? 'me' : 'unit';
+  var extraCls = '';
+  if (!isMine) {
+    extraCls = (m.from === 'seller') ? ' from-seller' : ' from-buyer';
+  }
+
   var el = document.createElement('div');
-  el.className = 'msg ' + cls;
+  el.className = 'msg ' + cls + extraCls;
   el.innerHTML =
     '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span>' +
     '<span class="msg-time">' + formatChatTime(m.time) + '</span>';
@@ -3239,6 +3310,7 @@ function scrollChatToBottom() {
 chatForm.addEventListener('submit', function(e) {
   e.preventDefault();
   if (currentChatProductId === null) return;
+  if (!currentChatRole) return;
 
   var text = chatInput.value.trim();
   if (!text) return;
@@ -3247,12 +3319,12 @@ chatForm.addEventListener('submit', function(e) {
     if (socket) {
       socket.emit('message', {
         productId: currentChatProductId,
-        from: 'me',
+        role: currentChatRole,
         text: text
       });
     }
   } else {
-    addMessageLocal(currentChatProductId, 'me', text);
+    addMessageLocal(currentChatProductId, currentChatRole, text);
     renderMessagesFromArray(chatsByProduct[currentChatProductId]);
   }
 
@@ -3284,6 +3356,7 @@ $('closeChat').addEventListener('click', function() {
   }
   chatModal.classList.remove('open');
   currentChatProductId = null;
+  currentChatRole = null;
 });
 
 chatModal.addEventListener('click', function(e) {
@@ -3293,6 +3366,7 @@ chatModal.addEventListener('click', function(e) {
     }
     chatModal.classList.remove('open');
     currentChatProductId = null;
+    currentChatRole = null;
   }
 });
 
@@ -3302,6 +3376,7 @@ chatBack.addEventListener('click', function() {
   }
   chatModal.classList.remove('open');
   currentChatProductId = null;
+  currentChatRole = null;
   setTimeout(openChatsList, 200);
 });
 
@@ -3370,11 +3445,12 @@ async function renderChatsList() {
       ? '<img src="' + row.image + '" alt="">'
       : '🆕';
 
-    var lastText = '';
-    if (row.lastFrom === 'me') {
-      lastText = '<span class="prefix">Вы: </span>' + escapeHtml(row.lastText);
-    } else {
-      lastText = '<span class="prefix-seller">Собеседник: </span>' + escapeHtml(row.lastText);
+    // Префикс по роли отправителя
+    var prefix = '';
+    if (row.lastFrom === 'seller') {
+      prefix = '<span class="prefix-seller">Продавец: </span>';
+    } else if (row.lastFrom === 'buyer') {
+      prefix = '<span class="prefix">Покупатель: </span>';
     }
 
     html +=
@@ -3382,7 +3458,7 @@ async function renderChatsList() {
         '<div class="chat-item-img">' + imgContent + '</div>' +
         '<div class="chat-item-info">' +
           '<div class="chat-item-title">' + escapeHtml(row.title) + '</div>' +
-          '<div class="chat-item-last">' + lastText + '</div>' +
+          '<div class="chat-item-last">' + prefix + escapeHtml(row.lastText) + '</div>' +
         '</div>' +
         '<div class="chat-item-meta">' +
           '<div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div>' +
@@ -3477,6 +3553,7 @@ document.addEventListener('keydown', function(e) {
       }
       chatModal.classList.remove('open');
       currentChatProductId = null;
+      currentChatRole = null;
       return;
     }
     if (chatsModal.classList.contains('open')) { closeChatsList(); return; }
