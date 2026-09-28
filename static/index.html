@@ -663,7 +663,6 @@
   .field-hint { font-size: 11px; color: rgba(200, 255, 210, 0.45); }
 
   .field-group input[type="text"],
-  .field-group input[type="number"],
   .field-group textarea {
     padding: 10px 14px;
     background: rgba(0, 0, 0, 0.35);
@@ -687,7 +686,6 @@
     box-shadow: 0 0 0 3px rgba(144, 238, 144, 0.15);
   }
 
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .builder-actions { display: flex; gap: 12px; margin-top: 6px; }
 
   .btn-primary {
@@ -704,10 +702,7 @@
     box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
   }
 
-  .btn-primary:disabled {
-    opacity: 0.6;
-    cursor: wait;
-  }
+  .btn-primary:disabled { opacity: 0.6; cursor: wait; }
 
   .btn-secondary {
     padding: 12px 20px;
@@ -880,20 +875,10 @@
 
   .card-footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-top: auto;
     gap: 8px;
-  }
-
-  .price { font-size: 19px; font-weight: bold; color: #fff; white-space: nowrap; }
-
-  .price small {
-    font-size: 12px;
-    color: rgba(180, 200, 190, 0.45);
-    text-decoration: line-through;
-    margin-left: 4px;
-    font-weight: normal;
   }
 
   .card-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
@@ -1068,13 +1053,11 @@
   .cart-item-title {
     font-size: 14px;
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 6px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  .cart-item-price { font-size: 13px; color: #6b7280; }
 
   .qty { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
 
@@ -1088,6 +1071,8 @@
     font-weight: bold;
     font-family: inherit;
   }
+
+  .qty button:hover { background: #ec4899; color: #fff; border-color: #ec4899; }
 
   .qty span { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
 
@@ -1179,7 +1164,6 @@
   .modal-body { padding: 28px; flex: 1; overflow-y: auto; color: #f0fff6; }
   .modal-body h2 { font-size: 22px; margin-bottom: 10px; color: #fff; }
   .modal-body p { color: rgba(200, 220, 210, 0.65); font-size: 14px; margin-bottom: 18px; }
-  .modal-body .price { font-size: 26px; margin-bottom: 20px; color: #fff; }
 
   .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
@@ -1352,7 +1336,6 @@
   }
 
   .chat-item-time { font-size: 11px; color: rgba(200, 220, 210, 0.4); }
-  .chat-item-price { font-size: 12px; color: #90ee90; font-weight: 600; }
 
   .chat-modal {
     position: fixed;
@@ -1438,16 +1421,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  .chat-product-sub {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 3px;
-    font-size: 11px;
-  }
-
-  .chat-product-price-small { color: #90ee90; font-weight: 600; }
 
   .chat-header-actions { display: flex; align-items: center; gap: 6px; }
 
@@ -1535,18 +1508,6 @@
     margin-bottom: 3px;
     letter-spacing: 0.6px;
     text-transform: uppercase;
-  }
-
-  .msg-system {
-    align-self: center;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    color: rgba(200, 255, 210, 0.55);
-    font-size: 11px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    max-width: 90%;
-    text-align: center;
   }
 
   .chat-input-area {
@@ -1656,7 +1617,6 @@
     .chats-btn, .cart-btn { padding: 9px 12px; font-size: 13px; }
     .hero h1 { font-size: 22px; padding: 12px 28px; letter-spacing: 1px; }
     .builder-form { padding: 20px; gap: 18px; }
-    .field-row { grid-template-columns: 1fr; }
     .filter-bar { flex-direction: column; align-items: stretch; }
     .categories { justify-content: center; }
     .modal-content { flex-direction: column; }
@@ -1705,8 +1665,6 @@
   <div class="categories" id="categories"></div>
   <select class="sort-select" id="sortSelect">
     <option value="default">Сортировка: по умолчанию</option>
-    <option value="price-asc">Цена: по возрастанию</option>
-    <option value="price-desc">Цена: по убыванию</option>
     <option value="rating">По рейтингу</option>
     <option value="name">По названию (А-Я)</option>
   </select>
@@ -1748,20 +1706,12 @@
           <div class="field-error" id="errorDesc">Введите описание</div>
         </div>
 
-        <div class="field-row">
-          <div class="field-group">
-            <label for="fieldCategory">Категория <span class="required">*</span></label>
-            <input type="text" id="fieldCategory" list="categoryList" placeholder="Книги, Ручки, ДЗ..." maxlength="30" autocomplete="off">
-            <datalist id="categoryList"></datalist>
-            <div class="field-hint">Выберите из списка или введите своё</div>
-            <div class="field-error" id="errorCategory">Введите категорию</div>
-          </div>
-
-          <div class="field-group">
-            <label for="fieldPrice">Цена, ₽ <span class="required">*</span></label>
-            <input type="number" id="fieldPrice" placeholder="990" min="1" max="999999" step="1">
-            <div class="field-error" id="errorPrice">Введите цену больше 0</div>
-          </div>
+        <div class="field-group">
+          <label for="fieldCategory">Категория <span class="required">*</span></label>
+          <input type="text" id="fieldCategory" list="categoryList" placeholder="Книги, Ручки, ДЗ..." maxlength="30" autocomplete="off">
+          <datalist id="categoryList"></datalist>
+          <div class="field-hint">Выберите из списка или введите своё</div>
+          <div class="field-error" id="errorCategory">Введите категорию</div>
         </div>
 
         <div class="builder-actions">
@@ -1802,8 +1752,8 @@
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-footer">
     <div class="cart-total">
-      <span>Всего:</span>
-      <span id="cartTotal">0 ₽</span>
+      <span>Товаров:</span>
+      <span id="cartTotal">0</span>
     </div>
     <button class="checkout-btn" id="checkoutBtn" type="button" disabled>Обсудить обмен</button>
   </div>
@@ -1830,9 +1780,6 @@
       <div class="chat-product-img" id="chatProductImg">🏪</div>
       <div class="chat-seller-info">
         <div class="chat-product-title" id="chatProductTitle">Unit Seller</div>
-        <div class="chat-product-sub">
-          <span class="chat-product-price-small" id="chatProductPrice"></span>
-        </div>
       </div>
       <div class="chat-header-actions">
         <button class="chat-clear-btn" id="chatClearBtn" type="button">Очистить</button>
@@ -1870,6 +1817,20 @@
 var MODE = 'local';
 var socket = null;
 
+/* ============================================================
+   ID ВЛАДЕЛЬЦА — генерируется один раз для этого браузера.
+   ============================================================ */
+var OWNER_KEY = 'marketplace_owner_id_v1';
+function getOwnerId() {
+  var id = SafeStorage.get(OWNER_KEY, null);
+  if (!id) {
+    id = 'u_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    SafeStorage.set(OWNER_KEY, id);
+  }
+  return id;
+}
+var MY_OWNER_ID = null;
+
 /* ============ БЕЗОПАСНОЕ ХРАНИЛИЩЕ ============ */
 var SafeStorage = (function() {
   var available = false;
@@ -1897,6 +1858,8 @@ var SafeStorage = (function() {
     }
   };
 })();
+
+MY_OWNER_ID = getOwnerId();
 
 /* ============ ФОН: МОЛЕКУЛЫ ============ */
 (function() {
@@ -2049,8 +2012,8 @@ var CATEGORY_SYNONYMS = {
   'домашняя работа': 'dz', 'homework': 'dz', 'hw': 'dz'
 };
 
-var STORAGE_KEY = 'marketplace_custom_cards_v8';
-var STORAGE_ID_KEY = 'marketplace_next_id_v8';
+var STORAGE_KEY = 'marketplace_custom_cards_v10';
+var STORAGE_ID_KEY = 'marketplace_next_id_v10';
 var ACTIVITY_KEY = 'marketplace_activity_v1';
 var CHATS_KEY = 'marketplace_chats_by_product_v1';
 
@@ -2406,7 +2369,6 @@ var chatClearBtn = $('chatClearBtn');
 var chatBack = $('chatBack');
 var chatProductImg = $('chatProductImg');
 var chatProductTitle = $('chatProductTitle');
-var chatProductPrice = $('chatProductPrice');
 
 var heroTitle = $('heroTitle');
 var hintModal = $('hintModal');
@@ -2445,11 +2407,9 @@ var fieldTitle = $('fieldTitle');
 var fieldDesc = $('fieldDesc');
 var fieldCategory = $('fieldCategory');
 var categoryList = $('categoryList');
-var fieldPrice = $('fieldPrice');
 var errorTitle = $('errorTitle');
 var errorDesc = $('errorDesc');
 var errorCategory = $('errorCategory');
-var errorPrice = $('errorPrice');
 var errorPhoto = $('errorPhoto');
 
 builderToggle.addEventListener('click', function(e) {
@@ -2554,13 +2514,6 @@ fieldCategory.addEventListener('input', function() {
     errorCategory.classList.remove('show');
   }
 });
-fieldPrice.addEventListener('input', function() {
-  var v = Number(fieldPrice.value);
-  if (fieldPrice.value && v > 0) {
-    fieldPrice.classList.remove('invalid');
-    errorPrice.classList.remove('show');
-  }
-});
 
 async function handlePublish(e) {
   if (e && e.preventDefault) e.preventDefault();
@@ -2581,16 +2534,13 @@ async function handlePublish(e) {
     var descOk = validateField(fieldDesc, errorDesc, !fieldDesc.value.trim());
     var resolvedCat = resolveCategory(fieldCategory.value);
     var catOk = validateField(fieldCategory, errorCategory, !resolvedCat);
-    var priceVal = Number(fieldPrice.value);
-    var priceOk = validateField(fieldPrice, errorPrice, !priceVal || priceVal <= 0);
 
-    if (!photoOk || !titleOk || !descOk || !catOk || !priceOk) {
+    if (!photoOk || !titleOk || !descOk || !catOk) {
       var missing = [];
       if (!photoOk) missing.push('фото');
       if (!titleOk) missing.push('название');
       if (!descOk) missing.push('описание');
       if (!catOk) missing.push('категория');
-      if (!priceOk) missing.push('цена');
       showToast('⚠️ Заполните: ' + missing.join(', '), true);
       return;
     }
@@ -2601,13 +2551,14 @@ async function handlePublish(e) {
       desc: fieldDesc.value.trim(),
       category: resolvedCat.key,
       categoryName: resolvedCat.name,
-      price: priceVal,
+      price: 0,
       oldPrice: null,
       rating: 5.0,
       badge: 'ВАШ ТОВАР',
       custom: true,
       image: uploadedImage,
-      icon: null
+      icon: null,
+      ownerId: MY_OWNER_ID
     };
 
     if (MODE === 'server') {
@@ -2631,10 +2582,10 @@ async function handlePublish(e) {
 
     builderForm.reset();
     clearPhoto();
-    [fieldTitle, fieldDesc, fieldCategory, fieldPrice].forEach(function(el) {
+    [fieldTitle, fieldDesc, fieldCategory].forEach(function(el) {
       el.classList.remove('invalid');
     });
-    [errorTitle, errorDesc, errorCategory, errorPrice].forEach(function(el) {
+    [errorTitle, errorDesc, errorCategory].forEach(function(el) {
       el.classList.remove('show');
     });
 
@@ -2681,10 +2632,10 @@ builderForm.addEventListener('submit', handlePublish);
 $('builderReset').addEventListener('click', function() {
   builderForm.reset();
   clearPhoto();
-  [fieldTitle, fieldDesc, fieldCategory, fieldPrice].forEach(function(el) {
+  [fieldTitle, fieldDesc, fieldCategory].forEach(function(el) {
     el.classList.remove('invalid');
   });
-  [errorTitle, errorDesc, errorCategory, errorPrice].forEach(function(el) {
+  [errorTitle, errorDesc, errorCategory].forEach(function(el) {
     el.classList.remove('show');
   });
   photoUpload.classList.remove('invalid');
@@ -2778,8 +2729,6 @@ function getFiltered() {
   }
 
   switch (state.sort) {
-    case 'price-asc': list.sort(function(a, b) { return a.price - b.price; }); break;
-    case 'price-desc': list.sort(function(a, b) { return b.price - a.price; }); break;
     case 'rating': list.sort(function(a, b) { return b.rating - a.rating; }); break;
     case 'name': list.sort(function(a, b) { return a.title.localeCompare(b.title, 'ru'); }); break;
   }
@@ -2797,6 +2746,10 @@ function escapeHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
+function isMyCard(p) {
+  return p.custom && p.ownerId && p.ownerId === MY_OWNER_ID;
+}
+
 function buildCardHtml(p, opts) {
   opts = opts || {};
   var imgContent = p.image
@@ -2810,7 +2763,7 @@ function buildCardHtml(p, opts) {
     badgeHtml = '<div class="badge' + (p.custom ? ' custom' : '') + '">' + escapeHtml(p.badge) + '</div>';
   }
 
-  var deleteBtn = (p.custom && !opts.rec)
+  var deleteBtn = (isMyCard(p) && !opts.rec)
     ? '<button class="delete-card-btn" data-delete="' + p.id + '" title="Удалить" type="button">🗑️</button>'
     : '';
 
@@ -2824,9 +2777,6 @@ function buildCardHtml(p, opts) {
         '<p class="card-desc">' + escapeHtml(p.desc) + '</p>' +
         '<div class="rating">★★★★★ <span>' + p.rating.toFixed(1) + '</span></div>' +
         '<div class="card-footer">' +
-          '<div class="price">' + p.price.toLocaleString('ru') + ' ₽' +
-            (p.oldPrice ? '<small>' + p.oldPrice.toLocaleString('ru') + ' ₽</small>' : '') +
-          '</div>' +
           '<div class="card-actions">' +
             '<button class="chat-btn" data-action="chat" data-id="' + p.id + '" title="Написать продавцу" type="button">💬</button>' +
             '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ Нравится</button>' +
@@ -2979,12 +2929,23 @@ async function handleProductClick(e) {
       if (products[i].id === id) { idx = i; break; }
     }
     if (idx !== -1) {
-      var name = products[idx].title;
+      var target = products[idx];
+
+      if (!isMyCard(target)) {
+        showToast('🚫 Это не ваша карточка', true);
+        return;
+      }
+
+      var name = target.title;
       products.splice(idx, 1);
 
       if (MODE === 'server') {
         try {
-          await fetch('/api/products/' + id, { method: 'DELETE' });
+          await fetch('/api/products/' + id, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ownerId: MY_OWNER_ID })
+          });
         } catch (err) {
           console.error('Ошибка удаления:', err);
         }
@@ -3066,18 +3027,18 @@ function renderCart() {
         '<div class="cart-empty-icon">🤍</div>' +
         '<p>Пока ничего не понравилось</p>' +
       '</div>';
-    cartTotalEl.textContent = '0 ₽';
+    cartTotalEl.textContent = '0';
     checkoutBtn.disabled = true;
     return;
   }
 
-  var total = 0;
+  var totalItems = 0;
   var html = '';
   for (var i = 0; i < state.cart.length; i++) {
     var item = state.cart[i];
     var p = products.find(function(x) { return x.id === item.id; });
     if (!p) continue;
-    total += p.price * item.qty;
+    totalItems += item.qty;
     var img = p.image
       ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
       : (p.icon || '🆕');
@@ -3086,7 +3047,6 @@ function renderCart() {
         '<div class="cart-item-img">' + img + '</div>' +
         '<div class="cart-item-info">' +
           '<div class="cart-item-title">' + escapeHtml(p.title) + '</div>' +
-          '<div class="cart-item-price">' + p.price.toLocaleString('ru') + ' ₽</div>' +
           '<div class="qty">' +
             '<button data-qty="-1" data-id="' + p.id + '" type="button">−</button>' +
             '<span>' + item.qty + '</span>' +
@@ -3097,7 +3057,7 @@ function renderCart() {
       '</div>';
   }
   cartItemsEl.innerHTML = html;
-  cartTotalEl.textContent = total.toLocaleString('ru') + ' ₽';
+  cartTotalEl.textContent = totalItems;
   checkoutBtn.disabled = false;
 }
 
@@ -3143,9 +3103,6 @@ function openModal(id) {
       '<h2>' + escapeHtml(p.title) + '</h2>' +
       '<div class="rating">★★★★★ <span>' + p.rating.toFixed(1) + '</span></div>' +
       '<p>' + escapeHtml(p.desc) + '</p>' +
-      '<div class="price">' + p.price.toLocaleString('ru') + ' ₽' +
-        (p.oldPrice ? '<small>' + p.oldPrice.toLocaleString('ru') + ' ₽</small>' : '') +
-      '</div>' +
       '<div class="modal-actions">' +
         '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ В понравившиеся</button>' +
         '<button class="modal-chat-btn" data-action="chat" data-id="' + p.id + '" type="button">💬 Чат с продавцом</button>' +
@@ -3195,7 +3152,6 @@ async function openChat(productId) {
     ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
     : (p.icon || '🆕');
   chatProductTitle.textContent = p.title;
-  chatProductPrice.textContent = p.price.toLocaleString('ru') + ' ₽';
 
   chatModal.classList.add('open');
   chatBody.innerHTML = '<div class="chat-placeholder"><p>Загрузка...</p></div>';
@@ -3239,19 +3195,6 @@ function renderMessagesFromArray(messages) {
   }
   chatBody.innerHTML = html;
   scrollChatToBottom();
-}
-
-function renderChatBody() {
-  if (currentChatProductId === null) return;
-
-  if (MODE === 'server') {
-    fetch('/api/chats/' + currentChatProductId)
-      .then(function(r) { return r.json(); })
-      .then(renderMessagesFromArray)
-      .catch(function() { renderMessagesFromArray([]); });
-  } else {
-    renderMessagesFromArray(chatsByProduct[currentChatProductId] || []);
-  }
 }
 
 function appendMessageToUI(m) {
@@ -3383,7 +3326,6 @@ async function renderChatsList() {
         productId: p.id,
         title: p.title,
         image: p.image,
-        price: p.price,
         lastText: last.text,
         lastFrom: last.from,
         lastTime: last.time
@@ -3425,7 +3367,6 @@ async function renderChatsList() {
         '</div>' +
         '<div class="chat-item-meta">' +
           '<div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div>' +
-          '<div class="chat-item-price">' + row.price.toLocaleString('ru') + ' ₽</div>' +
         '</div>' +
       '</div>';
   }
@@ -3504,12 +3445,7 @@ sortSelect.addEventListener('change', function() {
 
 /* ============ ОБСУДИТЬ ОБМЕН ============ */
 checkoutBtn.addEventListener('click', function() {
-  var total = 0;
-  for (var i = 0; i < state.cart.length; i++) {
-    var p = products.find(function(x) { return x.id === state.cart[i].id; });
-    if (p) total += p.price * state.cart[i].qty;
-  }
-  showToast('✓ Выбрано на ' + total.toLocaleString('ru') + ' ₽ — обсудите обмен в чате!');
+  showToast('✓ Обсудите обмен в чате!');
   closeCart();
   setTimeout(openChatsList, 400);
 });
