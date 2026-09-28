@@ -1,0 +1,3968 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>МаркетПлейс — Сеть обмена 101</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { min-height: 100%; }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: radial-gradient(ellipse at top, #0a1a10 0%, #050807 50%, #000 100%);
+    color: #111827;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  #bgCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+  }
+
+  header, .hero, .network-stats, .filter-bar, .builder-section,
+  .network-title, .results-info, .products, .recommendations, footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ============ HEADER ============ */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 14px 40px;
+    color: #fff;
+    isolation: isolate;
+
+    background:
+      radial-gradient(ellipse at 15% 10%, rgba(144,238,144,0.14), transparent 55%),
+      radial-gradient(ellipse at 85% 90%, rgba(16,185,129,0.12), transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.4), transparent 80%),
+      linear-gradient(135deg, rgba(10, 22, 16, 0.72), rgba(3, 8, 5, 0.82));
+
+    backdrop-filter: blur(24px) saturate(180%) brightness(0.95);
+    -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(0.95);
+
+    border-bottom: 1px solid rgba(144, 238, 144, 0.22);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      inset 0 -1px 1px rgba(0, 0, 0, 0.6),
+      0 6px 30px rgba(0, 0, 0, 0.55),
+      0 0 60px rgba(144, 238, 144, 0.12);
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -30%;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(144, 238, 144, 0.06) 40%,
+      rgba(255, 255, 255, 0.14) 50%,
+      rgba(144, 238, 144, 0.06) 60%,
+      transparent 100%
+    );
+    transform: skewX(-18deg);
+    animation: headerShine 9s ease-in-out infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  @keyframes headerShine {
+    0%   { left: -30%; opacity: 0; }
+    15%  { opacity: 1; }
+    55%  { left: 100%; opacity: 1; }
+    70%  { opacity: 0; }
+    100% { left: 100%; opacity: 0; }
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(144, 238, 144, 0.5) 30%,
+      rgba(16, 185, 129, 0.7) 50%,
+      rgba(144, 238, 144, 0.5) 70%,
+      transparent 100%
+    );
+    filter: blur(1px);
+    pointer-events: none;
+  }
+
+  .header-top {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 700;
+    white-space: nowrap;
+    padding: 10px 16px;
+    border-radius: 14px;
+    color: #fff;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    cursor: default;
+
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(144,238,144,0.22), transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(16,185,129,0.15), transparent 60%),
+      linear-gradient(135deg, rgba(20, 40, 30, 0.65), rgba(4, 10, 7, 0.75));
+
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+
+    border: 1px solid rgba(144, 238, 144, 0.32);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+      inset 0 0 20px rgba(144, 238, 144, 0.08),
+      0 4px 18px rgba(0, 0, 0, 0.45),
+      0 0 22px rgba(144, 238, 144, 0.12);
+
+    text-shadow:
+      0 0 10px rgba(255, 255, 255, 0.35),
+      0 0 22px rgba(144, 238, 144, 0.75),
+      0 0 40px rgba(16, 185, 129, 0.4);
+
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .logo::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(144,238,144,0.15) 40%,
+      rgba(255,255,255,0.55) 50%,
+      rgba(144,238,144,0.15) 60%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: glassShine 6s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    filter: blur(1px);
+    z-index: -1;
+  }
+
+  .logo:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+      inset 0 0 25px rgba(144, 238, 144, 0.12),
+      0 6px 24px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(144, 238, 144, 0.2);
+  }
+
+  .search {
+    flex: 1;
+    max-width: 500px;
+    display: flex;
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    isolation: isolate;
+
+    background:
+      linear-gradient(135deg, rgba(20, 35, 27, 0.7), rgba(4, 10, 7, 0.8));
+
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+
+    border: 1px solid rgba(144, 238, 144, 0.28);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+      0 4px 18px rgba(0, 0, 0, 0.4),
+      0 0 22px rgba(144, 238, 144, 0.1);
+  }
+
+  .search::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -30%;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(144, 238, 144, 0.08) 40%,
+      rgba(255, 255, 255, 0.18) 50%,
+      rgba(144, 238, 144, 0.08) 60%,
+      transparent 100%
+    );
+    transform: skewX(-18deg);
+    animation: headerShine 11s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .search:focus-within {
+    border-color: rgba(144, 238, 144, 0.6);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+      inset 0 0 30px rgba(144, 238, 144, 0.14),
+      0 6px 26px rgba(0, 0, 0, 0.5),
+      0 0 35px rgba(144, 238, 144, 0.3);
+  }
+
+  .search input {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    font-family: inherit;
+    background: transparent;
+    color: #f0fff6;
+    position: relative;
+    z-index: 2;
+    min-width: 0;
+  }
+
+  .search input::placeholder { color: rgba(200, 255, 210, 0.4); }
+  .search input:focus { color: #fff; }
+
+  .search button {
+    padding: 12px 24px;
+    border: none;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.85), rgba(5, 150, 105, 0.9));
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    position: relative;
+    z-index: 2;
+    border-left: 1px solid rgba(144, 238, 144, 0.25);
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  }
+
+  .search button:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 1), rgba(5, 150, 105, 1));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 20px rgba(16, 185, 129, 0.5);
+  }
+
+  .search button:active { transform: scale(0.98); }
+
+  .clear-search {
+    position: absolute;
+    right: 100px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(200, 255, 210, 0.5);
+    font-size: 18px;
+    cursor: pointer;
+    display: none;
+    padding: 4px 8px;
+    z-index: 3;
+  }
+
+  .clear-search:hover { color: #90ee90; }
+  .clear-search.visible { display: block; }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .chats-btn,
+  .cart-btn {
+    position: relative;
+    font-size: 14px;
+    padding: 11px 16px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    white-space: nowrap;
+    font-family: inherit;
+    color: #fff;
+    overflow: hidden;
+    isolation: isolate;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .chats-btn {
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(16,185,129,0.22), transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(144,238,144,0.18), transparent 60%),
+      linear-gradient(135deg, rgba(10, 40, 30, 0.75), rgba(3, 15, 10, 0.85));
+
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+      inset 0 0 20px rgba(16, 185, 129, 0.12),
+      0 4px 18px rgba(0, 0, 0, 0.45),
+      0 0 22px rgba(16, 185, 129, 0.2);
+
+    text-shadow:
+      0 0 8px rgba(255, 255, 255, 0.3),
+      0 0 18px rgba(16, 185, 129, 0.8);
+  }
+
+  .chats-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(16,185,129,0.2) 40%,
+      rgba(255,255,255,0.55) 50%,
+      rgba(16,185,129,0.2) 60%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: glassShine 7s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    filter: blur(1px);
+    z-index: -1;
+  }
+
+  .chats-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+      inset 0 0 25px rgba(16, 185, 129, 0.2),
+      0 8px 26px rgba(0, 0, 0, 0.5),
+      0 0 32px rgba(16, 185, 129, 0.45);
+  }
+
+  .chats-btn:active { transform: translateY(0) scale(0.98); }
+
+  .cart-btn {
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(244,114,182,0.22), transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(239,68,68,0.15), transparent 60%),
+      linear-gradient(135deg, rgba(40, 20, 28, 0.7), rgba(10, 4, 7, 0.8));
+
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+
+    border: 1px solid rgba(244, 114, 182, 0.35);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+      inset 0 0 20px rgba(244, 114, 182, 0.1),
+      0 4px 18px rgba(0, 0, 0, 0.4),
+      0 0 22px rgba(244, 114, 182, 0.15);
+
+    text-shadow:
+      0 0 8px rgba(255, 255, 255, 0.3),
+      0 0 18px rgba(244, 114, 182, 0.7);
+  }
+
+  .cart-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(244,114,182,0.18) 40%,
+      rgba(255,255,255,0.55) 50%,
+      rgba(244,114,182,0.18) 60%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: glassShine 7s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    filter: blur(1px);
+    z-index: -1;
+  }
+
+  .cart-btn:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+      inset 0 0 25px rgba(244, 114, 182, 0.18),
+      0 8px 26px rgba(0, 0, 0, 0.5),
+      0 0 32px rgba(244, 114, 182, 0.4);
+  }
+
+  .cart-btn:active { transform: translateY(0) scale(0.98); }
+
+  .cart-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: linear-gradient(135deg, #ec4899, #be185d);
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.6), 0 0 12px rgba(236, 72, 153, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 5;
+  }
+
+  @keyframes glassShine {
+    0%   { left: -60%; opacity: 0; }
+    15%  { opacity: 1; }
+    50%  { left: 100%; opacity: 1; }
+    65%  { opacity: 0; }
+    100% { left: 100%; opacity: 0; }
+  }
+
+  /* ============ HERO ============ */
+  .hero {
+    max-width: 1200px;
+    margin: 30px auto 10px;
+    padding: 0 20px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    display: inline-block;
+    position: relative;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    padding: 16px 44px;
+    margin: 0 auto 10px;
+    border-radius: 24px;
+    overflow: hidden;
+    isolation: isolate;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(255,255,255,0.45), transparent 55%),
+      radial-gradient(ellipse at 85% 85%, rgba(144,238,144,0.32), transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.18), transparent 70%),
+      linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.05));
+
+    backdrop-filter: blur(22px) saturate(200%) brightness(1.1);
+    -webkit-backdrop-filter: blur(22px) saturate(200%) brightness(1.1);
+
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow:
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.8),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.2),
+      inset 0 0 45px rgba(144, 238, 144, 0.22),
+      0 10px 40px rgba(0, 0, 0, 0.35),
+      0 0 60px rgba(144, 238, 144, 0.35);
+
+    text-shadow:
+      0 0 15px rgba(255, 255, 255, 0.6),
+      0 0 30px rgba(144, 238, 144, 0.75),
+      0 0 60px rgba(16, 185, 129, 0.45);
+
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
+    animation: glassFloat 6s ease-in-out infinite;
+  }
+
+  .hero h1::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 60%;
+    height: 200%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.15) 35%,
+      rgba(255, 255, 255, 0.85) 50%,
+      rgba(255, 255, 255, 0.15) 65%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: glassShine 5s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    filter: blur(2px);
+  }
+
+  .hero h1::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 25% 30%, rgba(144,238,144,0.5), transparent 35%),
+      radial-gradient(circle at 75% 70%, rgba(16,185,129,0.4), transparent 35%);
+    filter: blur(30px);
+    z-index: -1;
+    animation: liquidBlob 9s ease-in-out infinite;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .hero h1:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.2),
+      inset 0 0 60px rgba(144, 238, 144, 0.35),
+      0 15px 50px rgba(0, 0, 0, 0.45),
+      0 0 80px rgba(144, 238, 144, 0.5);
+  }
+
+  .hero h1:active { transform: translateY(-1px) scale(0.99); }
+
+  @keyframes liquidBlob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25%      { transform: translate(6px, -4px) scale(1.08); }
+    50%      { transform: translate(-4px, 5px) scale(0.96); }
+    75%      { transform: translate(5px, 3px) scale(1.05); }
+  }
+
+  @keyframes glassFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-2px); }
+  }
+
+  .hero p { color: rgba(200, 255, 210, 0.75); font-size: 15px; }
+
+  /* ============ HINT MODAL ============ */
+  .hint-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    padding: 20px;
+    z-index: 460;
+  }
+
+  .hint-modal.open { opacity: 1; visibility: visible; }
+
+  .hint-content {
+    position: relative;
+    max-width: 520px;
+    width: 100%;
+    padding: 40px 36px 34px;
+    border-radius: 26px;
+    overflow: hidden;
+    isolation: isolate;
+    text-align: center;
+    color: #fff;
+
+    background:
+      radial-gradient(ellipse at 20% 15%, rgba(255,255,255,0.42), transparent 55%),
+      radial-gradient(ellipse at 85% 85%, rgba(144,238,144,0.32), transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.22), transparent 70%),
+      linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.04));
+
+    backdrop-filter: blur(26px) saturate(200%) brightness(1.08);
+    -webkit-backdrop-filter: blur(26px) saturate(200%) brightness(1.08);
+
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.85),
+      inset 0 -1px 2px rgba(0, 0, 0, 0.2),
+      inset 0 0 55px rgba(144, 238, 144, 0.25),
+      0 20px 60px rgba(0, 0, 0, 0.55),
+      0 0 90px rgba(144, 238, 144, 0.35);
+
+    transform: scale(0.92) translateY(10px);
+    transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: hintFloat 7s ease-in-out infinite;
+  }
+
+  .hint-modal.open .hint-content { transform: scale(1) translateY(0); }
+
+  .hint-icon {
+    font-size: 62px;
+    margin-bottom: 16px;
+    filter: drop-shadow(0 0 25px rgba(144, 238, 144, 0.7));
+    animation: hintIconPulse 2.6s ease-in-out infinite;
+  }
+
+  @keyframes hintIconPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.08); }
+  }
+
+  .hint-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 14px;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 30px rgba(144, 238, 144, 0.7);
+  }
+
+  .hint-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(240, 255, 246, 0.92);
+    margin-bottom: 26px;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  }
+
+  .hint-text .accent {
+    color: #90ee90;
+    font-weight: 700;
+    text-shadow: 0 0 15px rgba(144, 238, 144, 0.85);
+  }
+
+  .hint-btn {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55), 0 0 30px rgba(144, 238, 144, 0.35);
+    transition: transform 0.2s, box-shadow 0.25s;
+  }
+
+  .hint-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.7), 0 0 45px rgba(144, 238, 144, 0.55);
+  }
+
+  .hint-btn:active { transform: translateY(0) scale(0.97); }
+
+  /* ============ STATS ============ */
+  .network-stats {
+    max-width: 1200px;
+    margin: 10px auto 0;
+    padding: 0 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-height: 30px;
+  }
+
+  .stat-chip {
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(144, 238, 144, 0.2);
+    border-radius: 20px;
+    font-size: 12px;
+    color: #d1fae5;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .stat-chip strong { color: #90ee90; font-size: 14px; }
+
+  /* ============ FILTER ============ */
+  .filter-bar {
+    max-width: 1200px;
+    margin: 24px auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .categories { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .category {
+    padding: 8px 18px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(144, 238, 144, 0.25);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    user-select: none;
+    color: #d1fae5;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .category:hover {
+    border-color: rgba(144, 238, 144, 0.7);
+    color: #fff;
+  }
+
+  .category.active {
+    background: linear-gradient(135deg, #10b981, #90ee90);
+    color: #052e16;
+    border-color: #90ee90;
+    font-weight: 700;
+  }
+
+  .sort-select {
+    padding: 9px 14px;
+    border: 1px solid rgba(144, 238, 144, 0.3);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    color: #d1fae5;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .sort-select option { background: #0a1a10; color: #d1fae5; }
+
+  /* ============ BUILDER ============ */
+  .builder-section {
+    max-width: 1200px;
+    margin: 30px auto 20px;
+    padding: 0 20px;
+  }
+
+  .builder-header { text-align: center; margin-bottom: 18px; }
+
+  .builder-header h2 {
+    font-size: 24px;
+    color: #fff;
+    text-shadow: 0 0 25px rgba(144, 238, 144, 0.5);
+    margin-bottom: 4px;
+  }
+
+  .builder-header p { color: rgba(200, 255, 210, 0.6); font-size: 14px; }
+
+  .builder-toggle {
+    display: block;
+    margin: 0 auto;
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    position: relative;
+    z-index: 5;
+    font-family: inherit;
+  }
+
+  .builder-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.6);
+  }
+
+  .builder-toggle.open {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(144, 238, 144, 0.4);
+    box-shadow: none;
+  }
+
+  .builder-form-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s ease, margin-top 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    margin-top: 0;
+  }
+
+  .builder-form-wrap.open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    margin-top: 20px;
+  }
+
+  .builder-form-wrap > .builder-form { overflow: hidden; min-height: 0; }
+
+  .builder-form {
+    background: linear-gradient(160deg, rgba(15, 30, 22, 0.9), rgba(5, 12, 8, 0.95));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(144, 238, 144, 0.25);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 28px;
+  }
+
+  .photo-upload {
+    position: relative;
+    width: 100%;
+    height: 240px;
+    border: 2px dashed rgba(144, 238, 144, 0.4);
+    border-radius: 12px;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    overflow: hidden;
+    text-align: center;
+    padding: 12px;
+  }
+
+  .photo-upload:hover { border-color: #90ee90; background: rgba(16, 185, 129, 0.08); }
+
+  .photo-upload.invalid {
+    border-color: #f87171;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+    animation: shake 0.4s;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .photo-upload input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 1; }
+
+  .photo-upload-icon { font-size: 42px; margin-bottom: 8px; }
+
+  .photo-upload-text { font-size: 13px; color: rgba(200, 255, 210, 0.7); line-height: 1.4; }
+  .photo-upload-text strong { color: #90ee90; }
+
+  .photo-preview {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+    border-radius: 10px;
+    z-index: 0;
+  }
+
+  .photo-preview.visible { display: block; }
+
+  .photo-upload.has-image .photo-upload-icon,
+  .photo-upload.has-image .photo-upload-text { display: none; }
+
+  .photo-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.9);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+  }
+
+  .photo-upload.has-image .photo-remove { display: flex; }
+
+  .photo-error {
+    color: #f87171;
+    font-size: 12px;
+    margin-top: 6px;
+    display: none;
+    text-align: center;
+  }
+
+  .photo-error.show { display: block; }
+
+  .builder-fields { display: flex; flex-direction: column; gap: 14px; }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .field-group label { font-size: 13px; font-weight: 600; color: #d1fae5; }
+  .field-group label .required { color: #f87171; }
+
+  .field-hint { font-size: 11px; color: rgba(200, 255, 210, 0.45); margin-top: -2px; }
+
+  .field-group input[type="text"],
+  .field-group input[type="number"],
+  .field-group textarea {
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(144, 238, 144, 0.25);
+    border-radius: 8px;
+    color: #f0fff6;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  .field-group textarea { min-height: 80px; max-height: 160px; }
+
+  .field-group input::placeholder,
+  .field-group textarea::placeholder { color: rgba(200, 255, 210, 0.35); }
+
+  .field-group input:focus,
+  .field-group textarea:focus {
+    border-color: #90ee90;
+    box-shadow: 0 0 0 3px rgba(144, 238, 144, 0.15);
+  }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .builder-actions { display: flex; gap: 12px; margin-top: 6px; }
+
+  .btn-primary {
+    flex: 1;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+  }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.55); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-secondary {
+    padding: 12px 20px;
+    background: rgba(255,255,255,0.08);
+    color: #d1fae5;
+    border: 1px solid rgba(144, 238, 144, 0.3);
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+
+  .field-error { color: #f87171; font-size: 12px; display: none; }
+  .field-error.show { display: block; }
+
+  .field-group input.invalid,
+  .field-group textarea.invalid {
+    border-color: #f87171;
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+  }
+
+  /* ============ NETWORK TITLE ============ */
+  .network-title {
+    max-width: 1200px;
+    margin: 40px auto 16px;
+    padding: 0 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .network-title h2 {
+    font-size: 22px;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(144, 238, 144, 0.4);
+  }
+
+  .network-title .sub { font-size: 13px; color: rgba(200, 255, 210, 0.55); }
+
+  .results-info {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    color: rgba(200, 255, 210, 0.7);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* ============ GRID ============ */
+  .products {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
+  }
+
+  .recommendations {
+    max-width: 1200px;
+    margin: 20px auto 60px;
+    padding: 0 20px;
+    display: none;
+  }
+
+  .recommendations.visible { display: block; }
+
+  .recommendations-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .recommendations-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+
+  .recommendations-title h2 {
+    font-size: 22px;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(144, 238, 144, 0.5);
+  }
+
+  .recommendations-title .sub { font-size: 13px; color: rgba(200, 255, 210, 0.55); }
+
+  .recommendations-title .reason {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(144, 238, 144, 0.35);
+    border-radius: 20px;
+    font-size: 12px;
+    color: #90ee90;
+  }
+
+  .recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .recommendations .card .card-image { height: 160px; font-size: 60px; }
+
+  /* ============ CARD ============ */
+  .card {
+    background: linear-gradient(160deg, rgba(15, 30, 22, 0.85), rgba(5, 12, 8, 0.92));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid rgba(144, 238, 144, 0.18);
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes cardAdded {
+    0%   { box-shadow: 0 0 0 0 rgba(144, 238, 144, 0.9); transform: scale(1.03); }
+    70%  { box-shadow: 0 0 0 15px rgba(144, 238, 144, 0); transform: scale(1); }
+    100% { box-shadow: 0 0 0 0 rgba(144, 238, 144, 0); transform: scale(1); }
+  }
+
+  .card.just-added { animation: cardAdded 1.5s ease; border-color: rgba(144, 238, 144, 0.9); }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 0 35px rgba(144, 238, 144, 0.35);
+    border-color: rgba(144, 238, 144, 0.7);
+  }
+
+  .card-image {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.15), transparent 65%),
+      linear-gradient(135deg, #0a1f14, #04100a);
+    cursor: pointer;
+    position: relative;
+    border-bottom: 1px solid rgba(144, 238, 144, 0.12);
+    overflow: hidden;
+  }
+
+  .card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .card-body { padding: 16px; display: flex; flex-direction: column; flex: 1; }
+
+  .card-category {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #90ee90;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #f0fff6;
+    cursor: pointer;
+  }
+
+  .card-title:hover { color: #90ee90; }
+
+  .card-desc {
+    font-size: 13px;
+    color: rgba(200, 220, 210, 0.6);
+    margin-bottom: 12px;
+    flex: 1;
+  }
+
+  .rating { font-size: 12px; color: #f59e0b; margin-bottom: 10px; }
+  .rating span { color: rgba(200, 220, 210, 0.6); margin-left: 4px; }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    gap: 8px;
+  }
+
+  .price { font-size: 19px; font-weight: bold; color: #fff; white-space: nowrap; }
+
+  .price small {
+    font-size: 12px;
+    color: rgba(180, 200, 190, 0.45);
+    text-decoration: line-through;
+    margin-left: 4px;
+    font-weight: normal;
+  }
+
+  .card-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+  .chat-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.08);
+    color: #90ee90;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    font-family: inherit;
+    position: relative;
+  }
+
+  .chat-btn:hover {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: #10b981;
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  }
+
+  .buy-btn {
+    background: linear-gradient(135deg, #ec4899, #be185d);
+    color: #fff;
+    border: none;
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    font-family: inherit;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .buy-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6), 0 0 15px rgba(244, 114, 182, 0.5);
+  }
+
+  .buy-btn:active { transform: scale(0.96); }
+
+  .badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    z-index: 2;
+  }
+
+  .badge.custom { background: linear-gradient(135deg, #10b981, #059669); }
+
+  .rec-label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #fff;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-weight: 700;
+    z-index: 2;
+    box-shadow: 0 2px 10px rgba(245, 158, 11, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .delete-card-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+  }
+
+  .delete-card-btn:hover { background: #ef4444; color: #fff; }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 70px 20px;
+    color: rgba(200, 255, 210, 0.75);
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    border: 1px dashed rgba(144, 238, 144, 0.3);
+  }
+
+  .empty-icon { font-size: 64px; margin-bottom: 14px; }
+  .empty h3 { color: #fff; margin-bottom: 8px; font-size: 20px; }
+  .empty p { font-size: 14px; }
+
+  /* ============ CART ============ */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.3s;
+    z-index: 200;
+  }
+
+  .overlay.open { opacity: 1; visibility: visible; }
+
+  .cart-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    max-width: 100%;
+    height: 100%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.3s ease;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+    z-index: 300;
+  }
+
+  .cart-panel.open { right: 0; }
+
+  .cart-header {
+    padding: 20px;
+    border-bottom: 1px solid #fce7f3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #fdf2f8, #ffffff);
+  }
+
+  .cart-header h2 { font-size: 18px; color: #9d174d; }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 26px;
+    cursor: pointer;
+    color: #6b7280;
+    line-height: 1;
+    padding: 0 6px;
+    font-family: inherit;
+  }
+
+  .close-btn:hover { color: #111827; }
+
+  .cart-items { flex: 1; overflow-y: auto; padding: 16px 20px; }
+
+  .cart-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+    align-items: center;
+  }
+
+  .cart-item-img {
+    font-size: 34px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdf2f8;
+    border-radius: 8px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  .cart-item-info { flex: 1; min-width: 0; }
+
+  .cart-item-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cart-item-price { font-size: 13px; color: #6b7280; }
+
+  .qty { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+
+  .qty button {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: inherit;
+  }
+
+  .qty button:hover { background: #ec4899; color: #fff; border-color: #ec4899; }
+
+  .qty span { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+    font-family: inherit;
+  }
+
+  .cart-empty { text-align: center; padding: 60px 20px; color: #6b7280; }
+  .cart-empty-icon { font-size: 50px; margin-bottom: 10px; }
+
+  .cart-footer {
+    padding: 20px;
+    border-top: 1px solid #fce7f3;
+    background: #fdf2f8;
+  }
+
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 14px;
+    color: #9d174d;
+  }
+
+  .checkout-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #ec4899, #be185d);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .checkout-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(236, 72, 153, 0.55);
+  }
+
+  .checkout-btn:disabled { background: #d1d5db; cursor: not-allowed; box-shadow: none; }
+
+  /* ============ MODAL (товар) ============ */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.25s;
+    padding: 20px;
+    z-index: 400;
+  }
+
+  .modal.open { opacity: 1; visibility: visible; }
+
+  .modal-content {
+    background: linear-gradient(160deg, rgba(15, 30, 22, 0.97), rgba(5, 12, 8, 0.99));
+    border: 1px solid rgba(144, 238, 144, 0.3);
+    border-radius: 16px;
+    max-width: 700px;
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    max-height: 90vh;
+  }
+
+  .modal-img {
+    width: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 100px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.2), transparent 65%),
+      linear-gradient(135deg, #0a1f14, #04100a);
+    flex-shrink: 0;
+    border-right: 1px solid rgba(144, 238, 144, 0.15);
+    overflow: hidden;
+  }
+
+  .modal-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  .modal-body { padding: 28px; flex: 1; overflow-y: auto; color: #f0fff6; }
+  .modal-body h2 { font-size: 22px; margin-bottom: 10px; color: #fff; }
+  .modal-body p { color: rgba(200, 220, 210, 0.65); font-size: 14px; margin-bottom: 18px; }
+  .modal-body .price { font-size: 26px; margin-bottom: 20px; color: #fff; }
+
+  .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .modal-actions .buy-btn { flex: 1; padding: 12px; font-size: 14px; min-width: 160px; justify-content: center; }
+
+  .modal-chat-btn {
+    padding: 12px 18px;
+    background: rgba(16, 185, 129, 0.1);
+    color: #90ee90;
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .modal-chat-btn:hover {
+    background: rgba(16, 185, 129, 0.25);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  }
+
+  /* ============ CHATS LIST MODAL ============ */
+  .chats-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.25s;
+    padding: 20px;
+    z-index: 455;
+  }
+
+  .chats-modal.open { opacity: 1; visibility: visible; }
+
+  .chats-content {
+    background: linear-gradient(160deg, rgba(15, 30, 22, 0.98), rgba(5, 12, 8, 0.99));
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    height: 80vh;
+    max-height: 720px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.25s;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 60px rgba(16, 185, 129, 0.2);
+  }
+
+  .chats-modal.open .chats-content { transform: scale(1); }
+
+  .chats-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba(0,0,0,0.3);
+  }
+
+  .chats-header h2 {
+    font-size: 17px;
+    color: #fff;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  }
+
+  .chats-header .close-btn { color: #9ca3af; }
+  .chats-header .close-btn:hover { color: #fff; }
+
+  .chats-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .chats-list::-webkit-scrollbar { width: 6px; }
+  .chats-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+  .chats-list::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.35);
+    border-radius: 3px;
+  }
+
+  .chats-empty {
+    margin: auto;
+    text-align: center;
+    color: rgba(200, 255, 210, 0.45);
+    font-size: 14px;
+    padding: 40px 20px;
+  }
+
+  .chats-empty-icon { font-size: 56px; margin-bottom: 14px; opacity: 0.5; }
+
+  .chats-empty p { margin-bottom: 6px; }
+
+  .chats-empty .hint {
+    font-size: 12px;
+    color: rgba(200, 255, 210, 0.3);
+    margin-top: 8px;
+  }
+
+  .chat-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(16, 185, 129, 0.18);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    align-items: center;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .chat-item:hover {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.6);
+    transform: translateX(3px);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+  }
+
+  .chat-item-img {
+    width: 54px;
+    height: 54px;
+    border-radius: 10px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.2), transparent 65%),
+      linear-gradient(135deg, #0a1f14, #04100a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+
+  .chat-item-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  .chat-item-info { flex: 1; min-width: 0; }
+
+  .chat-item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f0fff6;
+    margin-bottom: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chat-item-last {
+    font-size: 12px;
+    color: rgba(200, 220, 210, 0.55);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.35;
+  }
+
+  .chat-item-last .prefix {
+    color: #90ee90;
+    font-weight: 600;
+  }
+
+  .chat-item-last .prefix-seller {
+    color: #93c5fd;
+    font-weight: 600;
+  }
+
+  .chat-item-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+    min-width: 56px;
+  }
+
+  .chat-item-time {
+    font-size: 11px;
+    color: rgba(200, 220, 210, 0.4);
+    white-space: nowrap;
+  }
+
+  .chat-item-price {
+    font-size: 12px;
+    color: #90ee90;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ============ CHAT MODAL ============ */
+  .chat-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.25s;
+    padding: 20px;
+    z-index: 450;
+  }
+
+  .chat-modal.open { opacity: 1; visibility: visible; }
+
+  .chat-content {
+    background: linear-gradient(160deg, rgba(15, 30, 22, 0.98), rgba(5, 12, 8, 0.99));
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    height: 80vh;
+    max-height: 720px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95);
+    transition: transform 0.25s;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 60px rgba(16, 185, 129, 0.2);
+  }
+
+  .chat-modal.open .chat-content { transform: scale(1); }
+
+  .chat-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0,0,0,0.3);
+  }
+
+  .chat-back-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #90ee90;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+
+  .chat-back-btn:hover {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: #10b981;
+  }
+
+  .chat-product-img {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.2), transparent 65%),
+      linear-gradient(135deg, #0a1f14, #04100a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+
+  .chat-product-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  .chat-seller-info { flex: 1; min-width: 0; }
+
+  .chat-product-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+  }
+
+  .chat-product-sub {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 3px;
+    font-size: 11px;
+  }
+
+  .chat-product-price-small {
+    color: #90ee90;
+    font-weight: 600;
+  }
+
+  .chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .chat-clear-btn {
+    padding: 6px 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #f87171;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .chat-clear-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+    color: #fff;
+  }
+
+  .chat-header .close-btn { color: #9ca3af; }
+  .chat-header .close-btn:hover { color: #fff; }
+
+  /* ============ ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА ============ */
+  .chat-mode-switch {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.25);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+  }
+
+  .chat-mode-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: rgba(255,255,255,0.03);
+    color: rgba(200, 255, 210, 0.5);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .chat-mode-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.1);
+  }
+
+  .chat-mode-btn.active[data-mode="user"] {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.2));
+    border-color: rgba(16, 185, 129, 0.7);
+    color: #90ee90;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 0 18px rgba(16, 185, 129, 0.35);
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.7);
+  }
+
+  .chat-mode-btn.active[data-mode="seller"] {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(37, 99, 235, 0.2));
+    border-color: rgba(59, 130, 246, 0.7);
+    color: #93c5fd;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 0 18px rgba(59, 130, 246, 0.35);
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.7);
+  }
+
+  .chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-body::-webkit-scrollbar { width: 6px; }
+  .chat-body::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+  .chat-body::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.35);
+    border-radius: 3px;
+  }
+
+  .chat-placeholder {
+    margin: auto;
+    text-align: center;
+    color: rgba(200, 255, 210, 0.4);
+    font-size: 14px;
+    max-width: 320px;
+  }
+
+  .chat-placeholder-icon { font-size: 52px; margin-bottom: 12px; opacity: 0.5; }
+
+  .chat-placeholder p { margin-bottom: 4px; }
+
+  .chat-placeholder .hint {
+    font-size: 12px;
+    color: rgba(200, 255, 210, 0.3);
+    margin-top: 8px;
+  }
+
+  .msg {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    animation: fadeIn 0.22s ease;
+  }
+
+  .msg-text { display: block; }
+
+  .msg-time {
+    display: block;
+    font-size: 10px;
+    opacity: 0.55;
+    margin-top: 5px;
+    text-align: right;
+  }
+
+  .msg.me {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+
+  .msg.unit {
+    align-self: flex-start;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(29, 78, 216, 0.25));
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    color: #f0f8ff;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  }
+
+  .msg.unit::before {
+    content: 'Unit Seller';
+    display: block;
+    font-size: 10px;
+    color: #93c5fd;
+    font-weight: 700;
+    margin-bottom: 3px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  .msg-system {
+    align-self: center;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    color: rgba(200, 255, 210, 0.55);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    max-width: 90%;
+    text-align: center;
+  }
+
+  .chat-input-area {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(16, 185, 129, 0.2);
+    background: rgba(0,0,0,0.35);
+    transition: background 0.25s;
+  }
+
+  .chat-input-area input {
+    flex: 1;
+    padding: 11px 16px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 22px;
+    color: #f0fff6;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.25s;
+    min-width: 0;
+  }
+
+  .chat-input-area input::placeholder { color: rgba(200, 255, 210, 0.3); }
+
+  .chat-input-area input:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  }
+
+  .chat-send {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+    transition: transform 0.15s, box-shadow 0.2s, background 0.25s;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+
+  .chat-send:hover { transform: scale(1.06); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.7); }
+  .chat-send:active { transform: scale(0.95); }
+
+  /* Режим продавца — синие акценты */
+  .chat-input-area.seller-mode input {
+    border-color: rgba(59, 130, 246, 0.4);
+  }
+
+  .chat-input-area.seller-mode input::placeholder {
+    color: rgba(147, 197, 253, 0.4);
+  }
+
+  .chat-input-area.seller-mode input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .chat-input-area.seller-mode .chat-send {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.5);
+  }
+
+  .chat-input-area.seller-mode .chat-send:hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.7);
+  }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: linear-gradient(135deg, #ec4899, #be185d);
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    max-width: 90vw;
+    text-align: center;
+    z-index: 500;
+    box-shadow: 0 8px 30px rgba(236, 72, 153, 0.5);
+    cursor: pointer;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { background: linear-gradient(135deg, #ef4444, #b91c1c); box-shadow: 0 8px 30px rgba(239, 68, 68, 0.5); }
+
+  /* ============ FOOTER ============ */
+  footer {
+    background: rgba(10, 26, 16, 0.85);
+    color: rgba(200, 255, 210, 0.6);
+    text-align: center;
+    padding: 24px;
+    font-size: 13px;
+    border-top: 1px solid rgba(144, 238, 144, 0.15);
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 900px) {
+    .header-top { gap: 10px; }
+    .search { order: 5; flex-basis: 100%; max-width: 100%; }
+    .header-actions { gap: 8px; }
+  }
+
+  @media (max-width: 800px) {
+    .builder-form { grid-template-columns: 1fr; }
+    .photo-upload { height: 200px; max-width: 300px; margin: 0 auto; }
+  }
+
+  @media (max-width: 700px) {
+    header { padding: 12px 14px; }
+    .logo { font-size: 15px; padding: 8px 12px; }
+    .chats-btn, .cart-btn { padding: 9px 12px; font-size: 13px; }
+    .hero h1 { font-size: 22px; padding: 12px 28px; letter-spacing: 1px; }
+    .builder-form { padding: 20px; gap: 18px; }
+    .field-row { grid-template-columns: 1fr; }
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .categories { justify-content: center; }
+    .modal-content { flex-direction: column; }
+    .modal-img { width: 100%; height: 180px; font-size: 70px; border-right: none; border-bottom: 1px solid rgba(16, 185, 129, 0.15); }
+    .cart-panel { width: 100%; }
+    .builder-actions { flex-direction: column; }
+    .recommendations-title h2 { font-size: 18px; }
+    .chat-content, .chats-content { height: 90vh; max-height: none; border-radius: 12px; }
+    .chat-modal, .chats-modal { padding: 10px; }
+    .hint-content { padding: 30px 22px 26px; border-radius: 20px; }
+    .hint-icon { font-size: 50px; }
+    .hint-title { font-size: 18px; }
+    .hint-text { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<header>
+  <div class="header-top">
+    <div class="logo">🛒 МаркетПлейс</div>
+
+    <form class="search" id="searchForm">
+      <input type="text" id="searchInput" placeholder="Поиск по названию или описанию...">
+      <button type="button" class="clear-search" id="clearSearch">✕</button>
+      <button type="submit">Найти</button>
+    </form>
+
+    <div class="header-actions">
+      <button class="chats-btn" id="chatsBtn" type="button">
+        💬 Все чаты
+      </button>
+
+      <button class="cart-btn" id="cartBtn" type="button">
+        ❤️ Понравившиеся
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <h1 id="heroTitle" role="button" tabindex="0" title="Нажмите, чтобы узнать">Сеть обмена 101</h1>
+  <p>Все товары в одной сети — добавляйте свои через конструктор</p>
+</section>
+
+<div class="network-stats" id="networkStats"></div>
+
+<div class="filter-bar">
+  <div class="categories" id="categories"></div>
+
+  <select class="sort-select" id="sortSelect">
+    <option value="default">Сортировка: по умолчанию</option>
+    <option value="price-asc">Цена: по возрастанию</option>
+    <option value="price-desc">Цена: по убыванию</option>
+    <option value="rating">По рейтингу</option>
+    <option value="name">По названию (А-Я)</option>
+  </select>
+</div>
+
+<section class="builder-section">
+  <div class="builder-header">
+    <h2>✨ Конструктор карточек</h2>
+    <p>Заполните все поля — карточка сразу появится в сети и сохранится</p>
+  </div>
+
+  <button class="builder-toggle" id="builderToggle" type="button">➕ Открыть конструктор</button>
+
+  <div class="builder-form-wrap" id="builderFormWrap">
+    <form class="builder-form" id="builderForm" novalidate autocomplete="off">
+      <div>
+        <div class="photo-upload" id="photoUpload">
+          <input type="file" id="photoInput" accept="image/*">
+          <img class="photo-preview" id="photoPreview" alt="Превью">
+          <div class="photo-upload-icon">📷</div>
+          <div class="photo-upload-text">
+            <strong>Нажмите</strong> или перетащите<br>фото сюда <span class="required">*</span>
+          </div>
+          <button type="button" class="photo-remove" id="photoRemove" title="Удалить фото">✕</button>
+        </div>
+        <div class="photo-error" id="errorPhoto">Добавьте фото товара</div>
+      </div>
+
+      <div class="builder-fields">
+        <div class="field-group">
+          <label for="fieldTitle">Название <span class="required">*</span></label>
+          <input type="text" id="fieldTitle" placeholder="Например: Блокнот с кожаной обложкой" maxlength="60">
+          <div class="field-error" id="errorTitle">Введите название</div>
+        </div>
+
+        <div class="field-group">
+          <label for="fieldDesc">Описание <span class="required">*</span></label>
+          <textarea id="fieldDesc" placeholder="Расскажите о товаре: материал, размеры, особенности..." maxlength="300"></textarea>
+          <div class="field-error" id="errorDesc">Введите описание</div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label for="fieldCategory">Категория <span class="required">*</span></label>
+            <input type="text" id="fieldCategory" list="categoryList" placeholder="Книги, Ручки, ДЗ или своё название" maxlength="30" autocomplete="off">
+            <datalist id="categoryList"></datalist>
+            <div class="field-hint">Выберите из списка или введите своё</div>
+            <div class="field-error" id="errorCategory">Введите или выберите категорию</div>
+          </div>
+
+          <div class="field-group">
+            <label for="fieldPrice">Цена, ₽ <span class="required">*</span></label>
+            <input type="number" id="fieldPrice" placeholder="990" min="1" max="999999" step="1">
+            <div class="field-error" id="errorPrice">Введите цену больше 0</div>
+          </div>
+        </div>
+
+        <div class="builder-actions">
+          <button type="button" class="btn-primary" id="publishBtn">📡 Опубликовать в сеть</button>
+          <button type="button" class="btn-secondary" id="builderReset">Очистить</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<div class="network-title">
+  <h2>🌐 Сеть обмена 101</h2>
+  <span class="sub">Все опубликованные товары</span>
+</div>
+
+<div class="results-info" id="resultsInfo"></div>
+
+<main class="products" id="products"></main>
+
+<section class="recommendations" id="recommendations">
+  <div class="recommendations-header">
+    <div class="recommendations-title">
+      <h2>💡 Вам может понравиться</h2>
+      <span class="sub">Подобрано для вас</span>
+      <span class="reason" id="recReason">✨ На основе ваших интересов</span>
+    </div>
+  </div>
+  <div class="recommendations-grid" id="recommendationsGrid"></div>
+</section>
+
+<div class="overlay" id="overlay"></div>
+<aside class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h2>❤️ Понравившиеся</h2>
+    <button class="close-btn" id="closeCart" type="button">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Всего:</span>
+      <span id="cartTotal">0 ₽</span>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn" type="button" disabled>Обсудить обмен</button>
+  </div>
+</aside>
+
+<div class="modal" id="modal">
+  <div class="modal-content" id="modalContent"></div>
+</div>
+
+<div class="chats-modal" id="chatsModal">
+  <div class="chats-content">
+    <div class="chats-header">
+      <h2>💬 Все чаты</h2>
+      <button class="close-btn" id="closeChats" type="button">✕</button>
+    </div>
+    <div class="chats-list" id="chatsList"></div>
+  </div>
+</div>
+
+<div class="chat-modal" id="chatModal">
+  <div class="chat-content">
+    <div class="chat-header">
+      <button class="chat-back-btn" id="chatBack" type="button" title="К списку чатов">←</button>
+      <div class="chat-product-img" id="chatProductImg">🏪</div>
+      <div class="chat-seller-info">
+        <div class="chat-product-title" id="chatProductTitle">Unit Seller</div>
+        <div class="chat-product-sub">
+          <span class="chat-product-price-small" id="chatProductPrice"></span>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button class="chat-clear-btn" id="chatClearBtn" type="button">Очистить</button>
+        <button class="close-btn" id="closeChat" type="button">✕</button>
+      </div>
+    </div>
+
+    <!-- Переключатель режима -->
+    <div class="chat-mode-switch" id="chatModeSwitch">
+      <button class="chat-mode-btn active" data-mode="user" type="button">👤 Покупатель</button>
+      <button class="chat-mode-btn" data-mode="seller" type="button">🏪 Продавец</button>
+    </div>
+
+    <div class="chat-body" id="chatBody"></div>
+
+    <form class="chat-input-area" id="chatForm" autocomplete="off">
+      <input type="text" id="chatInput" placeholder="Написать продавцу..." maxlength="1000">
+      <button type="submit" class="chat-send" aria-label="Отправить">➤</button>
+    </form>
+  </div>
+</div>
+
+<div class="hint-modal" id="hintModal">
+  <div class="hint-content">
+    <div class="hint-icon">🤝</div>
+    <div class="hint-title">Сеть обмена 101</div>
+    <div class="hint-text">
+      <span class="accent">Выберите товар</span>, а в чате вы можете обговорить место встречи
+    </div>
+    <button class="hint-btn" id="hintClose" type="button">Понятно</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>© 2025 МаркетПлейс. Все права защищены.</footer>
+
+<script>
+'use strict';
+
+/* ============ БЕЗОПАСНОЕ ХРАНИЛИЩЕ ============ */
+var SafeStorage = (function() {
+  var available = false;
+  try {
+    var t = '__test__' + Date.now();
+    window.localStorage.setItem(t, 'x');
+    window.localStorage.removeItem(t);
+    available = true;
+  } catch (e) { available = false; }
+
+  return {
+    available: available,
+    get: function(key, fallback) {
+      if (fallback === undefined) fallback = null;
+      if (!available) return fallback;
+      try {
+        var v = window.localStorage.getItem(key);
+        return v === null ? fallback : v;
+      } catch (e) { return fallback; }
+    },
+    set: function(key, value) {
+      if (!available) return false;
+      try { window.localStorage.setItem(key, value); return true; }
+      catch (e) { return false; }
+    }
+  };
+})();
+
+/* ============ ФОН: МОЛЕКУЛЫ ============ */
+(function() {
+  var canvas = document.getElementById('bgCanvas');
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext('2d');
+  var W = 0, H = 0;
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var particles = [];
+  var mouse = { x: -9999, y: -9999 };
+  var time = 0;
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var count = Math.min(90, Math.max(35, Math.floor((W * H) / 18000)));
+    particles = [];
+    for (var i = 0; i < count; i++) particles.push(makeP());
+  }
+
+  function makeP() {
+    return {
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
+      r: Math.random() * 1.8 + 1,
+      isBlack: Math.random() < 0.3,
+      hue: 110 + Math.random() * 30,
+      pulse: Math.random() * Math.PI * 2,
+      pulseSpeed: 0.01 + Math.random() * 0.02
+    };
+  }
+
+  function drawConn(a, b, dist) {
+    var alpha = (1 - dist / 150) * 0.55;
+    var hue = 120 + Math.sin(time * 0.5 + a.x * 0.01) * 25;
+    var lightness = 55 + Math.sin(time + a.y * 0.02) * 15;
+    var g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+    g.addColorStop(0, 'hsla(' + hue + ',90%,' + lightness + '%,' + alpha + ')');
+    g.addColorStop(1, 'hsla(' + (hue + 20) + ',90%,' + lightness + '%,' + (alpha * 0.5) + ')');
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+
+  function drawP(p) {
+    p.pulse += p.pulseSpeed;
+    var pulseFactor = 1 + Math.sin(p.pulse) * 0.4;
+    var hue = p.hue + Math.sin(time * 0.8 + p.x * 0.01) * 20;
+    var lightBase = 60 + Math.sin(p.pulse) * 12;
+    var glow = p.r * 8 * pulseFactor;
+    var grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
+    if (p.isBlack) {
+      grd.addColorStop(0, 'rgba(0,0,0,1)');
+      grd.addColorStop(0.35, 'rgba(10,20,15,0.85)');
+      grd.addColorStop(0.6, 'hsla(' + hue + ',80%,45%,0.5)');
+      grd.addColorStop(1, 'hsla(' + hue + ',80%,60%,0)');
+    } else {
+      grd.addColorStop(0, 'hsla(' + hue + ',95%,' + (lightBase + 25) + '%,1)');
+      grd.addColorStop(0.4, 'hsla(' + hue + ',95%,' + lightBase + '%,0.55)');
+      grd.addColorStop(1, 'hsla(' + hue + ',95%,' + lightBase + '%,0)');
+    }
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, glow, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    if (p.isBlack) {
+      ctx.fillStyle = '#000';
+      ctx.strokeStyle = 'hsla(' + hue + ',90%,65%,0.9)';
+      ctx.lineWidth = 1.2;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = 'hsla(' + hue + ',100%,' + (lightBase + 20) + '%,1)';
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function animate() {
+    time += 0.016;
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillRect(0, 0, W, H);
+    var i, j, p, dx, dy, dSq, d, force;
+    for (i = 0; i < particles.length; i++) {
+      p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      dx = p.x - mouse.x; dy = p.y - mouse.y;
+      dSq = dx * dx + dy * dy;
+      if (dSq < 32400 && dSq > 0) {
+        d = Math.sqrt(dSq);
+        force = (1 - d / 180) * 0.6;
+        p.x += (dx / d) * force;
+        p.y += (dy / d) * force;
+      }
+      if (p.x < 0) { p.x = 0; p.vx *= -1; }
+      if (p.x > W) { p.x = W; p.vx *= -1; }
+      if (p.y < 0) { p.y = 0; p.vy *= -1; }
+      if (p.y > H) { p.y = H; p.vy *= -1; }
+    }
+    for (i = 0; i < particles.length; i++) {
+      for (j = i + 1; j < particles.length; j++) {
+        dx = particles[i].x - particles[j].x;
+        dy = particles[i].y - particles[j].y;
+        dSq = dx * dx + dy * dy;
+        if (dSq < 22500) drawConn(particles[i], particles[j], Math.sqrt(dSq));
+      }
+    }
+    for (i = 0; i < particles.length; i++) drawP(particles[i]);
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', function(e) {
+    mouse.x = e.clientX; mouse.y = e.clientY;
+  });
+  window.addEventListener('mouseleave', function() {
+    mouse.x = -9999; mouse.y = -9999;
+  });
+
+  resize();
+  animate();
+})();
+
+/* ============ ДАННЫЕ ============ */
+var BASE_PRODUCTS = [];
+
+var STANDARD_CATEGORIES = [
+  { key: 'book', name: 'Книги',    emoji: '📚' },
+  { key: 'pen',  name: 'Ручки',    emoji: '🖊️' },
+  { key: 'set',  name: 'Наборы',   emoji: '🎁' },
+  { key: 'dz',   name: 'ДЗ',       emoji: '📝' }
+];
+
+var CATEGORY_SYNONYMS = {
+  'книга': 'book', 'книги': 'book', 'book': 'book', 'books': 'book',
+  'ручка': 'pen',  'ручки': 'pen',  'pen': 'pen',  'pens': 'pen',
+  'набор': 'set',  'наборы': 'set', 'set': 'set',  'sets': 'set',
+  'дз': 'dz', 'домашка': 'dz', 'домашнее задание': 'dz',
+  'домашняя работа': 'dz', 'homework': 'dz', 'hw': 'dz'
+};
+
+var STORAGE_KEY = 'marketplace_custom_cards_v8';
+var STORAGE_ID_KEY = 'marketplace_next_id_v8';
+var ACTIVITY_KEY = 'marketplace_activity_v1';
+var CHATS_KEY = 'marketplace_chats_by_product_v1';
+var CHAT_MODE_KEY = 'marketplace_chat_mode_v1';
+
+function loadCustomCards() {
+  var raw = SafeStorage.get(STORAGE_KEY, null);
+  if (!raw) return [];
+  try {
+    var arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr.map(function(p) {
+      var copy = {};
+      for (var k in p) if (Object.prototype.hasOwnProperty.call(p, k)) copy[k] = p[k];
+      copy.custom = true;
+      if (!copy.category) copy.category = 'set';
+      return copy;
+    });
+  } catch (e) { return []; }
+}
+
+function saveCustomCards() {
+  var customOnly = products.filter(function(p) { return p.custom; });
+  try {
+    var ok = SafeStorage.set(STORAGE_KEY, JSON.stringify(customOnly));
+    if (!ok && SafeStorage.available) {
+      showToast('⚠️ Не удалось сохранить — возможно, много фото', true);
+    }
+  } catch (e) {}
+}
+
+function loadNextId() {
+  var v = Number(SafeStorage.get(STORAGE_ID_KEY, null));
+  return v && v >= 100 ? v : 100;
+}
+
+function saveNextId() {
+  SafeStorage.set(STORAGE_ID_KEY, String(nextId));
+}
+
+/* ============ КАТЕГОРИИ ============ */
+function categoryLabel(p) {
+  if (p.categoryName) return p.categoryName;
+  for (var i = 0; i < STANDARD_CATEGORIES.length; i++) {
+    if (STANDARD_CATEGORIES[i].key === p.category) return STANDARD_CATEGORIES[i].name;
+  }
+  return p.category || 'Разное';
+}
+
+function resolveCategory(inputText) {
+  var text = String(inputText || '').trim();
+  if (!text) return null;
+
+  var lower = text.toLowerCase();
+
+  if (CATEGORY_SYNONYMS.hasOwnProperty(lower)) {
+    var stdKey = CATEGORY_SYNONYMS[lower];
+    for (var i = 0; i < STANDARD_CATEGORIES.length; i++) {
+      if (STANDARD_CATEGORIES[i].key === stdKey) {
+        return { key: stdKey, name: STANDARD_CATEGORIES[i].name };
+      }
+    }
+  }
+
+  var slug = text.toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-zа-яё0-9_]/gi, '');
+  if (!slug) slug = 'cat_' + Date.now();
+
+  return { key: 'custom_' + slug, name: text };
+}
+
+function collectUsedCategories() {
+  var seen = {};
+  var list = [];
+  for (var i = 0; i < products.length; i++) {
+    var p = products[i];
+    if (!seen[p.category]) {
+      seen[p.category] = true;
+      list.push({ key: p.category, name: categoryLabel(p) });
+    }
+  }
+  return list;
+}
+
+/* ============ АКТИВНОСТЬ ============ */
+var activity = { viewed: [], carted: [] };
+
+function loadActivity() {
+  var raw = SafeStorage.get(ACTIVITY_KEY, null);
+  if (!raw) return;
+  try {
+    var obj = JSON.parse(raw);
+    if (obj && typeof obj === 'object') {
+      activity.viewed = Array.isArray(obj.viewed) ? obj.viewed.slice(-30) : [];
+      activity.carted = Array.isArray(obj.carted) ? obj.carted.slice(-30) : [];
+    }
+  } catch (e) {}
+}
+
+function saveActivity() {
+  try {
+    SafeStorage.set(ACTIVITY_KEY, JSON.stringify({
+      viewed: activity.viewed.slice(-30),
+      carted: activity.carted.slice(-30)
+    }));
+  } catch (e) {}
+}
+
+function trackView(id) {
+  if (!id) return;
+  activity.viewed = activity.viewed.filter(function(x) { return x !== id; });
+  activity.viewed.push(id);
+  if (activity.viewed.length > 30) activity.viewed = activity.viewed.slice(-30);
+  saveActivity();
+  scheduleRecommendations();
+}
+
+function trackCart(id) {
+  if (!id) return;
+  activity.carted = activity.carted.filter(function(x) { return x !== id; });
+  activity.carted.push(id);
+  if (activity.carted.length > 30) activity.carted = activity.carted.slice(-30);
+  saveActivity();
+  scheduleRecommendations();
+}
+
+/* ============================================================
+   ЧАТЫ — по каждому товару отдельно
+   ============================================================ */
+var chatsByProduct = {};
+var currentChatProductId = null;
+var chatMode = 'user'; // 'user' | 'seller'
+
+function loadChats() {
+  var raw = SafeStorage.get(CHATS_KEY, null);
+  if (!raw) return;
+  try {
+    var obj = JSON.parse(raw);
+    if (obj && typeof obj === 'object') {
+      if (obj.chats && typeof obj.chats === 'object') {
+        chatsByProduct = obj.chats;
+      }
+    }
+  } catch (e) {}
+}
+
+function saveChats() {
+  try {
+    SafeStorage.set(CHATS_KEY, JSON.stringify({ chats: chatsByProduct }));
+  } catch (e) {}
+}
+
+function loadChatMode() {
+  var v = SafeStorage.get(CHAT_MODE_KEY, null);
+  if (v === 'seller' || v === 'user') chatMode = v;
+  else chatMode = 'user';
+}
+
+function saveChatMode() {
+  SafeStorage.set(CHAT_MODE_KEY, chatMode);
+}
+
+function getChatByProduct(pid) {
+  if (!chatsByProduct[pid]) chatsByProduct[pid] = [];
+  return chatsByProduct[pid];
+}
+
+function addMessageToProduct(pid, from, text) {
+  var list = getChatByProduct(pid);
+  list.push({ from: from, text: text, time: Date.now() });
+  if (list.length > 200) list.splice(0, list.length - 200);
+  saveChats();
+}
+
+function clearChatByProduct(pid) {
+  chatsByProduct[pid] = [];
+  saveChats();
+}
+
+function formatChatTime(ms) {
+  var d = new Date(ms);
+  var now = new Date();
+  var diff = now.getTime() - d.getTime();
+  var dayMs = 24 * 60 * 60 * 1000;
+
+  if (diff < 60 * 1000) return 'только что';
+  if (diff < 60 * 60 * 1000) {
+    var mins = Math.floor(diff / 60000);
+    return mins + ' мин назад';
+  }
+  if (d.toDateString() === now.toDateString()) {
+    var hh = d.getHours();
+    var mm = d.getMinutes();
+    if (hh < 10) hh = '0' + hh;
+    if (mm < 10) mm = '0' + mm;
+    return hh + ':' + mm;
+  }
+  if (diff < 2 * dayMs) return 'вчера';
+
+  var dd = d.getDate();
+  var mo = d.getMonth() + 1;
+  if (dd < 10) dd = '0' + dd;
+  if (mo < 10) mo = '0' + mo;
+  return dd + '.' + mo;
+}
+
+/* ============ СОСТОЯНИЕ ============ */
+var products = BASE_PRODUCTS.concat(loadCustomCards());
+loadActivity();
+loadChats();
+loadChatMode();
+
+var nextId = loadNextId();
+var uploadedImage = null;
+var publishing = false;
+var state = { category: 'all', search: '', sort: 'default', cart: [] };
+
+/* ============ DOM ============ */
+function $(id) { return document.getElementById(id); }
+
+var productsEl = $('products');
+var resultsInfo = $('resultsInfo');
+var searchInput = $('searchInput');
+var clearSearch = $('clearSearch');
+var categoriesEl = $('categories');
+var sortSelect = $('sortSelect');
+var cartPanel = $('cartPanel');
+var overlay = $('overlay');
+var cartItemsEl = $('cartItems');
+var cartTotalEl = $('cartTotal');
+var cartCountEl = $('cartCount');
+var checkoutBtn = $('checkoutBtn');
+var modal = $('modal');
+var modalContent = $('modalContent');
+var toast = $('toast');
+var networkStatsEl = $('networkStats');
+
+var recommendationsEl = $('recommendations');
+var recommendationsGrid = $('recommendationsGrid');
+var recReason = $('recReason');
+
+var chatsBtn = $('chatsBtn');
+var chatsModal = $('chatsModal');
+var closeChats = $('closeChats');
+var chatsList = $('chatsList');
+
+var chatModal = $('chatModal');
+var chatBody = $('chatBody');
+var chatForm = $('chatForm');
+var chatInput = $('chatInput');
+var chatClearBtn = $('chatClearBtn');
+var chatBack = $('chatBack');
+var chatProductImg = $('chatProductImg');
+var chatProductTitle = $('chatProductTitle');
+var chatProductPrice = $('chatProductPrice');
+var chatModeSwitch = $('chatModeSwitch');
+
+var heroTitle = $('heroTitle');
+var hintModal = $('hintModal');
+var hintClose = $('hintClose');
+
+/* ============ HINT MODAL ============ */
+function openHint() { hintModal.classList.add('open'); }
+function closeHint() { hintModal.classList.remove('open'); }
+
+heroTitle.addEventListener('click', function(e) {
+  e.preventDefault();
+  openHint();
+});
+
+heroTitle.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    openHint();
+  }
+});
+
+hintClose.addEventListener('click', closeHint);
+
+hintModal.addEventListener('click', function(e) {
+  if (e.target === hintModal) closeHint();
+});
+
+/* ============ КОНСТРУКТОР ============ */
+var builderToggle = $('builderToggle');
+var builderFormWrap = $('builderFormWrap');
+var builderForm = $('builderForm');
+var photoUpload = $('photoUpload');
+var photoInput = $('photoInput');
+var photoPreview = $('photoPreview');
+var photoRemove = $('photoRemove');
+var fieldTitle = $('fieldTitle');
+var fieldDesc = $('fieldDesc');
+var fieldCategory = $('fieldCategory');
+var categoryList = $('categoryList');
+var fieldPrice = $('fieldPrice');
+var errorTitle = $('errorTitle');
+var errorDesc = $('errorDesc');
+var errorCategory = $('errorCategory');
+var errorPrice = $('errorPrice');
+var errorPhoto = $('errorPhoto');
+
+builderToggle.addEventListener('click', function(e) {
+  e.preventDefault();
+  var isOpen = builderFormWrap.classList.toggle('open');
+  builderToggle.classList.toggle('open', isOpen);
+  builderToggle.textContent = isOpen ? '✖ Закрыть конструктор' : '➕ Открыть конструктор';
+  if (isOpen) {
+    updateCategoryDatalist();
+    setTimeout(function() {
+      try { builderFormWrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch (err) { builderFormWrap.scrollIntoView(); }
+    }, 250);
+  }
+});
+
+function updateCategoryDatalist() {
+  var names = {};
+  for (var i = 0; i < STANDARD_CATEGORIES.length; i++) {
+    names[STANDARD_CATEGORIES[i].name] = true;
+  }
+  for (var j = 0; j < products.length; j++) {
+    var label = categoryLabel(products[j]);
+    if (label) names[label] = true;
+  }
+  var html = '';
+  for (var n in names) {
+    if (Object.prototype.hasOwnProperty.call(names, n)) {
+      html += '<option value="' + escapeHtml(n) + '">';
+    }
+  }
+  categoryList.innerHTML = html;
+}
+
+function setPhoto(dataUrl) {
+  uploadedImage = dataUrl;
+  photoPreview.src = dataUrl;
+  photoPreview.classList.add('visible');
+  photoUpload.classList.add('has-image');
+  photoUpload.classList.remove('invalid');
+  errorPhoto.classList.remove('show');
+}
+
+function clearPhoto() {
+  uploadedImage = null;
+  photoInput.value = '';
+  photoPreview.src = '';
+  photoPreview.classList.remove('visible');
+  photoUpload.classList.remove('has-image');
+}
+
+photoInput.addEventListener('change', function(e) {
+  var file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!file.type || file.type.indexOf('image/') !== 0) {
+    showToast('❌ Можно загрузить только изображение', true);
+    photoInput.value = '';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('❌ Файл слишком большой (макс. 5 МБ)', true);
+    photoInput.value = '';
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(ev) { setPhoto(ev.target.result); };
+  reader.readAsDataURL(file);
+});
+
+['dragenter', 'dragover'].forEach(function(evt) {
+  photoUpload.addEventListener(evt, function(e) {
+    e.preventDefault();
+    photoUpload.style.borderColor = '#90ee90';
+    photoUpload.style.background = 'rgba(16, 185, 129, 0.15)';
+  });
+});
+
+['dragleave', 'drop'].forEach(function(evt) {
+  photoUpload.addEventListener(evt, function(e) {
+    e.preventDefault();
+    photoUpload.style.borderColor = '';
+    photoUpload.style.background = '';
+  });
+});
+
+photoUpload.addEventListener('drop', function(e) {
+  var file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (!file || !file.type || file.type.indexOf('image/') !== 0) return;
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('❌ Файл слишком большой (макс. 5 МБ)', true);
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(ev) { setPhoto(ev.target.result); };
+  reader.readAsDataURL(file);
+});
+
+photoRemove.addEventListener('click', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  clearPhoto();
+});
+
+function validateField(input, errorEl, isInvalid) {
+  if (isInvalid) {
+    if (input) input.classList.add('invalid');
+    if (errorEl) errorEl.classList.add('show');
+    return false;
+  }
+  if (input) input.classList.remove('invalid');
+  if (errorEl) errorEl.classList.remove('show');
+  return true;
+}
+
+fieldTitle.addEventListener('input', function() {
+  if (fieldTitle.value.trim()) {
+    fieldTitle.classList.remove('invalid');
+    errorTitle.classList.remove('show');
+  }
+});
+
+fieldDesc.addEventListener('input', function() {
+  if (fieldDesc.value.trim()) {
+    fieldDesc.classList.remove('invalid');
+    errorDesc.classList.remove('show');
+  }
+});
+
+fieldCategory.addEventListener('input', function() {
+  if (fieldCategory.value.trim()) {
+    fieldCategory.classList.remove('invalid');
+    errorCategory.classList.remove('show');
+  }
+});
+
+fieldCategory.addEventListener('change', function() {
+  if (fieldCategory.value.trim()) {
+    fieldCategory.classList.remove('invalid');
+    errorCategory.classList.remove('show');
+  }
+});
+
+fieldPrice.addEventListener('input', function() {
+  var v = Number(fieldPrice.value);
+  if (fieldPrice.value && v > 0) {
+    fieldPrice.classList.remove('invalid');
+    errorPrice.classList.remove('show');
+  }
+});
+
+function handlePublish(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (publishing) return;
+  publishing = true;
+
+  try {
+    var photoOk = true;
+    if (!uploadedImage) {
+      photoUpload.classList.add('invalid');
+      errorPhoto.classList.add('show');
+      photoOk = false;
+    } else {
+      photoUpload.classList.remove('invalid');
+      errorPhoto.classList.remove('show');
+    }
+
+    var titleOk = validateField(fieldTitle, errorTitle, !fieldTitle.value.trim());
+    var descOk = validateField(fieldDesc, errorDesc, !fieldDesc.value.trim());
+
+    var resolvedCat = resolveCategory(fieldCategory.value);
+    var catOk = validateField(fieldCategory, errorCategory, !resolvedCat);
+
+    var priceVal = Number(fieldPrice.value);
+    var priceOk = validateField(fieldPrice, errorPrice, !priceVal || priceVal <= 0);
+
+    if (!photoOk || !titleOk || !descOk || !catOk || !priceOk) {
+      var missing = [];
+      if (!photoOk) missing.push('фото');
+      if (!titleOk) missing.push('название');
+      if (!descOk) missing.push('описание');
+      if (!catOk) missing.push('категория');
+      if (!priceOk) missing.push('цена');
+      showToast('⚠️ Заполните: ' + missing.join(', '), true);
+      return;
+    }
+
+    var newProduct = {
+      id: nextId++,
+      title: fieldTitle.value.trim(),
+      desc: fieldDesc.value.trim(),
+      category: resolvedCat.key,
+      categoryName: resolvedCat.name,
+      price: priceVal,
+      oldPrice: null,
+      rating: 5.0,
+      badge: 'ВАШ ТОВАР',
+      custom: true,
+      image: uploadedImage,
+      icon: null
+    };
+
+    products.unshift(newProduct);
+    saveNextId();
+    saveCustomCards();
+
+    var justAddedId = newProduct.id;
+
+    builderForm.reset();
+    clearPhoto();
+    fieldTitle.classList.remove('invalid');
+    fieldDesc.classList.remove('invalid');
+    fieldCategory.classList.remove('invalid');
+    fieldPrice.classList.remove('invalid');
+    errorTitle.classList.remove('show');
+    errorDesc.classList.remove('show');
+    errorCategory.classList.remove('show');
+    errorPrice.classList.remove('show');
+
+    builderFormWrap.classList.remove('open');
+    builderToggle.classList.remove('open');
+    builderToggle.textContent = '➕ Открыть конструктор';
+
+    state.category = 'all';
+    state.search = '';
+    state.sort = 'default';
+    searchInput.value = '';
+    sortSelect.value = 'default';
+    clearSearch.classList.remove('visible');
+
+    renderCategoryFilters();
+    renderProducts();
+    renderNetworkStats();
+    updateCategoryDatalist();
+
+    setTimeout(function() {
+      var cardEl = productsEl.querySelector('.card[data-id="' + justAddedId + '"]');
+      if (cardEl) {
+        cardEl.classList.add('just-added');
+        try { cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        catch (err) { cardEl.scrollIntoView(); }
+        setTimeout(function() { cardEl.classList.remove('just-added'); }, 1600);
+      }
+    }, 60);
+
+    showToast('📡 «' + newProduct.title + '» опубликован в сети');
+
+  } catch (err) {
+    console.error('Publish error:', err);
+    showToast('❌ Ошибка: ' + (err.message || 'что-то пошло не так'), true);
+  } finally {
+    setTimeout(function() { publishing = false; }, 400);
+  }
+}
+
+$('publishBtn').addEventListener('click', handlePublish);
+builderForm.addEventListener('submit', handlePublish);
+
+$('builderReset').addEventListener('click', function() {
+  builderForm.reset();
+  clearPhoto();
+  fieldTitle.classList.remove('invalid');
+  fieldDesc.classList.remove('invalid');
+  fieldCategory.classList.remove('invalid');
+  fieldPrice.classList.remove('invalid');
+  errorTitle.classList.remove('show');
+  errorDesc.classList.remove('show');
+  errorCategory.classList.remove('show');
+  errorPrice.classList.remove('show');
+  photoUpload.classList.remove('invalid');
+  errorPhoto.classList.remove('show');
+});
+
+/* ============ ФИЛЬТРЫ КАТЕГОРИЙ ============ */
+function renderCategoryFilters() {
+  var items = [{ key: 'all', name: 'Все' }];
+
+  for (var i = 0; i < STANDARD_CATEGORIES.length; i++) {
+    items.push({
+      key: STANDARD_CATEGORIES[i].key,
+      name: STANDARD_CATEGORIES[i].emoji + ' ' + STANDARD_CATEGORIES[i].name
+    });
+  }
+
+  var used = collectUsedCategories();
+  for (var j = 0; j < used.length; j++) {
+    var u = used[j];
+    var isStandard = false;
+    for (var k = 0; k < STANDARD_CATEGORIES.length; k++) {
+      if (STANDARD_CATEGORIES[k].key === u.key) { isStandard = true; break; }
+    }
+    if (!isStandard) {
+      items.push({ key: u.key, name: '🏷️ ' + u.name });
+    }
+  }
+
+  var exists = false;
+  for (var m = 0; m < items.length; m++) {
+    if (items[m].key === state.category) { exists = true; break; }
+  }
+  if (!exists) state.category = 'all';
+
+  var html = '';
+  for (var n = 0; n < items.length; n++) {
+    var active = items[n].key === state.category ? ' active' : '';
+    html += '<div class="category' + active + '" data-category="' +
+            escapeHtml(items[n].key) + '">' +
+            escapeHtml(items[n].name) + '</div>';
+  }
+  categoriesEl.innerHTML = html;
+}
+
+/* ============ СТАТИСТИКА ============ */
+function renderNetworkStats() {
+  var counts = {};
+  var custom = 0;
+
+  for (var i = 0; i < products.length; i++) {
+    var p = products[i];
+    if (p.custom) custom++;
+    if (!counts[p.category]) {
+      counts[p.category] = { name: categoryLabel(p), count: 0 };
+    }
+    counts[p.category].count++;
+  }
+
+  var html = '';
+  html += '<div class="stat-chip">📦 Всего в сети: <strong>' + products.length + '</strong></div>';
+  html += '<div class="stat-chip">✨ Ваших: <strong>' + custom + '</strong></div>';
+
+  for (var j = 0; j < STANDARD_CATEGORIES.length; j++) {
+    var s = STANDARD_CATEGORIES[j];
+    var c = counts[s.key] ? counts[s.key].count : 0;
+    html += '<div class="stat-chip">' + s.emoji + ' ' + s.name + ': <strong>' + c + '</strong></div>';
+    if (counts[s.key]) delete counts[s.key];
+  }
+
+  for (var k in counts) {
+    if (Object.prototype.hasOwnProperty.call(counts, k)) {
+      html += '<div class="stat-chip">🏷️ ' + escapeHtml(counts[k].name) +
+              ': <strong>' + counts[k].count + '</strong></div>';
+    }
+  }
+
+  networkStatsEl.innerHTML = html;
+}
+
+/* ============ ФИЛЬТРАЦИЯ ============ */
+function getFiltered() {
+  var list = products.slice();
+
+  if (state.category !== 'all') {
+    list = list.filter(function(p) { return p.category === state.category; });
+  }
+
+  if (state.search.trim()) {
+    var q = state.search.trim().toLowerCase();
+    list = list.filter(function(p) {
+      return p.title.toLowerCase().indexOf(q) !== -1 ||
+             p.desc.toLowerCase().indexOf(q) !== -1 ||
+             categoryLabel(p).toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  switch (state.sort) {
+    case 'price-asc': list.sort(function(a, b) { return a.price - b.price; }); break;
+    case 'price-desc': list.sort(function(a, b) { return b.price - a.price; }); break;
+    case 'rating': list.sort(function(a, b) { return b.rating - a.rating; }); break;
+    case 'name': list.sort(function(a, b) { return a.title.localeCompare(b.title, 'ru'); }); break;
+  }
+
+  return list;
+}
+
+/* ============ ОТРИСОВКА ============ */
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function buildCardHtml(p, opts) {
+  opts = opts || {};
+  var imgContent = p.image
+    ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
+    : (p.icon || '🆕');
+
+  var badgeHtml = '';
+  if (opts.rec && opts.recText) {
+    badgeHtml = '<div class="rec-label">✨ ' + escapeHtml(opts.recText) + '</div>';
+  } else if (p.badge) {
+    badgeHtml = '<div class="badge' + (p.custom ? ' custom' : '') + '">' + escapeHtml(p.badge) + '</div>';
+  }
+
+  var deleteBtn = (p.custom && !opts.rec)
+    ? '<button class="delete-card-btn" data-delete="' + p.id + '" title="Удалить" type="button">🗑️</button>'
+    : '';
+
+  return (
+    '<article class="card" data-id="' + p.id + '">' +
+      badgeHtml +
+      deleteBtn +
+      '<div class="card-image" data-action="open">' + imgContent + '</div>' +
+      '<div class="card-body">' +
+        '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
+        '<h3 class="card-title" data-action="open">' + escapeHtml(p.title) + '</h3>' +
+        '<p class="card-desc">' + escapeHtml(p.desc) + '</p>' +
+        '<div class="rating">★★★★★ <span>' + p.rating.toFixed(1) + '</span></div>' +
+        '<div class="card-footer">' +
+          '<div class="price">' +
+            p.price.toLocaleString('ru') + ' ₽' +
+            (p.oldPrice ? '<small>' + p.oldPrice.toLocaleString('ru') + ' ₽</small>' : '') +
+          '</div>' +
+          '<div class="card-actions">' +
+            '<button class="chat-btn" data-action="chat" data-id="' + p.id + '" title="Написать продавцу" type="button">💬</button>' +
+            '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ Нравится</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</article>'
+  );
+}
+
+function renderProducts() {
+  var list = getFiltered();
+
+  resultsInfo.textContent = list.length
+    ? 'Показано в сети: ' + list.length + ' из ' + products.length
+    : '';
+
+  if (!list.length) {
+    var isEmptyNetwork = products.length === 0;
+    productsEl.innerHTML =
+      '<div class="empty">' +
+        '<div class="empty-icon">' + (isEmptyNetwork ? '✨' : '🔍') + '</div>' +
+        '<h3>' + (isEmptyNetwork ? 'В сети пока нет карточек' : 'Ничего не найдено') + '</h3>' +
+        '<p>' + (isEmptyNetwork
+          ? 'Создайте первую карточку через конструктор выше 👆'
+          : 'Попробуйте изменить запрос или выбрать другую категорию.') + '</p>' +
+      '</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < list.length; i++) {
+    html += buildCardHtml(list[i]);
+  }
+  productsEl.innerHTML = html;
+}
+
+/* ============ РЕКОМЕНДАЦИИ ============ */
+function getRecommendations(limit) {
+  if (limit === undefined) limit = 4;
+  if (!products.length) return [];
+
+  var weights = {};
+  var hasActivity = false;
+
+  function bump(catKey, amount) {
+    if (!catKey) return;
+    if (!weights[catKey]) weights[catKey] = 0;
+    weights[catKey] += amount;
+  }
+
+  for (var i = 0; i < activity.carted.length; i++) {
+    var cp = findProduct(activity.carted[i]);
+    if (cp) { bump(cp.category, 2); hasActivity = true; }
+  }
+  for (var j = 0; j < activity.viewed.length; j++) {
+    var vp = findProduct(activity.viewed[j]);
+    if (vp) { bump(vp.category, 1); hasActivity = true; }
+  }
+
+  var excluded = {};
+  for (var m = 0; m < activity.viewed.length; m++) excluded[activity.viewed[m]] = true;
+  for (var n = 0; n < activity.carted.length; n++) excluded[activity.carted[n]] = true;
+
+  var candidates = products.filter(function(p) { return !excluded[p.id]; });
+
+  if (!hasActivity) return [];
+
+  var scored = candidates.map(function(p) {
+    var w = weights[p.category] || 0;
+    var score = w * 10 + (p.rating || 0) * 0.3 + (p.custom ? 0.5 : 0);
+    return { p: p, score: score };
+  });
+
+  scored.sort(function(a, b) { return b.score - a.score; });
+
+  var result = [];
+  for (var k = 0; k < scored.length && result.length < limit; k++) {
+    if (scored[k].score >= 10) result.push(scored[k].p);
+  }
+  return result;
+}
+
+function findProduct(id) {
+  for (var i = 0; i < products.length; i++) {
+    if (products[i].id === id) return products[i];
+  }
+  return null;
+}
+
+function getRecommendationReason() {
+  var cartedCats = {};
+  var viewedCats = {};
+
+  for (var i = 0; i < activity.carted.length; i++) {
+    var cp = findProduct(activity.carted[i]);
+    if (cp) cartedCats[cp.category] = categoryLabel(cp);
+  }
+  for (var j = 0; j < activity.viewed.length; j++) {
+    var vp = findProduct(activity.viewed[j]);
+    if (vp) viewedCats[vp.category] = categoryLabel(vp);
+  }
+
+  var cartedList = Object.keys(cartedCats).map(function(k) { return cartedCats[k]; });
+  var viewedList = Object.keys(viewedCats).map(function(k) { return viewedCats[k]; });
+
+  if (cartedList.length) {
+    return '❤️ По вашим понравившимся: ' + cartedList.slice(0, 2).join(', ');
+  }
+  if (viewedList.length) {
+    return '👁️ На основе просмотров: ' + viewedList.slice(0, 2).join(', ');
+  }
+  return '✨ На основе ваших интересов';
+}
+
+var recTimeout = null;
+function scheduleRecommendations() {
+  if (recTimeout) clearTimeout(recTimeout);
+  recTimeout = setTimeout(function() {
+    renderRecommendations();
+  }, 250);
+}
+
+function renderRecommendations() {
+  var recs = getRecommendations(4);
+
+  if (!recs.length) {
+    recommendationsEl.classList.remove('visible');
+    recommendationsGrid.innerHTML = '';
+    return;
+  }
+
+  recReason.textContent = getRecommendationReason();
+
+  var html = '';
+  for (var i = 0; i < recs.length; i++) {
+    var reason = 'Похожее';
+    for (var j = 0; j < activity.carted.length; j++) {
+      var cp = findProduct(activity.carted[j]);
+      if (cp && cp.category === recs[i].category) { reason = 'Вам нравится'; break; }
+    }
+    if (reason === 'Похожее') {
+      for (var k = 0; k < activity.viewed.length; k++) {
+        var vp = findProduct(activity.viewed[k]);
+        if (vp && vp.category === recs[i].category) { reason = 'Вы смотрели'; break; }
+      }
+    }
+    html += buildCardHtml(recs[i], { rec: true, recText: reason });
+  }
+  recommendationsGrid.innerHTML = html;
+  recommendationsEl.classList.add('visible');
+}
+
+/* ============ СОБЫТИЯ КАРТОЧЕК ============ */
+function handleProductClick(e) {
+  var delBtn = e.target.closest('[data-delete]');
+  if (delBtn) {
+    var id = Number(delBtn.getAttribute('data-delete'));
+    var idx = -1;
+    for (var i = 0; i < products.length; i++) {
+      if (products[i].id === id) { idx = i; break; }
+    }
+    if (idx !== -1) {
+      var name = products[idx].title;
+      products.splice(idx, 1);
+
+      delete chatsByProduct[id];
+      saveChats();
+
+      state.cart = state.cart.filter(function(x) { return x.id !== id; });
+      saveCustomCards();
+      renderCategoryFilters();
+      renderCart();
+      updateCartCount();
+      renderProducts();
+      renderNetworkStats();
+      updateCategoryDatalist();
+      scheduleRecommendations();
+      showToast('🗑️ «' + name + '» удалён из сети');
+    }
+    return;
+  }
+
+  var actionEl = e.target.closest('[data-action]');
+  if (!actionEl) return;
+
+  var action = actionEl.getAttribute('data-action');
+  var card = e.target.closest('.card');
+  if (!card) return;
+  var pid = Number(card.getAttribute('data-id'));
+
+  if (action === 'add') addToCart(pid);
+  else if (action === 'open') openModal(pid);
+  else if (action === 'chat') openChat(pid);
+}
+
+productsEl.addEventListener('click', handleProductClick);
+recommendationsGrid.addEventListener('click', handleProductClick);
+
+/* ============ ПОНРАВИВШИЕСЯ ============ */
+function addToCart(id) {
+  var item = state.cart.find(function(i) { return i.id === id; });
+  if (item) item.qty++;
+  else state.cart.push({ id: id, qty: 1 });
+
+  renderCart();
+  updateCartCount();
+  trackCart(id);
+
+  var product = products.find(function(p) { return p.id === id; });
+  if (product) showToast('❤️ «' + product.title + '» добавлено в понравившиеся');
+}
+
+function changeQty(id, delta) {
+  var item = state.cart.find(function(i) { return i.id === id; });
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) state.cart = state.cart.filter(function(i) { return i.id !== id; });
+  renderCart();
+  updateCartCount();
+}
+
+function removeFromCart(id) {
+  state.cart = state.cart.filter(function(i) { return i.id !== id; });
+  renderCart();
+  updateCartCount();
+}
+
+function updateCartCount() {
+  var total = 0;
+  for (var i = 0; i < state.cart.length; i++) total += state.cart[i].qty;
+  cartCountEl.textContent = total;
+  cartCountEl.style.display = total > 0 ? 'flex' : 'none';
+}
+
+function renderCart() {
+  if (!state.cart.length) {
+    cartItemsEl.innerHTML =
+      '<div class="cart-empty">' +
+        '<div class="cart-empty-icon">🤍</div>' +
+        '<p>Пока ничего не понравилось</p>' +
+      '</div>';
+    cartTotalEl.textContent = '0 ₽';
+    checkoutBtn.disabled = true;
+    return;
+  }
+
+  var total = 0;
+  var html = '';
+  for (var i = 0; i < state.cart.length; i++) {
+    var item = state.cart[i];
+    var p = products.find(function(x) { return x.id === item.id; });
+    if (!p) continue;
+    total += p.price * item.qty;
+    var img = p.image
+      ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
+      : (p.icon || '🆕');
+    html +=
+      '<div class="cart-item">' +
+        '<div class="cart-item-img">' + img + '</div>' +
+        '<div class="cart-item-info">' +
+          '<div class="cart-item-title">' + escapeHtml(p.title) + '</div>' +
+          '<div class="cart-item-price">' + p.price.toLocaleString('ru') + ' ₽</div>' +
+          '<div class="qty">' +
+            '<button data-qty="-1" data-id="' + p.id + '" type="button">−</button>' +
+            '<span>' + item.qty + '</span>' +
+            '<button data-qty="1" data-id="' + p.id + '" type="button">+</button>' +
+          '</div>' +
+        '</div>' +
+        '<button class="remove-btn" data-remove="' + p.id + '" type="button">🗑️</button>' +
+      '</div>';
+  }
+  cartItemsEl.innerHTML = html;
+  cartTotalEl.textContent = total.toLocaleString('ru') + ' ₽';
+  checkoutBtn.disabled = false;
+}
+
+cartItemsEl.addEventListener('click', function(e) {
+  var qtyBtn = e.target.closest('[data-qty]');
+  if (qtyBtn) {
+    changeQty(Number(qtyBtn.getAttribute('data-id')), Number(qtyBtn.getAttribute('data-qty')));
+    return;
+  }
+  var removeBtn = e.target.closest('[data-remove]');
+  if (removeBtn) removeFromCart(Number(removeBtn.getAttribute('data-remove')));
+});
+
+/* ============ ПАНЕЛЬ ПОНРАВИВШИХСЯ ============ */
+function openCart() {
+  cartPanel.classList.add('open');
+  overlay.classList.add('open');
+}
+function closeCart() {
+  cartPanel.classList.remove('open');
+  overlay.classList.remove('open');
+}
+
+$('cartBtn').addEventListener('click', openCart);
+$('closeCart').addEventListener('click', closeCart);
+overlay.addEventListener('click', closeCart);
+
+/* ============ МОДАЛЬНОЕ ОКНО ТОВАРА ============ */
+function openModal(id) {
+  var p = products.find(function(x) { return x.id === id; });
+  if (!p) return;
+
+  trackView(id);
+
+  var imgContent = p.image
+    ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
+    : (p.icon || '🆕');
+
+  modalContent.innerHTML =
+    '<div class="modal-img">' + imgContent + '</div>' +
+    '<div class="modal-body">' +
+      '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
+      '<h2>' + escapeHtml(p.title) + '</h2>' +
+      '<div class="rating">★★★★★ <span>' + p.rating.toFixed(1) + '</span></div>' +
+      '<p>' + escapeHtml(p.desc) + '</p>' +
+      '<div class="price">' +
+        p.price.toLocaleString('ru') + ' ₽' +
+        (p.oldPrice ? '<small>' + p.oldPrice.toLocaleString('ru') + ' ₽</small>' : '') +
+      '</div>' +
+      '<div class="modal-actions">' +
+        '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ В понравившиеся</button>' +
+        '<button class="modal-chat-btn" data-action="chat" data-id="' + p.id + '" type="button">💬 Чат с продавцом</button>' +
+      '</div>' +
+    '</div>';
+
+  modal.classList.add('open');
+}
+
+modal.addEventListener('click', function(e) {
+  if (e.target === modal) modal.classList.remove('open');
+
+  var addEl = e.target.closest('[data-action="add"]');
+  if (addEl) {
+    addToCart(Number(addEl.getAttribute('data-id')));
+    modal.classList.remove('open');
+    openCart();
+    return;
+  }
+
+  var chatEl = e.target.closest('[data-action="chat"]');
+  if (chatEl) {
+    var pid = Number(chatEl.getAttribute('data-id'));
+    modal.classList.remove('open');
+    openChat(pid);
+  }
+});
+
+/* ============================================================
+   ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА ЧАТА
+   ============================================================ */
+function setChatMode(mode) {
+  if (mode !== 'user' && mode !== 'seller') return;
+  chatMode = mode;
+  saveChatMode();
+
+  var btns = chatModeSwitch.querySelectorAll('.chat-mode-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-mode') === mode);
+  }
+
+  // Меняем стиль поля ввода и кнопки
+  if (mode === 'seller') {
+    chatForm.classList.add('seller-mode');
+    chatInput.placeholder = 'Ответить от имени продавца...';
+  } else {
+    chatForm.classList.remove('seller-mode');
+    chatInput.placeholder = 'Написать продавцу...';
+  }
+
+  // Обновляем цвета сообщений через перерисовку
+  renderChatBody();
+
+  setTimeout(function() { chatInput.focus(); }, 50);
+}
+
+chatModeSwitch.addEventListener('click', function(e) {
+  var btn = e.target.closest('.chat-mode-btn');
+  if (!btn) return;
+  var mode = btn.getAttribute('data-mode');
+  setChatMode(mode);
+});
+
+/* ============================================================
+   ЧАТЫ — открытие/закрытие/логика
+   ============================================================ */
+
+function openChat(productId) {
+  var p = findProduct(productId);
+  if (!p) {
+    showToast('❌ Товар не найден', true);
+    return;
+  }
+
+  currentChatProductId = productId;
+
+  chatProductImg.innerHTML = p.image
+    ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
+    : (p.icon || '🆕');
+  chatProductTitle.textContent = p.title;
+  chatProductPrice.textContent = p.price.toLocaleString('ru') + ' ₽';
+
+  // Восстанавливаем текущий режим
+  setChatMode(chatMode);
+
+  renderChatBody();
+  chatModal.classList.add('open');
+
+  setTimeout(function() {
+    chatInput.focus();
+    scrollChatToBottom();
+  }, 150);
+}
+
+function closeChat() {
+  chatModal.classList.remove('open');
+  currentChatProductId = null;
+}
+
+function renderChatBody() {
+  if (currentChatProductId === null) return;
+
+  var messages = getChatByProduct(currentChatProductId);
+
+  if (!messages.length) {
+    chatBody.innerHTML =
+      '<div class="chat-placeholder">' +
+        '<div class="chat-placeholder-icon">💬</div>' +
+        '<p>Здесь пока пусто</p>' +
+        '<p class="hint">Напишите первое сообщение — оно появится здесь и сохранится</p>' +
+      '</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < messages.length; i++) {
+    var m = messages[i];
+    if (!m || !m.text) continue;
+
+    if (m.from === 'system') {
+      html += '<div class="msg-system">' + escapeHtml(m.text) + '</div>';
+      continue;
+    }
+
+    var cls = m.from === 'me' ? 'me' : 'unit';
+    html +=
+      '<div class="msg ' + cls + '">' +
+        '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span>' +
+        '<span class="msg-time">' + formatChatTime(m.time) + '</span>' +
+      '</div>';
+  }
+
+  chatBody.innerHTML = html;
+  scrollChatToBottom();
+}
+
+function scrollChatToBottom() {
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+chatForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (currentChatProductId === null) return;
+
+  var text = chatInput.value.trim();
+  if (!text) return;
+
+  // В зависимости от режима — пишем от 'me' (покупатель) или 'unit' (продавец)
+  var sender = chatMode === 'seller' ? 'unit' : 'me';
+
+  addMessageToProduct(currentChatProductId, sender, text);
+  chatInput.value = '';
+  renderChatBody();
+});
+
+chatClearBtn.addEventListener('click', function() {
+  if (currentChatProductId === null) return;
+  if (!getChatByProduct(currentChatProductId).length) {
+    showToast('Чат уже пуст', true);
+    return;
+  }
+  if (!window.confirm('Очистить всю историю этого чата?')) return;
+
+  clearChatByProduct(currentChatProductId);
+  renderChatBody();
+  showToast('🗑️ История чата очищена');
+});
+
+$('closeChat').addEventListener('click', closeChat);
+
+chatModal.addEventListener('click', function(e) {
+  if (e.target === chatModal) closeChat();
+});
+
+chatBack.addEventListener('click', function() {
+  closeChat();
+  setTimeout(function() { openChatsList(); }, 200);
+});
+
+/* ============================================================
+   СПИСОК ВСЕХ ЧАТОВ
+   ============================================================ */
+
+function openChatsList() {
+  renderChatsList();
+  chatsModal.classList.add('open');
+}
+
+function closeChatsList() {
+  chatsModal.classList.remove('open');
+}
+
+chatsBtn.addEventListener('click', openChatsList);
+closeChats.addEventListener('click', closeChatsList);
+
+chatsModal.addEventListener('click', function(e) {
+  if (e.target === chatsModal) closeChatsList();
+});
+
+function renderChatsList() {
+  var chatProducts = [];
+
+  for (var pid in chatsByProduct) {
+    if (!Object.prototype.hasOwnProperty.call(chatsByProduct, pid)) continue;
+    var list = chatsByProduct[pid];
+    if (!list || !list.length) continue;
+
+    var p = findProduct(Number(pid));
+    if (!p) continue;
+
+    var last = list[list.length - 1];
+    chatProducts.push({
+      product: p,
+      lastMessage: last,
+      count: list.length
+    });
+  }
+
+  chatProducts.sort(function(a, b) {
+    return b.lastMessage.time - a.lastMessage.time;
+  });
+
+  if (!chatProducts.length) {
+    chatsList.innerHTML =
+      '<div class="chats-empty">' +
+        '<div class="chats-empty-icon">💬</div>' +
+        '<p>Пока нет ни одного чата</p>' +
+        '<p class="hint">Нажмите 💬 на любой карточке, чтобы начать диалог</p>' +
+      '</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < chatProducts.length; i++) {
+    var item = chatProducts[i];
+    var p = item.product;
+    var last = item.lastMessage;
+
+    var imgContent = p.image
+      ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
+      : (p.icon || '🆕');
+
+    var lastText = '';
+    if (last.from === 'me') {
+      lastText = '<span class="prefix">Вы: </span>' + escapeHtml(last.text);
+    } else if (last.from === 'unit') {
+      lastText = '<span class="prefix-seller">Продавец: </span>' + escapeHtml(last.text);
+    } else {
+      lastText = escapeHtml(last.text);
+    }
+
+    html +=
+      '<div class="chat-item" data-chat-id="' + p.id + '">' +
+        '<div class="chat-item-img">' + imgContent + '</div>' +
+        '<div class="chat-item-info">' +
+          '<div class="chat-item-title">' + escapeHtml(p.title) + '</div>' +
+          '<div class="chat-item-last">' + lastText + '</div>' +
+        '</div>' +
+        '<div class="chat-item-meta">' +
+          '<div class="chat-item-time">' + formatChatTime(last.time) + '</div>' +
+          '<div class="chat-item-price">' + p.price.toLocaleString('ru') + ' ₽</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  chatsList.innerHTML = html;
+}
+
+chatsList.addEventListener('click', function(e) {
+  var item = e.target.closest('[data-chat-id]');
+  if (!item) return;
+
+  var pid = Number(item.getAttribute('data-chat-id'));
+  closeChatsList();
+  setTimeout(function() { openChat(pid); }, 150);
+});
+
+/* ============ ФИЛЬТРЫ ============ */
+categoriesEl.addEventListener('click', function(e) {
+  var btn = e.target.closest('.category');
+  if (!btn) return;
+
+  var all = document.querySelectorAll('.category');
+  for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+  btn.classList.add('active');
+
+  state.category = btn.getAttribute('data-category');
+  renderProducts();
+});
+
+$('searchForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  state.search = searchInput.value;
+  renderProducts();
+});
+
+searchInput.addEventListener('input', function() {
+  state.search = searchInput.value;
+  clearSearch.classList.toggle('visible', searchInput.value.length > 0);
+  renderProducts();
+});
+
+clearSearch.addEventListener('click', function() {
+  searchInput.value = '';
+  state.search = '';
+  clearSearch.classList.remove('visible');
+  renderProducts();
+  searchInput.focus();
+});
+
+sortSelect.addEventListener('change', function() {
+  state.sort = sortSelect.value;
+  renderProducts();
+});
+
+/* ============ ОБСУДИТЬ ОБМЕН ============ */
+checkoutBtn.addEventListener('click', function() {
+  var total = 0;
+  for (var i = 0; i < state.cart.length; i++) {
+    var p = products.find(function(x) { return x.id === state.cart[i].id; });
+    if (p) total += p.price * state.cart[i].qty;
+  }
+
+  showToast('✓ Выбрано на ' + total.toLocaleString('ru') + ' ₽ — обсудите обмен в чате!');
+  closeCart();
+
+  setTimeout(function() { openChatsList(); }, 400);
+});
+
+/* ============ ESC ============ */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (hintModal.classList.contains('open')) { closeHint(); return; }
+    if (chatModal.classList.contains('open')) { closeChat(); return; }
+    if (chatsModal.classList.contains('open')) { closeChatsList(); return; }
+    modal.classList.remove('open');
+    closeCart();
+  }
+});
+
+/* ============ TOAST ============ */
+var toastTimer = null;
+function showToast(message, isError, extraClass) {
+  if (isError === undefined) isError = false;
+  if (extraClass === undefined) extraClass = '';
+  toast.textContent = message;
+  toast.className = 'toast';
+  if (isError) toast.classList.add('error');
+  if (extraClass) toast.classList.add(extraClass);
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+/* ============ СТАРТ ============ */
+renderCategoryFilters();
+renderProducts();
+renderNetworkStats();
+renderCart();
+renderRecommendations();
+updateCartCount();
+updateCategoryDatalist();
+</script>
+
+</body>
+</html>
