@@ -1601,6 +1601,23 @@
 
   .offline-badge.visible { display: block; }
 
+  .loading-badge {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    padding: 8px 14px;
+    background: rgba(16, 185, 129, 0.9);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 999;
+    display: none;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  }
+
+  .loading-badge.visible { display: block; }
+
   @media (max-width: 900px) {
     .header-top { gap: 10px; }
     .search { order: 5; flex-basis: 100%; max-width: 100%; }
@@ -1633,6 +1650,7 @@
 <canvas id="bgCanvas"></canvas>
 
 <div class="offline-badge" id="offlineBadge">⚠️ Оффлайн-режим (без сервера)</div>
+<div class="loading-badge" id="loadingBadge">⏳ Загрузка с сервера...</div>
 
 <header>
   <div class="header-top">
@@ -2108,13 +2126,26 @@ function addMessageLocal(pid, from, text) {
 }
 
 /* ============================================================
-   ИНИЦИАЛИЗАЦИЯ
+   ИНИЦИАЛИЗАЦИЯ — с увеличенным таймаутом 15 секунд
    ============================================================ */
 function detectModeAndInit() {
+  // Показать индикатор загрузки
+  var loadingBadge = document.getElementById('loadingBadge');
+  if (loadingBadge) loadingBadge.classList.add('visible');
+
+  var done = false;
+  function finish() {
+    if (done) return;
+    done = true;
+    if (loadingBadge) loadingBadge.classList.remove('visible');
+  }
+
   var timeout = setTimeout(function() {
-    console.warn('Сервер не ответил за 3 секунды — оффлайн-режим');
+    if (done) return;
+    finish();
+    console.warn('Сервер не ответил за 15 секунд — оффлайн-режим');
     initLocalMode();
-  }, 3000);
+  }, 15000);
 
   fetch('/api/products')
     .then(function(res) {
@@ -2122,13 +2153,17 @@ function detectModeAndInit() {
       return res.json();
     })
     .then(function(data) {
+      if (done) return;
       clearTimeout(timeout);
+      finish();
       MODE = 'server';
       console.log('✅ Режим: сервер. Загружено товаров:', data.length);
       initServerMode(data);
     })
     .catch(function(err) {
+      if (done) return;
       clearTimeout(timeout);
+      finish();
       console.warn('⚠️ Сервер недоступен:', err.message);
       initLocalMode();
     });
