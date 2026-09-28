@@ -359,7 +359,6 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -385,7 +384,6 @@
       radial-gradient(ellipse at 20% 15%, rgba(255,255,255,0.42), transparent 55%),
       linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.04));
     backdrop-filter: blur(26px) saturate(200%) brightness(1.08);
-    -webkit-backdrop-filter: blur(26px) saturate(200%) brightness(1.08);
     border: 1px solid rgba(255, 255, 255, 0.5);
     box-shadow:
       inset 0 1.5px 1px rgba(255, 255, 255, 0.85),
@@ -1465,6 +1463,11 @@
     margin-top: 8px;
   }
 
+  /* ============================================
+     СООБЩЕНИЯ В ЧАТЕ — КАК В МЕССЕНДЖЕРАХ
+     Свои — СЛЕВА (зелёные)
+     Собеседника — СПРАВА (синие)
+     ============================================ */
   .msg {
     max-width: 75%;
     padding: 10px 14px;
@@ -1484,23 +1487,31 @@
     text-align: right;
   }
 
+  /* ТВОИ сообщения — слева, зелёные */
   .msg.me {
-    align-self: flex-end;
+    align-self: flex-start;
     background: linear-gradient(135deg, #10b981, #059669);
     color: #fff;
-    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    margin-right: auto;
+    margin-left: 0;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   }
 
+  /* СОБЕСЕДНИКА — справа, синие */
   .msg.unit {
-    align-self: flex-start;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.35), rgba(29, 78, 216, 0.25));
-    border: 1px solid rgba(59, 130, 246, 0.4);
+    align-self: flex-end;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(29, 78, 216, 0.75));
+    border: 1px solid rgba(59, 130, 246, 0.6);
     color: #f0f8ff;
-    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    margin-left: auto;
+    margin-right: 0;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   }
 
   .msg.unit::before {
-    content: 'Unit Seller';
+    content: 'Собеседник';
     display: block;
     font-size: 10px;
     color: #93c5fd;
@@ -1835,21 +1846,9 @@
 var MODE = 'local';
 var socket = null;
 
-/* ============================================================
-   ID ВЛАДЕЛЬЦА — генерируется один раз для этого браузера.
-   ============================================================ */
+/* ============ ID ВЛАДЕЛЬЦА ============ */
 var OWNER_KEY = 'marketplace_owner_id_v1';
-function getOwnerId() {
-  var id = SafeStorage.get(OWNER_KEY, null);
-  if (!id) {
-    id = 'u_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    SafeStorage.set(OWNER_KEY, id);
-  }
-  return id;
-}
-var MY_OWNER_ID = null;
 
-/* ============ БЕЗОПАСНОЕ ХРАНИЛИЩЕ ============ */
 var SafeStorage = (function() {
   var available = false;
   try {
@@ -1877,7 +1876,15 @@ var SafeStorage = (function() {
   };
 })();
 
-MY_OWNER_ID = getOwnerId();
+function getOwnerId() {
+  var id = SafeStorage.get(OWNER_KEY, null);
+  if (!id) {
+    id = 'u_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    SafeStorage.set(OWNER_KEY, id);
+  }
+  return id;
+}
+var MY_OWNER_ID = getOwnerId();
 
 /* ============ ФОН: МОЛЕКУЛЫ ============ */
 (function() {
@@ -2030,8 +2037,8 @@ var CATEGORY_SYNONYMS = {
   'домашняя работа': 'dz', 'homework': 'dz', 'hw': 'dz'
 };
 
-var STORAGE_KEY = 'marketplace_custom_cards_v10';
-var STORAGE_ID_KEY = 'marketplace_next_id_v10';
+var STORAGE_KEY = 'marketplace_custom_cards_v11';
+var STORAGE_ID_KEY = 'marketplace_next_id_v11';
 var ACTIVITY_KEY = 'marketplace_activity_v1';
 var CHATS_KEY = 'marketplace_chats_by_product_v1';
 
@@ -2047,9 +2054,7 @@ var currentChatProductId = null;
 
 var activity = { viewed: [], carted: [] };
 
-/* ============================================================
-   LOCAL-РЕЖИМ
-   ============================================================ */
+/* ============ LOCAL-РЕЖИМ ============ */
 function loadCustomCardsLocal() {
   var raw = SafeStorage.get(STORAGE_KEY, null);
   if (!raw) return [];
@@ -2125,11 +2130,8 @@ function addMessageLocal(pid, from, text) {
   saveChatsLocal();
 }
 
-/* ============================================================
-   ИНИЦИАЛИЗАЦИЯ — с увеличенным таймаутом 15 секунд
-   ============================================================ */
+/* ============ ИНИЦИАЛИЗАЦИЯ ============ */
 function detectModeAndInit() {
-  // Показать индикатор загрузки
   var loadingBadge = document.getElementById('loadingBadge');
   if (loadingBadge) loadingBadge.classList.add('visible');
 
@@ -2189,14 +2191,10 @@ function initLocalMode() {
 
 function initServerMode(serverProducts) {
   MODE = 'server';
-
   initSocket();
-
   products = BASE_PRODUCTS.concat(serverProducts);
   nextId = Date.now();
-
   loadActivityLocal();
-
   renderCategoryFilters();
   renderProducts();
   renderNetworkStats();
@@ -2206,9 +2204,7 @@ function initServerMode(serverProducts) {
   updateCategoryDatalist();
 }
 
-/* ============================================================
-   WEBSOCKET
-   ============================================================ */
+/* ============ WEBSOCKET ============ */
 function initSocket() {
   socket = createSimpleSocket();
 
@@ -2303,9 +2299,7 @@ function loadProductsFromServer() {
     .catch(function(err) { console.error('Ошибка загрузки товаров:', err); });
 }
 
-/* ============================================================
-   КАТЕГОРИИ
-   ============================================================ */
+/* ============ КАТЕГОРИИ ============ */
 function categoryLabel(p) {
   if (p.categoryName) return p.categoryName;
   for (var i = 0; i < STANDARD_CATEGORIES.length; i++) {
@@ -2344,9 +2338,7 @@ function collectUsedCategories() {
   return list;
 }
 
-/* ============================================================
-   АКТИВНОСТЬ
-   ============================================================ */
+/* ============ АКТИВНОСТЬ ============ */
 function trackView(id) {
   if (!id) return;
   activity.viewed = activity.viewed.filter(function(x) { return x !== id; });
@@ -2365,9 +2357,7 @@ function trackCart(id) {
   scheduleRecommendations();
 }
 
-/* ============================================================
-   DOM
-   ============================================================ */
+/* ============ DOM ============ */
 function $(id) { return document.getElementById(id); }
 
 var productsEl = $('products');
@@ -2586,8 +2576,6 @@ async function handlePublish(e) {
       desc: fieldDesc.value.trim(),
       category: resolvedCat.key,
       categoryName: resolvedCat.name,
-      price: 0,
-      oldPrice: null,
       rating: 5.0,
       badge: 'ВАШ ТОВАР',
       custom: true,
@@ -3166,9 +3154,7 @@ modal.addEventListener('click', function(e) {
   }
 });
 
-/* ============================================================
-   ЧАТЫ
-   ============================================================ */
+/* ============ ЧАТЫ ============ */
 function emptyChatHtml() {
   return '<div class="chat-placeholder">' +
     '<div class="chat-placeholder-icon">💬</div>' +
@@ -3319,9 +3305,7 @@ chatBack.addEventListener('click', function() {
   setTimeout(openChatsList, 200);
 });
 
-/* ============================================================
-   СПИСОК ВСЕХ ЧАТОВ
-   ============================================================ */
+/* ============ СПИСОК ВСЕХ ЧАТОВ ============ */
 function openChatsList() {
   renderChatsList();
   chatsModal.classList.add('open');
@@ -3390,7 +3374,7 @@ async function renderChatsList() {
     if (row.lastFrom === 'me') {
       lastText = '<span class="prefix">Вы: </span>' + escapeHtml(row.lastText);
     } else {
-      lastText = '<span class="prefix-seller">Продавец: </span>' + escapeHtml(row.lastText);
+      lastText = '<span class="prefix-seller">Собеседник: </span>' + escapeHtml(row.lastText);
     }
 
     html +=
@@ -3417,9 +3401,7 @@ chatsList.addEventListener('click', function(e) {
   setTimeout(function() { openChat(pid); }, 150);
 });
 
-/* ============================================================
-   ФОРМАТИРОВАНИЕ ВРЕМЕНИ
-   ============================================================ */
+/* ============ ВРЕМЯ ============ */
 function formatChatTime(ms) {
   var d = new Date(ms);
   var now = new Date();
