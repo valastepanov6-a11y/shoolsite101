@@ -5,6 +5,7 @@
 """
 
 import json
+import os
 import sqlite3
 import time
 from contextlib import asynccontextmanager
@@ -37,12 +38,13 @@ def init_db():
             description  TEXT NOT NULL,
             category     TEXT NOT NULL,
             categoryName TEXT,
-            price        REAL NOT NULL,
+            price        REAL DEFAULT 0,
             oldPrice     REAL,
             rating       REAL DEFAULT 5,
             badge        TEXT,
             custom       INTEGER DEFAULT 1,
             image        TEXT,
+            ownerId      TEXT,
             createdAt    INTEGER
         );
 
@@ -73,10 +75,8 @@ class ChatManager:
     """Управляет активными WebSocket-подключениями и комнатами."""
 
     def __init__(self):
-        # Комнаты: {productId: set(WebSocket)}
-        self.rooms: dict[int, set[WebSocket]] = {}
-        # Все клиенты
-        self.clients: set[WebSocket] = set()
+        self.rooms: dict = {}
+        self.clients: set = set()
 
     async def connect(self, ws: WebSocket):
         await ws.accept()
@@ -95,7 +95,6 @@ class ChatManager:
             self.rooms[product_id].discard(ws)
 
     async def send_to_room(self, product_id: int, data: dict):
-        """Отправить сообщение всем в комнате товара."""
         room = self.rooms.get(product_id)
         if not room:
             return
@@ -110,7 +109,6 @@ class ChatManager:
             room.discard(ws)
 
     async def broadcast(self, data: dict):
-        """Отправить всем клиентам."""
         msg = json.dumps(data, ensure_ascii=False)
         dead = []
         for ws in list(self.clients):
@@ -159,13 +157,14 @@ async def get_products():
                 "desc": r["description"],
                 "category": r["category"],
                 "categoryName": r["categoryName"],
-                "price": r["price"],
+                "price": r["price"] if r["price"] is not None else 0,
                 "oldPrice": r["oldPrice"],
                 "rating": r["rating"],
                 "badge": r["badge"],
                 "custom": bool(r["custom"]),
                 "image": r["image"],
                 "icon": None,
+                "ownerId": r["ownerId"] if "ownerId" in r.keys() else None
             })
         return result
     finally:
@@ -176,10 +175,16 @@ async def get_products():
 async def create_product(request: Request):
     data = await request.json()
 
-    if not data.get("title") or not data.get("price"):
+    # Проверяем только обязательные поля: title и desc
+    if not data.get("title"):
         return JSONResponse(
             status_code=400,
-            content={"error": "Не хватает полей: title, price"}
+            content={"error": "Не хватает поля: title"}
+        )
+    if not data.get("desc"):
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Не хватает поля: desc"}
         )
 
     new_id = int(time.time() * 1000)
@@ -188,36 +193,57 @@ async def create_product(request: Request):
         conn.execute("""
             INSERT INTO products
                 (id, title, description, category, categoryName, price,
-                 oldPrice, rating, badge, custom, image, createdAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 oldPrice, rating, badge, custom, image, ownerId, createdAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             new_id,
             data.get("title", ""),
             data.get("desc", ""),
             data.get("category", "set"),
             data.get("categoryName"),
-            float(data.get("price", 0)),
+            float(data.get("price") or 0),
             data.get("oldPrice"),
-            float(data.get("rating", 5)),
+            float(data.get("rating") or 5),
             data.get("badge"),
             1 if data.get("custom", True) else 0,
             data.get("image"),
+            data.get("ownerId"),
             int(time.time() * 1000),
         ))
         conn.commit()
     finally:
         conn.close()
 
-    # Оповещаем всех
     await manager.broadcast({"type": "products_updated"})
-
     return {**data, "id": new_id}
 
 
 @app.delete("/api/products/{product_id}")
-async def delete_product(product_id: int):
+async def delete_product(product_id: int, request: Request):
+    # Проверяем, что удаляет владелец
+    owner_id = None
+    try:
+        body = await request.json()
+        owner_id = body.get("ownerId")
+    except Exception:
+        pass
+
     conn = get_db()
     try:
+        row = conn.execute(
+            "SELECT ownerId FROM products WHERE id = ?", (product_id,)
+        ).fetchone()
+
+        if row is None:
+            return JSONResponse(status_code=404, content={"error": "Не найдено"})
+
+        stored_owner = row["ownerId"]
+        if stored_owner and owner_id and stored_owner != owner_id:
+            return JSONResponse(
+                status_code=403,
+                content={"error": "Это не ваша карточка"}
+            )
+
         conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
         conn.execute("DELETE FROM messages WHERE productId = ?", (product_id,))
         conn.commit()
@@ -232,7 +258,6 @@ async def delete_product(product_id: int):
 
 @app.get("/api/chats")
 async def get_chats():
-    """Список всех чатов — по одному на товар, с последним сообщением."""
     conn = get_db()
     try:
         rows = conn.execute("""
@@ -240,7 +265,6 @@ async def get_chats():
                 m.productId AS productId,
                 p.title     AS title,
                 p.image     AS image,
-                p.price     AS price,
                 m.text      AS lastText,
                 m.fromUser  AS lastFrom,
                 m.time      AS lastTime
@@ -261,7 +285,6 @@ async def get_chats():
 
 @app.get("/api/chats/{product_id}")
 async def get_chat_history(product_id: int):
-    """История чата по конкретному товару."""
     conn = get_db()
     try:
         rows = conn.execute("""
@@ -277,7 +300,6 @@ async def get_chat_history(product_id: int):
 
 @app.delete("/api/chats/{product_id}")
 async def clear_chat(product_id: int):
-    """Очистить чат по товару."""
     conn = get_db()
     try:
         conn.execute("DELETE FROM messages WHERE productId = ?", (product_id,))
@@ -298,7 +320,7 @@ async def clear_chat(product_id: int):
 @app.websocket("/ws/chat")
 async def websocket_chat(ws: WebSocket):
     await manager.connect(ws)
-    print(f"🔌 Подключён клиент")
+    print("🔌 Подключён клиент")
 
     try:
         while True:
@@ -334,7 +356,6 @@ async def websocket_chat(ws: WebSocket):
                 text = str(text)[:1000]
                 ts = int(time.time() * 1000)
 
-                # Сохраняем в БД
                 conn = get_db()
                 try:
                     conn.execute("""
@@ -345,7 +366,6 @@ async def websocket_chat(ws: WebSocket):
                 finally:
                     conn.close()
 
-                # Рассылаем всем в комнате
                 await manager.send_to_room(int(pid), {
                     "type": "message",
                     "productId": int(pid),
@@ -354,7 +374,6 @@ async def websocket_chat(ws: WebSocket):
                     "time": ts,
                 })
 
-                # Оповещаем всех об обновлении списка чатов
                 await manager.broadcast({"type": "chats_updated"})
 
     except WebSocketDisconnect:
@@ -367,6 +386,11 @@ async def websocket_chat(ws: WebSocket):
 
 # ==================== СТАТИКА ====================
 
+@app.get("/favicon.ico")
+async def favicon():
+    return JSONResponse(status_code=204, content=None)
+
+
 @app.get("/")
 async def root():
     index = STATIC_DIR / "index.html"
@@ -375,13 +399,12 @@ async def root():
     return JSONResponse({"error": "index.html не найден в папке static/"}, status_code=404)
 
 
-# Отдаём статику (только после всех API-роутов)
 app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
 
 
 # ==================== ЗАПУСК ====================
+
 if __name__ == "__main__":
-    import os
     import uvicorn
     port = int(os.environ.get("PORT", 3000))
     uvicorn.run(app, host="0.0.0.0", port=port)
