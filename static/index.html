@@ -1065,13 +1065,62 @@
 
   .qty span { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
 
+  /* ============ КНОПКИ В КАРТОЧКЕ ПОНРАВИВШИХСЯ ============ */
+  .cart-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .cart-item-chat-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .cart-item-chat-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    transform: scale(1.08);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+  }
+
+  .cart-item-chat-btn:active {
+    transform: scale(0.96);
+  }
+
   .remove-btn {
-    background: none;
-    border: none;
+    width: 34px;
+    height: 34px;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
     color: #ef4444;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: inherit;
+    transition: all 0.2s;
+  }
+
+  .remove-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    transform: scale(1.08);
   }
 
   .cart-empty { text-align: center; padding: 60px 20px; color: #6b7280; }
@@ -1088,24 +1137,8 @@
     justify-content: space-between;
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 14px;
     color: #9d174d;
   }
-
-  .checkout-btn {
-    width: 100%;
-    padding: 14px;
-    background: linear-gradient(135deg, #ec4899, #be185d);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  .checkout-btn:disabled { background: #d1d5db; cursor: not-allowed; }
 
   .modal {
     position: fixed;
@@ -1479,8 +1512,6 @@
 
   /* ============================================
      СООБЩЕНИЯ ЧАТА — КАК В МЕССЕНДЖЕРАХ
-     Свои — СПРАВА (зелёные)
-     Собеседника — СЛЕВА (синие)
      ============================================ */
   .msg {
     max-width: 75%;
@@ -1501,7 +1532,6 @@
     text-align: right;
   }
 
-  /* СВОИ сообщения — СПРАВА, зелёные */
   .msg.me {
     align-self: flex-end;
     background: linear-gradient(135deg, #10b981, #059669);
@@ -1512,7 +1542,6 @@
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
   }
 
-  /* СОБЕСЕДНИКА — СЛЕВА, синие */
   .msg.unit {
     align-self: flex-start;
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(29, 78, 216, 0.75));
@@ -1534,13 +1563,8 @@
     text-transform: uppercase;
   }
 
-  .msg.unit.from-seller::before {
-    content: 'Продавец';
-  }
-
-  .msg.unit.from-buyer::before {
-    content: 'Покупатель';
-  }
+  .msg.unit.from-seller::before { content: 'Продавец'; }
+  .msg.unit.from-buyer::before { content: 'Покупатель'; }
 
   .chat-input-area {
     display: flex;
@@ -1797,7 +1821,6 @@
       <span>Товаров:</span>
       <span id="cartTotal">0</span>
     </div>
-    <button class="checkout-btn" id="checkoutBtn" type="button" disabled>Обсудить обмен</button>
   </div>
 </aside>
 
@@ -2383,7 +2406,6 @@ var overlay = $('overlay');
 var cartItemsEl = $('cartItems');
 var cartTotalEl = $('cartTotal');
 var cartCountEl = $('cartCount');
-var checkoutBtn = $('checkoutBtn');
 var modal = $('modal');
 var modalContent = $('modalContent');
 var toast = $('toast');
@@ -3064,7 +3086,6 @@ function renderCart() {
         '<p>Пока ничего не понравилось</p>' +
       '</div>';
     cartTotalEl.textContent = '0';
-    checkoutBtn.disabled = true;
     return;
   }
 
@@ -3089,12 +3110,14 @@ function renderCart() {
             '<button data-qty="1" data-id="' + p.id + '" type="button">+</button>' +
           '</div>' +
         '</div>' +
-        '<button class="remove-btn" data-remove="' + p.id + '" type="button">🗑️</button>' +
+        '<div class="cart-item-actions">' +
+          '<button class="cart-item-chat-btn" data-chat-id="' + p.id + '" title="Открыть чат с продавцом" type="button">💬</button>' +
+          '<button class="remove-btn" data-remove="' + p.id + '" title="Удалить" type="button">🗑️</button>' +
+        '</div>' +
       '</div>';
   }
   cartItemsEl.innerHTML = html;
   cartTotalEl.textContent = totalItems;
-  checkoutBtn.disabled = false;
 }
 
 cartItemsEl.addEventListener('click', function(e) {
@@ -3103,6 +3126,15 @@ cartItemsEl.addEventListener('click', function(e) {
     changeQty(Number(qtyBtn.getAttribute('data-id')), Number(qtyBtn.getAttribute('data-qty')));
     return;
   }
+
+  var chatBtn = e.target.closest('[data-chat-id]');
+  if (chatBtn) {
+    var chatPid = Number(chatBtn.getAttribute('data-chat-id'));
+    closeCart();
+    setTimeout(function() { openChat(chatPid); }, 300);
+    return;
+  }
+
   var removeBtn = e.target.closest('[data-remove]');
   if (removeBtn) removeFromCart(Number(removeBtn.getAttribute('data-remove')));
 });
@@ -3194,7 +3226,6 @@ async function openChat(productId) {
   var p = findProduct(productId);
   if (!p) { showToast('❌ Товар не найден', true); return; }
 
-  // Проверяем доступ
   if (MODE === 'server') {
     try {
       var joinRes = await fetch('/api/chats/' + productId + '/join', {
@@ -3209,14 +3240,13 @@ async function openChat(productId) {
         return;
       }
 
-      currentChatRole = joinData.role; // 'seller' | 'buyer'
+      currentChatRole = joinData.role;
     } catch (err) {
       console.error('Ошибка проверки доступа:', err);
       showToast('❌ Не удалось проверить доступ', true);
       return;
     }
   } else {
-    // Локальный режим — определяем по isMyCard
     currentChatRole = isMyCard(p) ? 'seller' : 'buyer';
   }
 
@@ -3263,11 +3293,9 @@ function renderMessagesFromArray(messages) {
     var m = messages[i];
     if (!m || !m.text) continue;
 
-    // Своё ли это сообщение?
     var isMine = (m.from === currentChatRole);
     var cls = isMine ? 'me' : 'unit';
 
-    // Метка для чужих сообщений
     var extraCls = '';
     if (!isMine) {
       extraCls = (m.from === 'seller') ? ' from-seller' : ' from-buyer';
@@ -3415,168 +3443,4 @@ async function renderChatsList() {
       if (!list || !list.length) continue;
       var p = findProduct(Number(pid));
       if (!p) continue;
-      var last = list[list.length - 1];
-      rows.push({
-        productId: p.id,
-        title: p.title,
-        image: p.image,
-        lastText: last.text,
-        lastFrom: last.from,
-        lastTime: last.time
-      });
-    }
-    rows.sort(function(a, b) { return b.lastTime - a.lastTime; });
-  }
-
-  if (!rows.length) {
-    chatsList.innerHTML =
-      '<div class="chats-empty">' +
-        '<div class="chats-empty-icon">💬</div>' +
-        '<p>Пока нет ни одного чата</p>' +
-        '<p class="hint">Нажмите 💬 на любой карточке, чтобы начать диалог</p>' +
-      '</div>';
-    return;
-  }
-
-  var html = '';
-  for (var i = 0; i < rows.length; i++) {
-    var row = rows[i];
-    var imgContent = row.image
-      ? '<img src="' + row.image + '" alt="">'
-      : '🆕';
-
-    // Префикс по роли отправителя
-    var prefix = '';
-    if (row.lastFrom === 'seller') {
-      prefix = '<span class="prefix-seller">Продавец: </span>';
-    } else if (row.lastFrom === 'buyer') {
-      prefix = '<span class="prefix">Покупатель: </span>';
-    }
-
-    html +=
-      '<div class="chat-item" data-chat-id="' + row.productId + '">' +
-        '<div class="chat-item-img">' + imgContent + '</div>' +
-        '<div class="chat-item-info">' +
-          '<div class="chat-item-title">' + escapeHtml(row.title) + '</div>' +
-          '<div class="chat-item-last">' + prefix + escapeHtml(row.lastText) + '</div>' +
-        '</div>' +
-        '<div class="chat-item-meta">' +
-          '<div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div>' +
-        '</div>' +
-      '</div>';
-  }
-
-  chatsList.innerHTML = html;
-}
-
-chatsList.addEventListener('click', function(e) {
-  var item = e.target.closest('[data-chat-id]');
-  if (!item) return;
-  var pid = Number(item.getAttribute('data-chat-id'));
-  closeChatsList();
-  setTimeout(function() { openChat(pid); }, 150);
-});
-
-/* ============ ВРЕМЯ ============ */
-function formatChatTime(ms) {
-  var d = new Date(ms);
-  var now = new Date();
-  var diff = now.getTime() - d.getTime();
-  var dayMs = 24 * 60 * 60 * 1000;
-
-  if (diff < 60 * 1000) return 'только что';
-  if (diff < 60 * 60 * 1000) return Math.floor(diff / 60000) + ' мин назад';
-  if (d.toDateString() === now.toDateString()) {
-    var hh = d.getHours(), mm = d.getMinutes();
-    if (hh < 10) hh = '0' + hh;
-    if (mm < 10) mm = '0' + mm;
-    return hh + ':' + mm;
-  }
-  if (diff < 2 * dayMs) return 'вчера';
-
-  var dd = d.getDate(), mo = d.getMonth() + 1;
-  if (dd < 10) dd = '0' + dd;
-  if (mo < 10) mo = '0' + mo;
-  return dd + '.' + mo;
-}
-
-/* ============ ФИЛЬТРЫ ============ */
-categoriesEl.addEventListener('click', function(e) {
-  var btn = e.target.closest('.category');
-  if (!btn) return;
-  var all = document.querySelectorAll('.category');
-  for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
-  btn.classList.add('active');
-  state.category = btn.getAttribute('data-category');
-  renderProducts();
-});
-
-$('searchForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  state.search = searchInput.value;
-  renderProducts();
-});
-
-searchInput.addEventListener('input', function() {
-  state.search = searchInput.value;
-  clearSearch.classList.toggle('visible', searchInput.value.length > 0);
-  renderProducts();
-});
-
-clearSearch.addEventListener('click', function() {
-  searchInput.value = '';
-  state.search = '';
-  clearSearch.classList.remove('visible');
-  renderProducts();
-  searchInput.focus();
-});
-
-sortSelect.addEventListener('change', function() {
-  state.sort = sortSelect.value;
-  renderProducts();
-});
-
-/* ============ ОБСУДИТЬ ОБМЕН ============ */
-checkoutBtn.addEventListener('click', function() {
-  showToast('✓ Обсудите обмен в чате!');
-  closeCart();
-  setTimeout(openChatsList, 400);
-});
-
-/* ============ ESC ============ */
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    if (hintModal.classList.contains('open')) { hintModal.classList.remove('open'); return; }
-    if (chatModal.classList.contains('open')) {
-      if (MODE === 'server' && socket && currentChatProductId !== null) {
-        socket.emit('leave', currentChatProductId);
-      }
-      chatModal.classList.remove('open');
-      currentChatProductId = null;
-      currentChatRole = null;
-      return;
-    }
-    if (chatsModal.classList.contains('open')) { closeChatsList(); return; }
-    modal.classList.remove('open');
-    closeCart();
-  }
-});
-
-/* ============ TOAST ============ */
-var toastTimer = null;
-function showToast(message, isError) {
-  if (isError === undefined) isError = false;
-  toast.textContent = message;
-  toast.className = 'toast';
-  if (isError) toast.classList.add('error');
-  toast.classList.add('show');
-  if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 3000);
-}
-
-/* ============ СТАРТ ============ */
-detectModeAndInit();
-</script>
-
-</body>
-</html>
+      var last = list[list.length - 1
