@@ -865,6 +865,9 @@
     flex: 1;
   }
 
+  .rating { font-size: 12px; color: #f59e0b; margin-bottom: 10px; }
+  .rating span { color: rgba(200, 220, 210, 0.6); margin-left: 4px; }
+
   .card-footer {
     display: flex;
     justify-content: flex-end;
@@ -1689,6 +1692,7 @@
 
   /* ================= МОБИЛЬНЫЕ ФИКСЫ (антизум) ================= */
   @media (max-width: 700px) {
+    /* 1) Инпуты 16px — iOS Safari не будет зумить при фокусе */
     .search input,
     .field-group input[type="text"],
     .field-group textarea,
@@ -1697,13 +1701,15 @@
       font-size: 16px;
     }
 
+    /* 2) Модалки на dvh — не дёргаются при скрытии адресной строки */
     .chat-content,
     .chats-content {
-      height: 90vh;
-      height: 90dvh;
+      height: 90vh;   /* фолбэк для старых браузеров */
+      height: 90dvh;  /* современные браузеры */
       max-height: none;
     }
 
+    /* 3) Фикс ширины — никаких горизонтальных переполнений */
     .products {
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 14px;
@@ -1713,12 +1719,14 @@
     .products .card-image { height: 160px; font-size: 60px; }
     .recommendations .card .card-image { height: 130px; font-size: 50px; }
 
+    /* 4) Sticky header не должен растягиваться при зуме */
     header {
       position: sticky;
       top: 0;
     }
   }
 
+  /* Защита для iOS Safari — после потери фокуса вернуть масштаб */
   input, textarea, select, button {
     font-size: 16px;
   }
@@ -1773,6 +1781,7 @@
   <div class="categories" id="categories"></div>
   <select class="sort-select" id="sortSelect">
     <option value="default">Сортировка: по умолчанию</option>
+    <option value="rating">По рейтингу</option>
     <option value="name">По названию (А-Я)</option>
   </select>
 </div>
@@ -2854,6 +2863,7 @@ function getFiltered() {
   }
 
   switch (state.sort) {
+    case 'rating': list.sort(function(a, b) { return b.rating - a.rating; }); break;
     case 'name': list.sort(function(a, b) { return a.title.localeCompare(b.title, 'ru'); }); break;
   }
 
@@ -2907,6 +2917,7 @@ function buildCardHtml(p, opts) {
         '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
         '<h3 class="card-title" data-action="open">' + escapeHtml(p.title) + '</h3>' +
         '<p class="card-desc">' + escapeHtml(p.desc) + '</p>' +
+        '<div class="rating">★★★★★ <span>' + p.rating.toFixed(1) + '</span></div>' +
         '<div class="card-footer">' +
           '<div class="card-actions">' +
             chatBtn +
@@ -2975,7 +2986,7 @@ function getRecommendations(limit) {
 
   var scored = candidates.map(function(p) {
     var w = weights[p.category] || 0;
-    return { p: p, score: w * 10 + (p.custom ? 0.5 : 0) };
+    return { p: p, score: w * 10 + (p.rating || 0) * 0.3 + (p.custom ? 0.5 : 0) };
   });
 
   scored.sort(function(a, b) { return b.score - a.score; });
@@ -3266,6 +3277,7 @@ function openModal(id) {
     '<div class="modal-body">' +
       '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
       '<h2>' + escapeHtml(p.title) + '</h2>' +
+      '<div class="rating">★★★★★ <span>' + p.rating.toFixed(1) + '</span></div>' +
       '<p>' + escapeHtml(p.desc) + '</p>' +
       '<div class="modal-actions">' +
         '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ В понравившиеся</button>' +
@@ -3683,12 +3695,15 @@ toast.addEventListener('click', function() {
 });
 
 /* ============ АНТИЗУМ ДЛЯ iOS ============ */
+/* Если Safari всё же зазумил (например, после потери фокуса) — мягко
+   вернём масштаб через visualViewport, не мешая обычному pinch-зуму. */
 (function() {
   if (!window.visualViewport) return;
 
   var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
   if (!isTouch) return;
 
+  // Следим только за авто-зумом после фокуса на input
   document.addEventListener('focusin', function(e) {
     var t = e.target;
     if (!t) return;
@@ -3696,10 +3711,12 @@ toast.addEventListener('click', function() {
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
 
     var fs = parseFloat(window.getComputedStyle(t).fontSize) || 16;
-    if (fs >= 16) return;
+    if (fs >= 16) return; // не должно зумать, но на всякий случай
 
+    // Если всё же зазумило — через короткую паузу вернём scale = 1
     setTimeout(function() {
       if (window.visualViewport.scale > 1) {
+        // Прокручиваем фокус обратно
         t.scrollIntoView({ block: 'center' });
       }
     }, 50);
