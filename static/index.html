@@ -298,8 +298,11 @@
   .cart-header h2 { font-size: 18px; color: #9d174d; }
   .close-btn { background: none; border: none; font-size: 26px; cursor: pointer; color: #6b7280; }
   .cart-items { flex: 1; overflow-y: auto; padding: 16px 20px; }
-  .cart-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e5e7eb; align-items: center; }
-  .cart-item-img { font-size: 34px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #fdf2f8; border-radius: 8px; overflow: hidden; }
+  .cart-item {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb; align-items: center;
+  }
+  .cart-item-img { font-size: 34px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #fdf2f8; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
   .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
   .cart-item-info { flex: 1; min-width: 0; }
   .cart-item-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -307,16 +310,33 @@
   .qty button { width: 24px; height: 24px; border: 1px solid #e5e7eb; background: #fff; border-radius: 5px; cursor: pointer; font-weight: bold; }
   .qty button:hover { background: #ec4899; color: #fff; border-color: #ec4899; }
   .qty span { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
-  .remove-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; }
+  .cart-item-actions {
+    display: flex; flex-direction: column; gap: 6px; align-items: center; flex-shrink: 0;
+  }
+  .cart-chat-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.08);
+    color: #059669; font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .cart-chat-btn:hover {
+    background: rgba(16, 185, 129, 0.25); border-color: #10b981; color: #10b981;
+  }
+  .remove-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.06);
+    color: #ef4444; cursor: pointer; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .remove-btn:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
   .cart-empty { text-align: center; padding: 60px 20px; color: #6b7280; }
   .cart-empty-icon { font-size: 50px; margin-bottom: 10px; }
   .cart-footer { padding: 20px; border-top: 1px solid #fce7f3; background: #fdf2f8; }
-  .cart-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; margin-bottom: 14px; color: #9d174d; }
-  .checkout-btn {
-    width: 100%; padding: 14px; background: linear-gradient(135deg, #ec4899, #be185d);
-    color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
-  }
-  .checkout-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+  .cart-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: #9d174d; }
   .modal {
     position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
     display: flex; align-items: center; justify-content: center;
@@ -647,7 +667,6 @@
       <span>Товаров:</span>
       <span id="cartTotal">0</span>
     </div>
-    <button class="checkout-btn" id="checkoutBtn" type="button" disabled>Обсудить обмен</button>
   </div>
 </aside>
 
@@ -1175,7 +1194,6 @@ var overlay = $('overlay');
 var cartItemsEl = $('cartItems');
 var cartTotalEl = $('cartTotal');
 var cartCountEl = $('cartCount');
-var checkoutBtn = $('checkoutBtn');
 var modal = $('modal');
 var modalContent = $('modalContent');
 var toast = $('toast');
@@ -1700,7 +1718,8 @@ function updateCartCount() {
 function renderCart() {
   if (!state.cart.length) {
     cartItemsEl.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🤍</div><p>Пока ничего не понравилось</p></div>';
-    cartTotalEl.textContent = '0'; checkoutBtn.disabled = true; return;
+    cartTotalEl.textContent = '0';
+    return;
   }
   var totalItems = 0; var html = '';
   for (var i = 0; i < state.cart.length; i++) {
@@ -1720,18 +1739,33 @@ function renderCart() {
             '<button data-qty="1" data-id="' + p.id + '" type="button">+</button>' +
           '</div>' +
         '</div>' +
-        '<button class="remove-btn" data-remove="' + p.id + '" type="button">🗑️</button>' +
+        '<div class="cart-item-actions">' +
+          '<button class="cart-chat-btn" data-cart-chat="' + p.id + '" title="Написать продавцу" type="button">💬</button>' +
+          '<button class="remove-btn" data-remove="' + p.id + '" title="Убрать" type="button">🗑️</button>' +
+        '</div>' +
       '</div>';
   }
   cartItemsEl.innerHTML = html;
   cartTotalEl.textContent = totalItems;
-  checkoutBtn.disabled = false;
 }
 cartItemsEl.addEventListener('click', function(e) {
   var qtyBtn = e.target.closest('[data-qty]');
-  if (qtyBtn) { changeQty(Number(qtyBtn.getAttribute('data-id')), Number(qtyBtn.getAttribute('data-qty'))); return; }
+  if (qtyBtn) {
+    changeQty(Number(qtyBtn.getAttribute('data-id')), Number(qtyBtn.getAttribute('data-qty')));
+    return;
+  }
   var removeBtn = e.target.closest('[data-remove]');
-  if (removeBtn) removeFromCart(Number(removeBtn.getAttribute('data-remove')));
+  if (removeBtn) {
+    removeFromCart(Number(removeBtn.getAttribute('data-remove')));
+    return;
+  }
+  var chatBtn = e.target.closest('[data-cart-chat]');
+  if (chatBtn) {
+    var pid = Number(chatBtn.getAttribute('data-cart-chat'));
+    closeCart();
+    setTimeout(function() { handleChatButton(pid); }, 250);
+    return;
+  }
 });
 function openCart() { cartPanel.classList.add('open'); overlay.classList.add('open'); }
 function closeCart() { cartPanel.classList.remove('open'); overlay.classList.remove('open'); }
@@ -1878,13 +1912,9 @@ async function refreshChat() {
   if (currentChatProductId === null) return;
   if (!currentChatBuyerId) return;
 
-  var url = (MODE === 'server')
-    ? '/api/chats/' + currentChatProductId + '/' + encodeURIComponent(currentChatBuyerId)
-    : null;
-
   if (MODE === 'server') {
     try {
-      var res = await fetch(url);
+      var res = await fetch('/api/chats/' + currentChatProductId + '/' + encodeURIComponent(currentChatBuyerId));
       if (!res.ok) return;
       var messages = await res.json();
       renderMessagesFromArray(messages);
@@ -1952,7 +1982,6 @@ chatForm.addEventListener('submit', async function(e) {
   var ok = false;
 
   if (MODE === 'server') {
-    // Пробуем HTTP POST
     try {
       var res = await fetch(
         '/api/chats/' + currentChatProductId + '/' + encodeURIComponent(currentChatBuyerId) + '/messages',
@@ -1978,7 +2007,6 @@ chatForm.addEventListener('submit', async function(e) {
       console.warn('HTTP send error:', err);
     }
 
-    // Fallback: WS
     if (!ok && wsClient) {
       console.log('→ fallback via WS');
       wsClient.sendMessage(
@@ -2026,7 +2054,7 @@ function appendMessageToUI(m) {
   chatBody.appendChild(el);
   scrollChatToBottom();
 
-  lastMessagesHash = ''; // force refresh next poll
+  lastMessagesHash = '';
 }
 
 /* ============ ОЧИСТКА ============ */
@@ -2226,13 +2254,6 @@ clearSearch.addEventListener('click', function() {
 sortSelect.addEventListener('change', function() {
   state.sort = sortSelect.value;
   renderProducts();
-});
-
-/* ============ ОБСУДИТЬ ============ */
-checkoutBtn.addEventListener('click', function() {
-  showToast('✓ Обсудите обмен в чате!');
-  closeCart();
-  setTimeout(function() { openChatsList(null); }, 400);
 });
 
 /* ============ ESC ============ */
