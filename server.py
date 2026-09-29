@@ -20,7 +20,6 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -34,6 +33,7 @@ DB_PATH = DATA_DIR / "marketplace.db"
 DATA_DIR.mkdir(exist_ok=True)
 STATIC_DIR.mkdir(exist_ok=True)
 
+# Роли в чате
 ALLOWED_ROLES = ("seller", "buyer")
 MAX_MESSAGE_LENGTH = 1000
 
@@ -45,7 +45,7 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS products (
-            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            id            INTEGER PRIMARY KEY,
             title         TEXT NOT NULL,
             description   TEXT NOT NULL,
             category      TEXT NOT NULL,
@@ -71,9 +71,6 @@ def init_db():
 
         CREATE INDEX IF NOT EXISTS idx_messages_product
             ON messages(productId, time);
-
-        CREATE INDEX IF NOT EXISTS idx_products_owner
-            ON products(ownerId);
     """)
     conn.commit()
 
@@ -95,17 +92,6 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
-
-
-def product_exists(product_id: int) -> bool:
-    conn = get_db()
-    try:
-        row = conn.execute(
-            "SELECT 1 FROM products WHERE id = ?", (product_id,)
-        ).fetchone()
-        return row is not None
-    finally:
-        conn.close()
 
 
 # ==================== WEB-SOCKET МЕНЕДЖЕР ====================
@@ -177,14 +163,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# CORS — на случай если фронт открыт с другого origin
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 # ==================== API: ТОВАРЫ ====================
 
@@ -198,7 +176,7 @@ async def get_products():
         result = []
         for r in rows:
             result.append({
-                "id": int(r["id"]),
+                "id": r["id"],
                 "title": r["title"],
                 "desc": r["description"],
                 "category": r["category"],
@@ -210,7 +188,7 @@ async def get_products():
                 "custom": bool(r["custom"]),
                 "image": r["image"],
                 "icon": None,
-                "ownerId": r["ownerId"],
+                "ownerId": r["ownerId"] if "ownerId" in r.keys() else None,
             })
         return result
     except Exception as e:
@@ -224,31 +202,29 @@ async def get_products():
 async def create_product(request: Request):
     try:
         data = await request.json()
-    except Exception as e:
-        print(f"❌ POST /api/products: некорректный JSON: {e}")
+    except Exception:
         return JSONResponse(status_code=400, content={"error": "Некорректный JSON"})
 
-    title = (data.get("title") or "").strip()
-    desc = (data.get("desc") or "").strip()
-    category = (data.get("category") or "set").strip()
-
-    if not title:
+    if not data.get("title"):
         return JSONResponse(status_code=400, content={"error": "Не хватает поля: title"})
-    if not desc:
+    if not data.get("desc"):
         return JSONResponse(status_code=400, content={"error": "Не хватает поля: desc"})
+
+    new_id = int(time.time() * 1000)
 
     try:
         conn = get_db()
         try:
-            cur = conn.execute("""
+            conn.execute("""
                 INSERT INTO products
-                    (title, description, category, categoryName, price,
+                    (id, title, description, category, categoryName, price,
                      oldPrice, rating, badge, custom, image, ownerId, createdAt)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                title[:200],
-                desc[:2000],
-                category[:100],
+                new_id,
+                str(data.get("title", ""))[:200],
+                str(data.get("desc", ""))[:2000],
+                str(data.get("category", "set"))[:100],
                 data.get("categoryName"),
                 float(data.get("price") or 0),
                 data.get("oldPrice"),
@@ -260,29 +236,12 @@ async def create_product(request: Request):
                 int(time.time() * 1000),
             ))
             conn.commit()
-            new_id = int(cur.lastrowid)
         finally:
             conn.close()
 
-        print(f"✅ Создан товар #{new_id}: {title!r}  (ownerId={data.get('ownerId')!r})")
+        print(f"✅ Создан товар #{new_id}: {data.get('title')}")
         await manager.broadcast({"type": "products_updated"})
-
-        # Возвращаем товар целиком — с гарантированно валидным id
-        return {
-            "id": new_id,
-            "title": title,
-            "desc": desc,
-            "category": category,
-            "categoryName": data.get("categoryName"),
-            "price": float(data.get("price") or 0),
-            "oldPrice": data.get("oldPrice"),
-            "rating": float(data.get("rating") or 5),
-            "badge": data.get("badge"),
-            "custom": bool(data.get("custom", True)),
-            "image": data.get("image"),
-            "icon": None,
-            "ownerId": data.get("ownerId"),
-        }
+        return {**data, "id": new_id}
 
     except Exception as e:
         print(f"❌ Ошибка создания: {e}")
@@ -363,17 +322,7 @@ async def join_chat(product_id: int, request: Request):
             ).fetchone()
 
             if row is None:
-                # Диагностика: покажем, какие id реально есть в БД
-                ids = [r["id"] for r in conn.execute(
-                    "SELECT id FROM products ORDER BY createdAt DESC LIMIT 10"
-                ).fetchall()]
-                print(f"⚠️ join: товар #{product_id} не найден. "
-                      f"Последние id в БД: {ids}")
-                return {
-                    "allowed": False,
-                    "reason": f"Товар #{product_id} не найден на сервере",
-                    "debug_known_ids": ids,
-                }
+                return {"allowed": False, "reason": "Товар не найден"}
 
             seller_id = row["ownerId"]
             buyer_id = row["buyerOwnerId"]
@@ -425,7 +374,7 @@ async def get_chats():
             WHERE m.id = (
                 SELECT id FROM messages
                 WHERE productId = m.productId
-                ORDER BY time DESC, id DESC LIMIT 1
+                ORDER BY time DESC LIMIT 1
             )
             ORDER BY m.time DESC
         """).fetchall()
@@ -445,7 +394,7 @@ async def get_chat_history(product_id: int):
             SELECT fromUser AS "from", text, time
             FROM messages
             WHERE productId = ?
-            ORDER BY time ASC, id ASC
+            ORDER BY time ASC
         """, (product_id,)).fetchall()
         return [dict(r) for r in rows]
     except Exception as e:
@@ -478,28 +427,6 @@ async def clear_chat(product_id: int):
         return JSONResponse(status_code=500, content={"error": "Не удалось очистить"})
 
 
-# ==================== DEBUG ====================
-
-@app.get("/api/debug/products")
-async def debug_products():
-    """Быстрая диагностика: что реально лежит в БД."""
-    conn = get_db()
-    try:
-        rows = conn.execute("""
-            SELECT id, title, ownerId, buyerOwnerId, createdAt
-            FROM products ORDER BY createdAt DESC
-        """).fetchall()
-        return [dict(r) for r in rows]
-    finally:
-        conn.close()
-
-
-@app.get("/api/health")
-async def health():
-    """Простой health-check: если открывается — сервер жив."""
-    return {"status": "ok", "time": int(time.time() * 1000)}
-
-
 # ==================== WEB-SOCKET ====================
 
 @app.websocket("/ws/chat")
@@ -526,15 +453,10 @@ async def websocket_chat(ws: WebSocket):
                 pid = data.get("productId")
                 try:
                     pid_int = int(pid)
+                    manager.join(pid_int, ws)
+                    print(f"→ Клиент зашёл в комнату {pid_int}")
                 except (ValueError, TypeError):
-                    continue
-
-                if not product_exists(pid_int):
-                    print(f"⚠️ WS join: товар #{pid_int} не существует")
-                    continue
-
-                manager.join(pid_int, ws)
-                print(f"→ Клиент зашёл в комнату {pid_int}")
+                    pass
 
             # --- LEAVE ---
             elif msg_type == "leave":
@@ -556,10 +478,6 @@ async def websocket_chat(ws: WebSocket):
                 try:
                     pid_int = int(pid)
                 except (ValueError, TypeError):
-                    continue
-
-                if not product_exists(pid_int):
-                    print(f"⚠️ WS message: товар #{pid_int} не существует")
                     continue
 
                 if role not in ALLOWED_ROLES:
@@ -620,7 +538,7 @@ async def root():
     if index.exists():
         return FileResponse(index)
     return JSONResponse(
-        {"error": "index.html не найден. Положите файл в static/index.html"},
+        {"error": "index.html не найден"},
         status_code=404
     )
 
