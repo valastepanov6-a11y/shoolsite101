@@ -241,8 +241,6 @@
   .card-category { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #90ee90; font-weight: 700; margin-bottom: 6px; }
   .card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #f0fff6; cursor: pointer; }
   .card-desc { font-size: 13px; color: rgba(200, 220, 210, 0.6); margin-bottom: 12px; flex: 1; }
-  .rating { font-size: 12px; color: #f59e0b; margin-bottom: 10px; }
-  .rating span { color: rgba(200, 220, 210, 0.6); margin-left: 4px; }
   .card-footer { display: flex; justify-content: flex-end; align-items: center; margin-top: auto; gap: 8px; }
   .card-actions { display: flex; gap: 6px; align-items: center; }
   .chat-btn {
@@ -1529,7 +1527,6 @@ function buildCardHtml(p, opts) {
         '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
         '<h3 class="card-title" data-action="open">' + escapeHtml(p.title) + '</h3>' +
         '<p class="card-desc">' + escapeHtml(p.desc) + '</p>' +
-        '<div class="rating">★★★★★ <span>' + p.rating.toFixed(1) + '</span></div>' +
         '<div class="card-footer">' +
           '<div class="card-actions">' +
             '<button class="chat-btn" data-action="chat" data-id="' + p.id + '" title="Чат" type="button">💬</button>' +
@@ -1784,7 +1781,6 @@ function openModal(id) {
     '<div class="modal-body">' +
       '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
       '<h2>' + escapeHtml(p.title) + '</h2>' +
-      '<div class="rating">★★★★★ <span>' + p.rating.toFixed(1) + '</span></div>' +
       '<p>' + escapeHtml(p.desc) + '</p>' +
       '<div class="modal-actions">' +
         '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ В понравившиеся</button>' +
