@@ -41,6 +41,7 @@ MAX_MESSAGE_LENGTH = 1000
 # ==================== БАЗА ДАННЫХ ====================
 
 def init_db():
+    """Создаёт таблицы, если их нет."""
     conn = sqlite3.connect(DB_PATH)
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS products (
@@ -76,6 +77,7 @@ def init_db():
     """)
     conn.commit()
 
+    # Миграция: добавить buyerOwnerId, если её нет
     try:
         cols = [r[1] for r in conn.execute("PRAGMA table_info(products)").fetchall()]
         if "buyerOwnerId" not in cols:
@@ -336,6 +338,13 @@ async def delete_product(product_id: int, request: Request):
 
 @app.post("/api/chats/{product_id}/join")
 async def join_chat(product_id: int, request: Request):
+    """
+    Проверяет, может ли пользователь зайти в чат по товару.
+    Роли:
+      - seller — владелец карточки (ownerId)
+      - buyer — первый, кто открыл чат
+    Никто третий зайти не может.
+    """
     try:
         body = await request.json()
         owner_id = body.get("ownerId")
@@ -354,7 +363,7 @@ async def join_chat(product_id: int, request: Request):
             ).fetchone()
 
             if row is None:
-                # Диагностика: покажем, какие id реально есть
+                # Диагностика: покажем, какие id реально есть в БД
                 ids = [r["id"] for r in conn.execute(
                     "SELECT id FROM products ORDER BY createdAt DESC LIMIT 10"
                 ).fetchall()]
@@ -369,9 +378,11 @@ async def join_chat(product_id: int, request: Request):
             seller_id = row["ownerId"]
             buyer_id = row["buyerOwnerId"]
 
+            # Продавец — всегда пускаем
             if seller_id and owner_id == seller_id:
                 return {"allowed": True, "role": "seller"}
 
+            # Ещё нет покупателя — регистрируем
             if not buyer_id:
                 conn.execute(
                     "UPDATE products SET buyerOwnerId = ? WHERE id = ?",
@@ -381,9 +392,11 @@ async def join_chat(product_id: int, request: Request):
                 print(f"👤 Новый покупатель для товара #{product_id}: {owner_id}")
                 return {"allowed": True, "role": "buyer"}
 
+            # Этот же покупатель — пускаем
             if buyer_id == owner_id:
                 return {"allowed": True, "role": "buyer"}
 
+            # Другой человек — отказ
             return {
                 "allowed": False,
                 "reason": "Этот чат уже ведётся другим покупателем"
@@ -502,6 +515,7 @@ async def websocket_chat(ws: WebSocket):
 
             msg_type = data.get("type")
 
+            # --- JOIN ---
             if msg_type == "join":
                 pid = data.get("productId")
                 try:
@@ -516,6 +530,7 @@ async def websocket_chat(ws: WebSocket):
                 manager.join(pid_int, ws)
                 print(f"→ Клиент зашёл в комнату {pid_int}")
 
+            # --- LEAVE ---
             elif msg_type == "leave":
                 pid = data.get("productId")
                 try:
@@ -523,6 +538,7 @@ async def websocket_chat(ws: WebSocket):
                 except (ValueError, TypeError):
                     pass
 
+            # --- MESSAGE ---
             elif msg_type == "message":
                 pid = data.get("productId")
                 role = data.get("role")
