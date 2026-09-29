@@ -494,6 +494,12 @@ async def debug_products():
         conn.close()
 
 
+@app.get("/api/health")
+async def health():
+    """Простой health-check: если открывается — сервер жив."""
+    return {"status": "ok", "time": int(time.time() * 1000)}
+
+
 # ==================== WEB-SOCKET ====================
 
 @app.websocket("/ws/chat")
