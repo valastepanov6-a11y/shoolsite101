@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Бэкенд «Сеть обмена 101».
-FastAPI + SQLite + WebSocket.
+Бэкенд «Сеть обмена 101». FastAPI + SQLite + WebSocket.
+
+Чат = (productId, buyerId). У продавца по одному товару
+может быть МНОГО чатов — по одному на покупателя.
 """
 import json
 import os
@@ -12,7 +14,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import JSONResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
@@ -25,52 +27,62 @@ STATIC_DIR.mkdir(exist_ok=True)
 ALLOWED_ROLES = ("seller", "buyer")
 MAX_MESSAGE_LENGTH = 1000
 
+# Все колонки, которые ОБЯЗАНЫ быть в messages.
+# Если хоть одной нет — таблицу пересоздаём.
+MESSAGES_REQUIRED_COLS = {
+    "id", "productId", "buyerId", "role", "senderOwnerId", "text", "time",
+}
+
 
 # ==================== БАЗА ====================
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     try:
-        cols = [r[1] for r in conn.execute("PRAGMA table_info(messages)").fetchall()]
-        if cols and ("buyerId" not in cols or "role" not in cols):
-            print("🔄 Пересоздаём таблицу messages (старая схема)")
+        try:
+            cols = [r[1] for r in conn.execute("PRAGMA table_info(messages)").fetchall()]
+        except Exception:
+            cols = []
+
+        if cols and not MESSAGES_REQUIRED_COLS.issubset(set(cols)):
+            print(f"🔄 Старая схема messages ({sorted(cols)}) — пересоздаём")
             conn.execute("DROP TABLE IF EXISTS messages")
-    except Exception as e:
-        print(f"⚠️ schema check: {e}")
+            conn.commit()
 
-    conn.executescript("""
-        CREATE TABLE IF NOT EXISTS products (
-            id           INTEGER PRIMARY KEY,
-            title        TEXT NOT NULL,
-            description  TEXT NOT NULL,
-            category     TEXT NOT NULL,
-            categoryName TEXT,
-            price        REAL DEFAULT 0,
-            oldPrice     REAL,
-            rating       REAL DEFAULT 5,
-            badge        TEXT,
-            custom       INTEGER DEFAULT 1,
-            image        TEXT,
-            ownerId      TEXT,
-            createdAt    INTEGER
-        );
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS products (
+                id           INTEGER PRIMARY KEY,
+                title        TEXT NOT NULL,
+                description  TEXT NOT NULL,
+                category     TEXT NOT NULL,
+                categoryName TEXT,
+                price        REAL DEFAULT 0,
+                oldPrice     REAL,
+                rating       REAL DEFAULT 5,
+                badge        TEXT,
+                custom       INTEGER DEFAULT 1,
+                image        TEXT,
+                ownerId      TEXT,
+                createdAt    INTEGER
+            );
 
-        CREATE TABLE IF NOT EXISTS messages (
-            id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            productId     INTEGER NOT NULL,
-            buyerId       TEXT NOT NULL,
-            role          TEXT NOT NULL,
-            senderOwnerId TEXT,
-            text          TEXT NOT NULL,
-            time          INTEGER NOT NULL
-        );
+            CREATE TABLE IF NOT EXISTS messages (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                productId     INTEGER NOT NULL,
+                buyerId       TEXT NOT NULL,
+                role          TEXT NOT NULL,
+                senderOwnerId TEXT,
+                text          TEXT NOT NULL,
+                time          INTEGER NOT NULL
+            );
 
-        CREATE INDEX IF NOT EXISTS idx_messages_chat
-            ON messages(productId, buyerId, time);
-    """)
-    conn.commit()
-    conn.close()
-    print(f"📁 БД: {DB_PATH}")
+            CREATE INDEX IF NOT EXISTS idx_messages_chat
+                ON messages(productId, buyerId, time);
+        """)
+        conn.commit()
+    finally:
+        conn.close()
+    print(f"📁 БД готова: {DB_PATH}")
 
 
 def get_db():
@@ -135,12 +147,14 @@ class ChatManager:
 manager = ChatManager()
 
 
-# ==================== ОБЩАЯ ЛОГИКА СООБЩЕНИЙ ====================
+# ==================== ОБЩАЯ ЛОГИКА ====================
 
 async def save_and_broadcast_message(product_id, buyer_id, role, text, sender_owner):
     """Сохраняет сообщение и рассылает всем в комнате. Возвращает payload или None."""
     if role not in ALLOWED_ROLES:
+        print(f"⚠️ Отклонено: неизвестная роль '{role}'")
         return None
+
     text = str(text or "").strip()
     if not text:
         return None
@@ -155,25 +169,27 @@ async def save_and_broadcast_message(product_id, buyer_id, role, text, sender_ow
                 INSERT INTO messages
                     (productId, buyerId, role, senderOwnerId, text, time)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (product_id, buyer_id, role, sender_owner, text, ts))
+            """, (product_id, str(buyer_id), role, sender_owner, text, ts))
             conn.commit()
             msg_id = cur.lastrowid
         finally:
             conn.close()
     except Exception as e:
-        print(f"❌ Ошибка сохранения сообщения: {e}")
+        print(f"❌ Ошибка INSERT в messages: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
     payload = {
         "type": "message",
         "id": msg_id,
         "productId": product_id,
-        "buyerId": buyer_id,
+        "buyerId": str(buyer_id),
         "role": role,
         "text": text,
         "time": ts,
     }
-    await manager.send_to_room(room_key(product_id, buyer_id), payload)
+    await manager.send_to_room(room_key(product_id, str(buyer_id)), payload)
     await manager.broadcast({"type": "chats_updated"})
     return payload
 
@@ -186,6 +202,9 @@ async def lifespan(app: FastAPI):
     print()
     print("=" * 55)
     print("✅ Сервер запущен: http://localhost:3000")
+    print("   Тест в двух вкладках:")
+    print("   • http://localhost:3000/?as=seller")
+    print("   • http://localhost:3000/?as=buyer1")
     print("=" * 55)
     print()
     yield
@@ -193,6 +212,20 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ==================== DEBUG ====================
+
+@app.get("/api/ping")
+async def ping():
+    return {"ok": True, "time": int(time.time() * 1000)}
 
 
 # ==================== ТОВАРЫ ====================
@@ -219,7 +252,7 @@ async def get_products():
         } for r in rows]
     except Exception as e:
         print(f"❌ GET /api/products: {e}")
-        return JSONResponse(status_code=500, content={"error": "Ошибка чтения товаров"})
+        return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         conn.close()
 
@@ -267,7 +300,7 @@ async def create_product(request: Request):
         return {**data, "id": new_id}
     except Exception as e:
         print(f"❌ create product: {e}")
-        return JSONResponse(status_code=500, content={"error": "Не удалось сохранить"})
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @app.delete("/api/products/{product_id}")
@@ -299,13 +332,17 @@ async def delete_product(product_id: int, request: Request):
         return {"ok": True}
     except Exception as e:
         print(f"❌ delete: {e}")
-        return JSONResponse(status_code=500, content={"error": "Ошибка удаления"})
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 # ==================== ЧАТЫ ====================
 
 @app.post("/api/chats/{product_id}/join")
 async def join_chat(product_id: int, request: Request):
+    """
+    Определяет роль пользователя в чате по товару.
+    { ownerId, buyerId? } → { allowed, role, buyerId }
+    """
     try:
         body = await request.json()
     except Exception:
@@ -363,7 +400,7 @@ async def get_chats(ownerId: str = None):
         return [dict(r) for r in rows]
     except Exception as e:
         print(f"❌ GET /api/chats: {e}")
-        return JSONResponse(status_code=500, content={"error": "Ошибка чтения чатов"})
+        return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         conn.close()
 
@@ -381,14 +418,14 @@ async def get_chat_history(product_id: int, buyer_id: str):
         return [{"id": r["id"], "role": r["role"], "text": r["text"], "time": r["time"]} for r in rows]
     except Exception as e:
         print(f"❌ GET history: {e}")
-        return JSONResponse(status_code=500, content={"error": "Ошибка"})
+        return JSONResponse(status_code=500, content={"error": str(e)})
     finally:
         conn.close()
 
 
 @app.post("/api/chats/{product_id}/{buyer_id}/messages")
 async def post_message(product_id: int, buyer_id: str, request: Request):
-    """Отправить сообщение через HTTP. Надёжнее WS."""
+    """Основной путь отправки сообщения (HTTP). Надёжнее WS."""
     try:
         data = await request.json()
     except Exception:
@@ -402,7 +439,9 @@ async def post_message(product_id: int, buyer_id: str, request: Request):
         sender_owner=data.get("ownerId"),
     )
     if payload is None:
-        return JSONResponse(status_code=400, content={"error": "Не удалось сохранить"})
+        return JSONResponse(status_code=400, content={
+            "error": "Не удалось сохранить сообщение (проверь role/text)"
+        })
     return payload
 
 
@@ -428,7 +467,7 @@ async def clear_chat(product_id: int, buyer_id: str):
         return {"ok": True}
     except Exception as e:
         print(f"❌ clear chat: {e}")
-        return JSONResponse(status_code=500, content={"error": "Ошибка"})
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 # ==================== WEBSOCKET ====================
@@ -475,7 +514,7 @@ async def websocket_chat(ws: WebSocket):
                 manager.leave(room_key(pid_int, str(bid)), ws)
 
             elif t == "message":
-                # Backwards compat — но фронт теперь использует HTTP POST.
+                # Fallback-путь, если HTTP не сработал.
                 pid = data.get("productId")
                 bid = data.get("buyerId")
                 if pid is None or not bid:
@@ -512,10 +551,14 @@ async def root():
     index = STATIC_DIR / "index.html"
     if index.exists():
         return FileResponse(index)
-    return JSONResponse({"error": "index.html не найден в static/"}, status_code=404)
-
-
-app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
+    # Фоллбэк: index.html может лежать рядом с main.py
+    alt = BASE_DIR / "index.html"
+    if alt.exists():
+        return FileResponse(alt)
+    return JSONResponse(
+        {"error": "index.html не найден. Положи его в static/index.html"},
+        status_code=404
+    )
 
 
 if __name__ == "__main__":
