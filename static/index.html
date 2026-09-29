@@ -1065,7 +1065,6 @@
 
   .qty span { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
 
-  /* ============ КНОПКИ В КАРТОЧКЕ ПОНРАВИВШИХСЯ ============ */
   .cart-item-actions {
     display: flex;
     flex-direction: column;
@@ -1095,10 +1094,6 @@
     border-color: #10b981;
     transform: scale(1.08);
     box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
-  }
-
-  .cart-item-chat-btn:active {
-    transform: scale(0.96);
   }
 
   .remove-btn {
@@ -1510,9 +1505,6 @@
     margin-top: 8px;
   }
 
-  /* ============================================
-     СООБЩЕНИЯ ЧАТА — КАК В МЕССЕНДЖЕРАХ
-     ============================================ */
   .msg {
     max-width: 75%;
     padding: 10px 14px;
@@ -2088,7 +2080,7 @@ var state = { category: 'all', search: '', sort: 'default', cart: [] };
 
 var chatsByProduct = {};
 var currentChatProductId = null;
-var currentChatRole = null; // 'seller' | 'buyer'
+var currentChatRole = null;
 
 var activity = { viewed: [], carted: [] };
 
@@ -3443,4 +3435,127 @@ async function renderChatsList() {
       if (!list || !list.length) continue;
       var p = findProduct(Number(pid));
       if (!p) continue;
-      var last = list[list.length - 1
+      var last = list[list.length - 1];
+      rows.push({
+        productId: Number(pid),
+        title: p.title,
+        image: p.image,
+        icon: p.icon,
+        lastText: last.text,
+        lastFrom: last.from,
+        lastTime: last.time
+      });
+    }
+    rows.sort(function(a, b) { return (b.lastTime || 0) - (a.lastTime || 0); });
+  }
+
+  if (!rows.length) {
+    chatsList.innerHTML =
+      '<div class="chats-empty">' +
+        '<div class="chats-empty-icon">💬</div>' +
+        '<p>Чатов пока нет</p>' +
+        '<p class="hint">Откройте товар и нажмите 💬 — переписка появится здесь</p>' +
+      '</div>';
+    return;
+  }
+
+  var html = '';
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var imgHtml = row.image
+      ? '<img src="' + row.image + '" alt="">'
+      : (row.icon || '🏪');
+    var prefix = row.lastFrom === 'seller' ? 'Продавец' : 'Покупатель';
+    var prefixCls = row.lastFrom === 'seller' ? 'prefix-seller' : 'prefix';
+
+    html +=
+      '<div class="chat-item" data-chat-product="' + row.productId + '">' +
+        '<div class="chat-item-img">' + imgHtml + '</div>' +
+        '<div class="chat-item-info">' +
+          '<div class="chat-item-title">' + escapeHtml(row.title || 'Товар') + '</div>' +
+          '<div class="chat-item-last">' +
+            '<span class="' + prefixCls + '">' + prefix + ':</span> ' +
+            escapeHtml(row.lastText || '') +
+          '</div>' +
+        '</div>' +
+        '<div class="chat-item-meta">' +
+          '<div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div>' +
+        '</div>' +
+      '</div>';
+  }
+  chatsList.innerHTML = html;
+}
+
+chatsList.addEventListener('click', function(e) {
+  var item = e.target.closest('[data-chat-product]');
+  if (!item) return;
+  var pid = Number(item.getAttribute('data-chat-product'));
+  closeChatsList();
+  setTimeout(function() { openChat(pid); }, 220);
+});
+
+/* ============ ВРЕМЯ В ЧАТЕ ============ */
+function formatChatTime(ts) {
+  if (!ts) return '';
+  var d = new Date(ts);
+  var now = new Date();
+  var hh = ('0' + d.getHours()).slice(-2);
+  var mm = ('0' + d.getMinutes()).slice(-2);
+  if (d.toDateString() === now.toDateString()) return hh + ':' + mm;
+  var dd = ('0' + d.getDate()).slice(-2);
+  var mo = ('0' + (d.getMonth() + 1)).slice(-2);
+  return dd + '.' + mo + ' ' + hh + ':' + mm;
+}
+
+/* ============ ПОИСК / ФИЛЬТРЫ / СОРТИРОВКА ============ */
+document.getElementById('searchForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  state.search = searchInput.value;
+  renderProducts();
+  clearSearch.classList.toggle('visible', !!searchInput.value);
+});
+
+searchInput.addEventListener('input', function() {
+  clearSearch.classList.toggle('visible', !!searchInput.value);
+});
+
+clearSearch.addEventListener('click', function() {
+  searchInput.value = '';
+  state.search = '';
+  clearSearch.classList.remove('visible');
+  renderProducts();
+});
+
+categoriesEl.addEventListener('click', function(e) {
+  var cat = e.target.closest('.category');
+  if (!cat) return;
+  state.category = cat.getAttribute('data-category');
+  renderCategoryFilters();
+  renderProducts();
+});
+
+sortSelect.addEventListener('change', function() {
+  state.sort = sortSelect.value;
+  renderProducts();
+});
+
+/* ============ TOAST ============ */
+function showToast(msg, isError) {
+  toast.textContent = msg;
+  toast.classList.toggle('error', !!isError);
+  toast.classList.add('show');
+  if (toast._hideTimer) clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(function() {
+    toast.classList.remove('show');
+  }, 3200);
+}
+
+toast.addEventListener('click', function() {
+  toast.classList.remove('show');
+});
+
+/* ============ ЗАПУСК ============ */
+detectModeAndInit();
+</script>
+</body>
+</html>
