@@ -27,14 +27,10 @@ STATIC_DIR.mkdir(exist_ok=True)
 ALLOWED_ROLES = ("seller", "buyer")
 MAX_MESSAGE_LENGTH = 1000
 
-# Все колонки, которые ОБЯЗАНЫ быть в messages.
-# Если хоть одной нет — таблицу пересоздаём.
 MESSAGES_REQUIRED_COLS = {
     "id", "productId", "buyerId", "role", "senderOwnerId", "text", "time",
 }
 
-
-# ==================== БАЗА ====================
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -91,8 +87,6 @@ def get_db():
     return conn
 
 
-# ==================== WEBSOCKET ====================
-
 def room_key(product_id, buyer_id: str) -> str:
     return f"{product_id}:{buyer_id}"
 
@@ -147,10 +141,7 @@ class ChatManager:
 manager = ChatManager()
 
 
-# ==================== ОБЩАЯ ЛОГИКА ====================
-
 async def save_and_broadcast_message(product_id, buyer_id, role, text, sender_owner):
-    """Сохраняет сообщение и рассылает всем в комнате. Возвращает payload или None."""
     if role not in ALLOWED_ROLES:
         print(f"⚠️ Отклонено: неизвестная роль '{role}'")
         return None
@@ -194,8 +185,6 @@ async def save_and_broadcast_message(product_id, buyer_id, role, text, sender_ow
     return payload
 
 
-# ==================== LIFESPAN ====================
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
@@ -221,14 +210,10 @@ app.add_middleware(
 )
 
 
-# ==================== DEBUG ====================
-
 @app.get("/api/ping")
 async def ping():
     return {"ok": True, "time": int(time.time() * 1000)}
 
-
-# ==================== ТОВАРЫ ====================
 
 @app.get("/api/products")
 async def get_products():
@@ -335,14 +320,8 @@ async def delete_product(product_id: int, request: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-# ==================== ЧАТЫ ====================
-
 @app.post("/api/chats/{product_id}/join")
 async def join_chat(product_id: int, request: Request):
-    """
-    Определяет роль пользователя в чате по товару.
-    { ownerId, buyerId? } → { allowed, role, buyerId }
-    """
     try:
         body = await request.json()
     except Exception:
@@ -425,7 +404,6 @@ async def get_chat_history(product_id: int, buyer_id: str):
 
 @app.post("/api/chats/{product_id}/{buyer_id}/messages")
 async def post_message(product_id: int, buyer_id: str, request: Request):
-    """Основной путь отправки сообщения (HTTP). Надёжнее WS."""
     try:
         data = await request.json()
     except Exception:
@@ -470,8 +448,6 @@ async def clear_chat(product_id: int, buyer_id: str):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-# ==================== WEBSOCKET ====================
-
 @app.websocket("/ws/chat")
 async def websocket_chat(ws: WebSocket):
     await manager.connect(ws)
@@ -514,7 +490,6 @@ async def websocket_chat(ws: WebSocket):
                 manager.leave(room_key(pid_int, str(bid)), ws)
 
             elif t == "message":
-                # Fallback-путь, если HTTP не сработал.
                 pid = data.get("productId")
                 bid = data.get("buyerId")
                 if pid is None or not bid:
@@ -539,8 +514,6 @@ async def websocket_chat(ws: WebSocket):
         print(f"⚠️ WS error: {e}")
 
 
-# ==================== СТАТИКА ====================
-
 @app.get("/favicon.ico")
 async def favicon():
     return JSONResponse(status_code=204, content=None)
@@ -551,7 +524,6 @@ async def root():
     index = STATIC_DIR / "index.html"
     if index.exists():
         return FileResponse(index)
-    # Фоллбэк: index.html может лежать рядом с main.py
     alt = BASE_DIR / "index.html"
     if alt.exists():
         return FileResponse(alt)
