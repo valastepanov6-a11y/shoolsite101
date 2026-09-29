@@ -1,16 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Бэкенд для маркетплейса «Сеть обмена 101».
-Стек: Python 3.11 + FastAPI + SQLite + WebSocket
-
-Ключевые моменты:
-- Каждый чат = (productId, buyerId). У продавца по одному товару
-  может быть МНОГО отдельных чатов — по одному на покупателя.
-- Роль: 'seller' (владелец товара) | 'buyer' (все остальные).
-- Сообщения хранятся с ролью отправителя.
-- POST /api/chats/{id}/join — вычисляет роль и (для продавца) buyerId.
+Бэкенд «Сеть обмена 101».
+FastAPI + SQLite + WebSocket.
 """
-
 import json
 import os
 import sqlite3
@@ -37,16 +29,14 @@ MAX_MESSAGE_LENGTH = 1000
 # ==================== БАЗА ====================
 
 def init_db():
-    """Создаёт таблицы. Старую схему messages пересоздаёт автоматически."""
     conn = sqlite3.connect(DB_PATH)
     try:
         cols = [r[1] for r in conn.execute("PRAGMA table_info(messages)").fetchall()]
-        # Старая схема (fromUser / нет buyerId) → пересоздаём
         if cols and ("buyerId" not in cols or "role" not in cols):
-            print("🔄 Обнаружена старая схема messages — пересоздаём таблицу")
+            print("🔄 Пересоздаём таблицу messages (старая схема)")
             conn.execute("DROP TABLE IF EXISTS messages")
     except Exception as e:
-        print(f"⚠️ Не удалось проверить схему messages: {e}")
+        print(f"⚠️ schema check: {e}")
 
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS products (
@@ -80,7 +70,7 @@ def init_db():
     """)
     conn.commit()
     conn.close()
-    print(f"📁 База данных готова: {DB_PATH}")
+    print(f"📁 БД: {DB_PATH}")
 
 
 def get_db():
@@ -89,7 +79,7 @@ def get_db():
     return conn
 
 
-# ==================== WEBSOCKET МЕНЕДЖЕР ====================
+# ==================== WEBSOCKET ====================
 
 def room_key(product_id, buyer_id: str) -> str:
     return f"{product_id}:{buyer_id}"
@@ -97,7 +87,7 @@ def room_key(product_id, buyer_id: str) -> str:
 
 class ChatManager:
     def __init__(self):
-        self.rooms = {}       # room_key -> set[WebSocket]
+        self.rooms = {}
         self.clients = set()
 
     async def connect(self, ws: WebSocket):
@@ -125,8 +115,7 @@ class ChatManager:
         for ws in list(room):
             try:
                 await ws.send_text(msg)
-            except Exception as e:
-                print(f"⚠️ Ошибка отправки: {e}")
+            except Exception:
                 dead.append(ws)
         for ws in dead:
             room.discard(ws)
@@ -137,13 +126,56 @@ class ChatManager:
         for ws in list(self.clients):
             try:
                 await ws.send_text(msg)
-            except Exception as e:
+            except Exception:
                 dead.append(ws)
         for ws in dead:
             self.clients.discard(ws)
 
 
 manager = ChatManager()
+
+
+# ==================== ОБЩАЯ ЛОГИКА СООБЩЕНИЙ ====================
+
+async def save_and_broadcast_message(product_id, buyer_id, role, text, sender_owner):
+    """Сохраняет сообщение и рассылает всем в комнате. Возвращает payload или None."""
+    if role not in ALLOWED_ROLES:
+        return None
+    text = str(text or "").strip()
+    if not text:
+        return None
+    if len(text) > MAX_MESSAGE_LENGTH:
+        text = text[:MAX_MESSAGE_LENGTH]
+
+    ts = int(time.time() * 1000)
+    try:
+        conn = get_db()
+        try:
+            cur = conn.execute("""
+                INSERT INTO messages
+                    (productId, buyerId, role, senderOwnerId, text, time)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (product_id, buyer_id, role, sender_owner, text, ts))
+            conn.commit()
+            msg_id = cur.lastrowid
+        finally:
+            conn.close()
+    except Exception as e:
+        print(f"❌ Ошибка сохранения сообщения: {e}")
+        return None
+
+    payload = {
+        "type": "message",
+        "id": msg_id,
+        "productId": product_id,
+        "buyerId": buyer_id,
+        "role": role,
+        "text": text,
+        "time": ts,
+    }
+    await manager.send_to_room(room_key(product_id, buyer_id), payload)
+    await manager.broadcast({"type": "chats_updated"})
+    return payload
 
 
 # ==================== LIFESPAN ====================
@@ -153,12 +185,11 @@ async def lifespan(app: FastAPI):
     init_db()
     print()
     print("=" * 55)
-    print("✅ Сервер запущен")
-    print("🌐 Открой: http://localhost:3000")
+    print("✅ Сервер запущен: http://localhost:3000")
     print("=" * 55)
     print()
     yield
-    print("👋 Сервер остановлен")
+    print("👋 Остановлен")
 
 
 app = FastAPI(lifespan=lifespan)
@@ -171,24 +202,21 @@ async def get_products():
     conn = get_db()
     try:
         rows = conn.execute("SELECT * FROM products ORDER BY createdAt DESC").fetchall()
-        result = []
-        for r in rows:
-            result.append({
-                "id": r["id"],
-                "title": r["title"],
-                "desc": r["description"],
-                "category": r["category"],
-                "categoryName": r["categoryName"],
-                "price": r["price"] if r["price"] is not None else 0,
-                "oldPrice": r["oldPrice"],
-                "rating": r["rating"] if r["rating"] is not None else 5,
-                "badge": r["badge"],
-                "custom": bool(r["custom"]),
-                "image": r["image"],
-                "icon": None,
-                "ownerId": r["ownerId"],
-            })
-        return result
+        return [{
+            "id": r["id"],
+            "title": r["title"],
+            "desc": r["description"],
+            "category": r["category"],
+            "categoryName": r["categoryName"],
+            "price": r["price"] if r["price"] is not None else 0,
+            "oldPrice": r["oldPrice"],
+            "rating": r["rating"] if r["rating"] is not None else 5,
+            "badge": r["badge"],
+            "custom": bool(r["custom"]),
+            "image": r["image"],
+            "icon": None,
+            "ownerId": r["ownerId"],
+        } for r in rows]
     except Exception as e:
         print(f"❌ GET /api/products: {e}")
         return JSONResponse(status_code=500, content={"error": "Ошибка чтения товаров"})
@@ -204,12 +232,11 @@ async def create_product(request: Request):
         return JSONResponse(status_code=400, content={"error": "Некорректный JSON"})
 
     if not data.get("title"):
-        return JSONResponse(status_code=400, content={"error": "Не хватает поля: title"})
+        return JSONResponse(status_code=400, content={"error": "Нет поля: title"})
     if not data.get("desc"):
-        return JSONResponse(status_code=400, content={"error": "Не хватает поля: desc"})
+        return JSONResponse(status_code=400, content={"error": "Нет поля: desc"})
 
     new_id = int(time.time() * 1000)
-
     try:
         conn = get_db()
         try:
@@ -236,14 +263,11 @@ async def create_product(request: Request):
             conn.commit()
         finally:
             conn.close()
-
-        print(f"✅ Создан товар #{new_id}: {data.get('title')}")
         await manager.broadcast({"type": "products_updated"})
         return {**data, "id": new_id}
-
     except Exception as e:
-        print(f"❌ Ошибка создания товара: {e}")
-        return JSONResponse(status_code=500, content={"error": "Не удалось сохранить товар"})
+        print(f"❌ create product: {e}")
+        return JSONResponse(status_code=500, content={"error": "Не удалось сохранить"})
 
 
 @app.delete("/api/products/{product_id}")
@@ -259,46 +283,29 @@ async def delete_product(product_id: int, request: Request):
         conn = get_db()
         try:
             row = conn.execute(
-                "SELECT ownerId, title FROM products WHERE id = ?",
-                (product_id,)
+                "SELECT ownerId FROM products WHERE id = ?", (product_id,)
             ).fetchone()
-
             if row is None:
-                return JSONResponse(status_code=404, content={"error": "Товар не найден"})
-
-            stored_owner = row["ownerId"]
-            if stored_owner and owner_id and stored_owner != owner_id:
-                return JSONResponse(status_code=403, content={"error": "Это не ваша карточка"})
-
-            title = row["title"]
+                return JSONResponse(status_code=404, content={"error": "Не найдено"})
+            stored = row["ownerId"]
+            if stored and owner_id and stored != owner_id:
+                return JSONResponse(status_code=403, content={"error": "Не ваша карточка"})
             conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
             conn.execute("DELETE FROM messages WHERE productId = ?", (product_id,))
             conn.commit()
-            print(f"🗑️ Удалён товар #{product_id}: {title}")
         finally:
             conn.close()
-
         await manager.broadcast({"type": "products_updated"})
         return {"ok": True}
-
     except Exception as e:
-        print(f"❌ Ошибка удаления: {e}")
-        return JSONResponse(status_code=500, content={"error": "Не удалось удалить товар"})
+        print(f"❌ delete: {e}")
+        return JSONResponse(status_code=500, content={"error": "Ошибка удаления"})
 
 
 # ==================== ЧАТЫ ====================
 
 @app.post("/api/chats/{product_id}/join")
 async def join_chat(product_id: int, request: Request):
-    """
-    Определяет роль пользователя в чате по товару.
-    Тело: { ownerId, buyerId? }
-    Ответ: { allowed, role, buyerId }
-      - Продавец без buyerId → allowed=true, role='seller', buyerId=null
-        (фронт покажет список покупателей)
-      - Продавец с buyerId → конкретный чат
-      - Покупатель → buyerId = его ownerId, role='buyer'
-    """
     try:
         body = await request.json()
     except Exception:
@@ -307,82 +314,52 @@ async def join_chat(product_id: int, request: Request):
     buyer_id = body.get("buyerId")
 
     if not owner_id:
-        return JSONResponse(status_code=400,
-                            content={"allowed": False, "reason": "Нет ownerId"})
+        return {"allowed": False, "reason": "Нет ownerId"}
 
     conn = get_db()
     try:
         row = conn.execute(
-            "SELECT ownerId FROM products WHERE id = ?",
-            (product_id,)
+            "SELECT ownerId FROM products WHERE id = ?", (product_id,)
         ).fetchone()
-
         if row is None:
-            return JSONResponse(status_code=404,
-                                content={"allowed": False, "reason": "Товар не найден"})
-
+            return {"allowed": False, "reason": "Товар не найден"}
         product_owner = row["ownerId"]
-
         if product_owner and product_owner == owner_id:
-            # Продавец
             return {"allowed": True, "role": "seller", "buyerId": buyer_id or None}
-        else:
-            # Покупатель — всегда свой buyerId
-            return {"allowed": True, "role": "buyer", "buyerId": owner_id}
+        return {"allowed": True, "role": "buyer", "buyerId": owner_id}
     finally:
         conn.close()
 
 
 @app.get("/api/chats")
 async def get_chats(ownerId: str = None):
-    """
-    Список чатов пользователя.
-    Покупатель видит свои чаты; продавец — все чаты по своим товарам.
-    """
     conn = get_db()
     try:
+        base_sql = """
+            SELECT
+                m.productId AS productId,
+                m.buyerId   AS buyerId,
+                p.title     AS title,
+                p.image     AS image,
+                p.ownerId   AS productOwnerId,
+                m.text      AS lastText,
+                m.role      AS lastFrom,
+                m.time      AS lastTime
+            FROM messages m
+            JOIN products p ON p.id = m.productId
+            WHERE m.id = (
+                SELECT id FROM messages
+                WHERE productId = m.productId AND buyerId = m.buyerId
+                ORDER BY time DESC LIMIT 1
+            )
+        """
         if ownerId:
-            rows = conn.execute("""
-                SELECT
-                    m.productId AS productId,
-                    m.buyerId   AS buyerId,
-                    p.title     AS title,
-                    p.image     AS image,
-                    p.ownerId   AS productOwnerId,
-                    m.text      AS lastText,
-                    m.role      AS lastFrom,
-                    m.time      AS lastTime
-                FROM messages m
-                JOIN products p ON p.id = m.productId
-                WHERE m.id = (
-                    SELECT id FROM messages
-                    WHERE productId = m.productId AND buyerId = m.buyerId
-                    ORDER BY time DESC LIMIT 1
-                )
+            rows = conn.execute(base_sql + """
                 AND (p.ownerId = ? OR m.buyerId = ?)
                 ORDER BY m.time DESC
             """, (ownerId, ownerId)).fetchall()
         else:
-            rows = conn.execute("""
-                SELECT
-                    m.productId AS productId,
-                    m.buyerId   AS buyerId,
-                    p.title     AS title,
-                    p.image     AS image,
-                    p.ownerId   AS productOwnerId,
-                    m.text      AS lastText,
-                    m.role      AS lastFrom,
-                    m.time      AS lastTime
-                FROM messages m
-                JOIN products p ON p.id = m.productId
-                WHERE m.id = (
-                    SELECT id FROM messages
-                    WHERE productId = m.productId AND buyerId = m.buyerId
-                    ORDER BY time DESC LIMIT 1
-                )
-                ORDER BY m.time DESC
-            """).fetchall()
-
+            rows = conn.execute(base_sql + " ORDER BY m.time DESC").fetchall()
         return [dict(r) for r in rows]
     except Exception as e:
         print(f"❌ GET /api/chats: {e}")
@@ -393,26 +370,44 @@ async def get_chats(ownerId: str = None):
 
 @app.get("/api/chats/{product_id}/{buyer_id}")
 async def get_chat_history(product_id: int, buyer_id: str):
-    """История конкретного чата (товар + покупатель)."""
     conn = get_db()
     try:
         rows = conn.execute("""
-            SELECT role, text, time
+            SELECT id, role, text, time
             FROM messages
             WHERE productId = ? AND buyerId = ?
             ORDER BY time ASC
         """, (product_id, buyer_id)).fetchall()
-        return [{"role": r["role"], "text": r["text"], "time": r["time"]} for r in rows]
+        return [{"id": r["id"], "role": r["role"], "text": r["text"], "time": r["time"]} for r in rows]
     except Exception as e:
-        print(f"❌ Ошибка чтения чата #{product_id}/{buyer_id}: {e}")
-        return JSONResponse(status_code=500, content={"error": "Ошибка чтения чата"})
+        print(f"❌ GET history: {e}")
+        return JSONResponse(status_code=500, content={"error": "Ошибка"})
     finally:
         conn.close()
 
 
+@app.post("/api/chats/{product_id}/{buyer_id}/messages")
+async def post_message(product_id: int, buyer_id: str, request: Request):
+    """Отправить сообщение через HTTP. Надёжнее WS."""
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse(status_code=400, content={"error": "Некорректный JSON"})
+
+    payload = await save_and_broadcast_message(
+        product_id=product_id,
+        buyer_id=buyer_id,
+        role=data.get("role"),
+        text=data.get("text"),
+        sender_owner=data.get("ownerId"),
+    )
+    if payload is None:
+        return JSONResponse(status_code=400, content={"error": "Не удалось сохранить"})
+    return payload
+
+
 @app.delete("/api/chats/{product_id}/{buyer_id}")
 async def clear_chat(product_id: int, buyer_id: str):
-    """Очистка конкретного чата."""
     try:
         conn = get_db()
         try:
@@ -424,8 +419,6 @@ async def clear_chat(product_id: int, buyer_id: str):
         finally:
             conn.close()
 
-        print(f"🧹 Очищен чат {product_id}/{buyer_id}")
-
         await manager.send_to_room(room_key(product_id, buyer_id), {
             "type": "chat_cleared",
             "productId": product_id,
@@ -434,8 +427,8 @@ async def clear_chat(product_id: int, buyer_id: str):
         await manager.broadcast({"type": "chats_updated"})
         return {"ok": True}
     except Exception as e:
-        print(f"❌ Ошибка очистки чата: {e}")
-        return JSONResponse(status_code=500, content={"error": "Не удалось очистить чат"})
+        print(f"❌ clear chat: {e}")
+        return JSONResponse(status_code=500, content={"error": "Ошибка"})
 
 
 # ==================== WEBSOCKET ====================
@@ -443,29 +436,24 @@ async def clear_chat(product_id: int, buyer_id: str):
 @app.websocket("/ws/chat")
 async def websocket_chat(ws: WebSocket):
     await manager.connect(ws)
-    print(f"🔌 Подключён клиент: {ws.client}")
+    print(f"🔌 WS connect: {ws.client}")
 
     try:
         while True:
             raw = await ws.receive_text()
-
             try:
                 data = json.loads(raw)
             except json.JSONDecodeError:
-                print(f"⚠️ Невалидный JSON: {raw[:100]}")
                 continue
-
             if not isinstance(data, dict):
                 continue
 
-            msg_type = data.get("type")
+            t = data.get("type")
 
-            # --- JOIN ---
-            if msg_type == "join":
+            if t == "join":
                 pid = data.get("productId")
                 bid = data.get("buyerId")
                 if pid is None or not bid:
-                    print(f"⚠️ join: не хватает productId/buyerId: {data}")
                     continue
                 try:
                     pid_int = int(pid)
@@ -473,10 +461,9 @@ async def websocket_chat(ws: WebSocket):
                     continue
                 key = room_key(pid_int, str(bid))
                 manager.join(key, ws)
-                print(f"→ join room {key}")
+                print(f"→ join {key}")
 
-            # --- LEAVE ---
-            elif msg_type == "leave":
+            elif t == "leave":
                 pid = data.get("productId")
                 bid = data.get("buyerId")
                 if pid is None or not bid:
@@ -487,68 +474,30 @@ async def websocket_chat(ws: WebSocket):
                     continue
                 manager.leave(room_key(pid_int, str(bid)), ws)
 
-            # --- MESSAGE ---
-            elif msg_type == "message":
+            elif t == "message":
+                # Backwards compat — но фронт теперь использует HTTP POST.
                 pid = data.get("productId")
                 bid = data.get("buyerId")
-                role = data.get("role")
-                text = data.get("text")
-                sender_owner = data.get("ownerId")
-
-                if pid is None or not bid or role is None or text is None:
-                    print(f"⚠️ message: не хватает полей: {data}")
+                if pid is None or not bid:
                     continue
-
                 try:
                     pid_int = int(pid)
                 except (ValueError, TypeError):
                     continue
-
-                if role not in ALLOWED_ROLES:
-                    print(f"⚠️ Неизвестная роль: {role}")
-                    continue
-
-                text = str(text).strip()
-                if not text:
-                    continue
-                if len(text) > MAX_MESSAGE_LENGTH:
-                    text = text[:MAX_MESSAGE_LENGTH]
-
-                ts = int(time.time() * 1000)
-
-                try:
-                    conn = get_db()
-                    try:
-                        conn.execute("""
-                            INSERT INTO messages
-                                (productId, buyerId, role, senderOwnerId, text, time)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        """, (pid_int, str(bid), role, sender_owner, text, ts))
-                        conn.commit()
-                    finally:
-                        conn.close()
-                except Exception as e:
-                    print(f"❌ Ошибка сохранения сообщения: {e}")
-                    continue
-
-                await manager.send_to_room(room_key(pid_int, str(bid)), {
-                    "type": "message",
-                    "productId": pid_int,
-                    "buyerId": str(bid),
-                    "role": role,
-                    "text": text,
-                    "time": ts,
-                })
-
-                await manager.broadcast({"type": "chats_updated"})
+                await save_and_broadcast_message(
+                    product_id=pid_int,
+                    buyer_id=str(bid),
+                    role=data.get("role"),
+                    text=data.get("text"),
+                    sender_owner=data.get("ownerId"),
+                )
 
     except WebSocketDisconnect:
         manager.disconnect(ws)
-        print(f"❌ Клиент отключён: {ws.client}")
-
+        print(f"❌ WS disconnect: {ws.client}")
     except Exception as e:
         manager.disconnect(ws)
-        print(f"⚠️ Ошибка WebSocket: {e}")
+        print(f"⚠️ WS error: {e}")
 
 
 # ==================== СТАТИКА ====================
@@ -572,5 +521,5 @@ app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 3000))
-    print(f"🚀 Запуск на порту {port}")
+    print(f"🚀 Порт {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
