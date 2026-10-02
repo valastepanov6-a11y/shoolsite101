@@ -34,11 +34,20 @@
     border: 1px solid rgba(144, 238, 144, 0.32);
     text-shadow: 0 0 10px rgba(255,255,255,0.35), 0 0 22px rgba(144,238,144,0.75);
   }
-  .whoami {
-    font-size: 12px; padding: 8px 12px; border-radius: 10px;
-    background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.55);
-    color: #90ee90; font-family: monospace; font-weight: 600;
+  .user-box {
+    display: flex; align-items: center; gap: 8px;
   }
+  .whoami {
+    font-size: 13px; padding: 8px 14px; border-radius: 10px;
+    background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.55);
+    color: #90ee90; font-weight: 700;
+  }
+  .logout-btn {
+    font-size: 12px; padding: 8px 12px; border-radius: 10px;
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4);
+    color: #fca5a5; cursor: pointer; font-weight: 600;
+  }
+  .logout-btn:hover { background: rgba(239,68,68,0.25); color: #fff; }
   .search {
     flex: 1; max-width: 500px; display: flex; position: relative;
     border-radius: 14px; overflow: hidden;
@@ -80,11 +89,12 @@
     text-shadow: 0 0 15px rgba(255,255,255,0.6), 0 0 30px rgba(144,238,144,0.75);
   }
   .hero p { color: rgba(200, 255, 210, 0.75); font-size: 15px; }
-  .hint-modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  .hint-modal, .auth-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
     display: flex; align-items: center; justify-content: center;
-    opacity: 0; visibility: hidden; transition: 0.3s; padding: 20px; z-index: 460;
+    padding: 20px; z-index: 900;
   }
+  .hint-modal { opacity: 0; visibility: hidden; transition: 0.3s; z-index: 460; }
   .hint-modal.open { opacity: 1; visibility: visible; }
   .hint-content {
     max-width: 520px; width: 100%; padding: 40px 36px; border-radius: 26px;
@@ -100,6 +110,78 @@
     padding: 12px 32px; background: linear-gradient(135deg, #10b981, #059669);
     color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700;
     cursor: pointer;
+  }
+  /* AUTH MODAL */
+  .auth-modal { display: none; }
+  .auth-modal.open { display: flex; }
+  .auth-content {
+    max-width: 420px; width: 100%; padding: 36px 32px; border-radius: 20px;
+    background: linear-gradient(160deg, rgba(15, 30, 22, 0.98), rgba(5, 12, 8, 0.99));
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 60px rgba(16,185,129,0.2);
+    color: #fff;
+  }
+  .auth-logo {
+    text-align: center; font-size: 40px; margin-bottom: 6px;
+    filter: drop-shadow(0 0 20px rgba(144,238,144,0.6));
+  }
+  .auth-title {
+    text-align: center; font-size: 22px; font-weight: 700;
+    margin-bottom: 6px; color: #fff;
+  }
+  .auth-sub {
+    text-align: center; font-size: 13px; color: rgba(200,255,210,0.55);
+    margin-bottom: 24px;
+  }
+  .auth-tabs {
+    display: flex; background: rgba(0,0,0,0.4);
+    border-radius: 10px; padding: 4px; margin-bottom: 22px;
+    border: 1px solid rgba(16,185,129,0.2);
+  }
+  .auth-tab {
+    flex: 1; padding: 10px; text-align: center; font-size: 14px;
+    font-weight: 600; cursor: pointer; border-radius: 8px;
+    color: rgba(200,255,210,0.6); transition: 0.2s;
+  }
+  .auth-tab.active {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; box-shadow: 0 4px 12px rgba(16,185,129,0.4);
+  }
+  .auth-field { margin-bottom: 14px; }
+  .auth-field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: #d1fae5; margin-bottom: 6px;
+  }
+  .auth-field input {
+    width: 100%; padding: 12px 14px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(144, 238, 144, 0.28);
+    border-radius: 8px; color: #f0fff6; font-size: 14px;
+    outline: none; font-family: inherit;
+  }
+  .auth-field input:focus {
+    border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+  }
+  .auth-hint {
+    font-size: 11px; color: rgba(200,255,210,0.4); margin-top: 4px;
+  }
+  .auth-error {
+    display: none; padding: 10px 14px; margin-bottom: 14px;
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4);
+    color: #fca5a5; border-radius: 8px; font-size: 13px;
+  }
+  .auth-error.show { display: block; }
+  .auth-submit {
+    width: 100%; padding: 13px; margin-top: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 6px 20px rgba(16,185,129,0.4);
+  }
+  .auth-submit:disabled { opacity: 0.6; cursor: wait; }
+  .auth-footer {
+    text-align: center; font-size: 12px;
+    color: rgba(200,255,210,0.45); margin-top: 16px;
   }
   .network-stats {
     max-width: 1200px; margin: 10px auto 0; padding: 0 20px;
@@ -240,6 +322,8 @@
   .card-category { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #90ee90; font-weight: 700; margin-bottom: 6px; }
   .card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #f0fff6; cursor: pointer; }
   .card-desc { font-size: 13px; color: rgba(200, 220, 210, 0.6); margin-bottom: 12px; flex: 1; }
+  .card-owner { font-size: 11px; color: rgba(200,220,210,0.5); margin-bottom: 10px; }
+  .card-owner strong { color: #90ee90; }
   .card-footer { display: flex; justify-content: flex-end; align-items: center; margin-top: auto; gap: 8px; }
   .card-actions { display: flex; gap: 6px; align-items: center; }
   .chat-btn {
@@ -394,7 +478,8 @@
   .chat-item-img img { width: 100%; height: 100%; object-fit: cover; }
   .chat-item-info { flex: 1; min-width: 0; }
   .chat-item-title { font-size: 14px; font-weight: 600; color: #f0fff6; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chat-item-sub { font-size: 11px; color: rgba(200, 220, 210, 0.4); margin-bottom: 3px; }
+  .chat-item-sub { font-size: 11px; color: rgba(200, 220, 210, 0.6); margin-bottom: 3px; }
+  .chat-item-sub strong { color: #90ee90; }
   .chat-item-last { font-size: 12px; color: rgba(200, 220, 210, 0.55); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .chat-item-last .prefix { color: #90ee90; font-weight: 600; }
   .chat-item-last .prefix-seller { color: #93c5fd; font-weight: 600; }
@@ -497,7 +582,7 @@
     transform: translateX(-50%) translateY(100px);
     background: linear-gradient(135deg, #ec4899, #be185d); color: #fff;
     padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 500;
-    opacity: 0; transition: 0.3s; max-width: 90vw; text-align: center; z-index: 500;
+    opacity: 0; transition: 0.3s; max-width: 90vw; text-align: center; z-index: 999;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: linear-gradient(135deg, #ef4444, #b91c1c); }
@@ -509,7 +594,7 @@
   .loading-badge {
     position: fixed; top: 80px; right: 20px; padding: 8px 14px;
     border-radius: 8px; font-size: 12px; font-weight: 600;
-    z-index: 999; display: none; color: #fff;
+    z-index: 998; display: none; color: #fff;
     background: rgba(16, 185, 129, 0.9);
   }
   .loading-badge.visible { display: block; }
@@ -542,12 +627,48 @@
 
 <canvas id="bgCanvas"></canvas>
 
-<div class="loading-badge" id="loadingBadge">⏳ Подключение к Supabase...</div>
+<div class="loading-badge" id="loadingBadge">⏳ Подключение...</div>
+
+<!-- AUTH MODAL -->
+<div class="auth-modal open" id="authModal">
+  <div class="auth-content">
+    <div class="auth-logo">🛒</div>
+    <div class="auth-title">Сеть обмена 101</div>
+    <div class="auth-sub">Войдите, чтобы создавать карточки и общаться</div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" data-tab="login" id="tabLogin">Вход</div>
+      <div class="auth-tab" data-tab="register" id="tabRegister">Регистрация</div>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <form id="authForm" autocomplete="off">
+      <div class="auth-field">
+        <label for="authUsername">Ник</label>
+        <input type="text" id="authUsername" placeholder="например: ivan_2007" maxlength="20" autocomplete="username">
+        <div class="auth-hint">3–20 символов: латиница, цифры, _</div>
+      </div>
+      <div class="auth-field">
+        <label for="authPassword">Пароль</label>
+        <input type="password" id="authPassword" placeholder="минимум 6 символов" maxlength="100" autocomplete="current-password">
+      </div>
+      <button type="submit" class="auth-submit" id="authSubmit">Войти</button>
+    </form>
+
+    <div class="auth-footer" id="authFooter">
+      Нет аккаунта? Нажмите «Регистрация» выше.
+    </div>
+  </div>
+</div>
 
 <header>
   <div class="header-top">
     <div class="logo">🛒 МаркетПлейс</div>
-    <div class="whoami" id="whoami">—</div>
+    <div class="user-box" id="userBox" style="display:none;">
+      <div class="whoami" id="whoami">—</div>
+      <button class="logout-btn" id="logoutBtn" type="button">Выйти</button>
+    </div>
     <form class="search" id="searchForm">
       <input type="text" id="searchInput" placeholder="Поиск по названию или описанию...">
       <button type="button" class="clear-search" id="clearSearch">✕</button>
@@ -712,170 +833,31 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-/* =====================================================
-   НАСТРОЙКИ SUPABASE
-   ===================================================== */
 const SUPABASE_URL = 'https://rfptkmwuwbnnapihxqmb.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcHRrbXd1d2JubmFwaWh4cW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4Nzc5ODYsImV4cCI6MjEwNjQ1Mzk4Nn0.4rCq_Ic2pXmonY9cVPRV-hdDQA4x23tKtXyB3nTt8eE';
-
-/* =====================================================
-   IDENT ПОЛЬЗОВАТЕЛЯ
-   ===================================================== */
-const params = new URLSearchParams(location.search);
-const asName = params.get('as');
-const STORAGE_PREFIX = asName ? `sb-${asName}-` : 'sb-default-';
-const authStorage = asName ? window.sessionStorage : window.localStorage;
+const EMAIL_DOMAIN = '@marketplace.local';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: {
-    storage: authStorage,
-    storageKey: STORAGE_PREFIX + 'auth',
-    persistSession: true,
-    autoRefreshToken: true,
-  }
+  auth: { persistSession: true, autoRefreshToken: true }
 });
 
 let MY_OWNER_ID = null;
-let MY_NAME = '—';
+let MY_USERNAME = null;
+let products = [];
+let uploadedImage = null;
+let publishing = false;
+const state = { category: 'all', search: '', sort: 'default', cart: [] };
+let activity = { viewed: [], carted: [] };
+let currentChatProductId = null;
+let currentChatBuyerId = null;
+let currentChatRole = null;
+let chatsFilterProductId = null;
+let realtimeChannel = null;
+let chatsRealtimeChannel = null;
+let productsChannel = null;
+let lastMessagesHash = '';
+let profilesCache = {};
 
-async function initAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session && session.user) {
-    MY_OWNER_ID = session.user.id;
-  } else {
-    try {
-      const { data, error } = await supabase.auth.signInAnonymously();
-      if (error) throw error;
-      MY_OWNER_ID = data.user.id;
-    } catch (err) {
-      console.warn('Anonymous auth недоступен, fallback:', err.message);
-      let fallbackId = authStorage.getItem(STORAGE_PREFIX + 'fallback-id');
-      if (!fallbackId) {
-        fallbackId = 'anon-' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
-        authStorage.setItem(STORAGE_PREFIX + 'fallback-id', fallbackId);
-      }
-      MY_OWNER_ID = fallbackId;
-    }
-  }
-  MY_NAME = asName || ('user-' + String(MY_OWNER_ID).slice(0, 6));
-  const whoami = document.getElementById('whoami');
-  if (whoami) whoami.textContent = 'Вы: ' + MY_NAME;
-  console.log('✅ ownerId:', MY_OWNER_ID);
-}
-
-/* =====================================================
-   ФОН
-   ===================================================== */
-(function() {
-  const canvas = document.getElementById('bgCanvas');
-  if (!canvas || !canvas.getContext) return;
-  const ctx = canvas.getContext('2d');
-  let W = 0, H = 0;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  let particles = [];
-  const mouse = { x: -9999, y: -9999 };
-  let time = 0;
-
-  function resize() {
-    W = window.innerWidth; H = window.innerHeight;
-    canvas.width = W * dpr; canvas.height = H * dpr;
-    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const count = Math.min(90, Math.max(35, Math.floor((W * H) / 18000)));
-    particles = [];
-    for (let i = 0; i < count; i++) particles.push(makeP());
-  }
-  function makeP() {
-    return {
-      x: Math.random() * W, y: Math.random() * H,
-      vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
-      r: Math.random() * 1.8 + 1,
-      isBlack: Math.random() < 0.3,
-      hue: 110 + Math.random() * 30,
-      pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: 0.01 + Math.random() * 0.02
-    };
-  }
-  function drawConn(a, b, dist) {
-    const alpha = (1 - dist / 150) * 0.55;
-    const hue = 120 + Math.sin(time * 0.5 + a.x * 0.01) * 25;
-    const lightness = 55 + Math.sin(time + a.y * 0.02) * 15;
-    const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-    g.addColorStop(0, 'hsla(' + hue + ',90%,' + lightness + '%,' + alpha + ')');
-    g.addColorStop(1, 'hsla(' + (hue + 20) + ',90%,' + lightness + '%,' + (alpha * 0.5) + ')');
-    ctx.strokeStyle = g; ctx.lineWidth = 0.8;
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-  }
-  function drawP(p) {
-    p.pulse += p.pulseSpeed;
-    const pulseFactor = 1 + Math.sin(p.pulse) * 0.4;
-    const hue = p.hue + Math.sin(time * 0.8 + p.x * 0.01) * 20;
-    const lightBase = 60 + Math.sin(p.pulse) * 12;
-    const glow = p.r * 8 * pulseFactor;
-    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
-    if (p.isBlack) {
-      grd.addColorStop(0, 'rgba(0,0,0,1)');
-      grd.addColorStop(0.35, 'rgba(10,20,15,0.85)');
-      grd.addColorStop(0.6, 'hsla(' + hue + ',80%,45%,0.5)');
-      grd.addColorStop(1, 'hsla(' + hue + ',80%,60%,0)');
-    } else {
-      grd.addColorStop(0, 'hsla(' + hue + ',95%,' + (lightBase + 25) + '%,1)');
-      grd.addColorStop(0.4, 'hsla(' + hue + ',95%,' + lightBase + '%,0.55)');
-      grd.addColorStop(1, 'hsla(' + hue + ',95%,' + lightBase + '%,0)');
-    }
-    ctx.fillStyle = grd;
-    ctx.beginPath(); ctx.arc(p.x, p.y, glow, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath();
-    if (p.isBlack) {
-      ctx.fillStyle = '#000';
-      ctx.strokeStyle = 'hsla(' + hue + ',90%,65%,0.9)';
-      ctx.lineWidth = 1.2;
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill(); ctx.stroke();
-    } else {
-      ctx.fillStyle = 'hsla(' + hue + ',100%,' + (lightBase + 20) + '%,1)';
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-    }
-  }
-  function animate() {
-    time += 0.016;
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.fillRect(0, 0, W, H);
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      p.x += p.vx; p.y += p.vy;
-      const dx = p.x - mouse.x, dy = p.y - mouse.y;
-      const dSq = dx * dx + dy * dy;
-      if (dSq < 32400 && dSq > 0) {
-        const d = Math.sqrt(dSq);
-        const force = (1 - d / 180) * 0.6;
-        p.x += (dx / d) * force; p.y += (dy / d) * force;
-      }
-      if (p.x < 0) { p.x = 0; p.vx *= -1; }
-      if (p.x > W) { p.x = W; p.vx *= -1; }
-      if (p.y < 0) { p.y = 0; p.vy *= -1; }
-      if (p.y > H) { p.y = H; p.vy *= -1; }
-    }
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dSq = dx * dx + dy * dy;
-        if (dSq < 22500) drawConn(particles[i], particles[j], Math.sqrt(dSq));
-      }
-    }
-    for (let i = 0; i < particles.length; i++) drawP(particles[i]);
-    requestAnimationFrame(animate);
-  }
-  window.addEventListener('resize', resize);
-  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-  window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
-  resize(); animate();
-})();
-
-/* =====================================================
-   КАТЕГОРИИ
-   ===================================================== */
 const STANDARD_CATEGORIES = [
   { key: 'book', name: 'Книги', emoji: '📚' },
   { key: 'pen',  name: 'Ручки', emoji: '🖊️' },
@@ -892,30 +874,247 @@ const CATEGORY_SYNONYMS = {
 const CART_KEY = 'marketplace_cart_v1';
 const ACTIVITY_KEY = 'marketplace_activity_v1';
 
-let products = [];
-let uploadedImage = null;
-let publishing = false;
-const state = { category: 'all', search: '', sort: 'default', cart: [] };
-let activity = { viewed: [], carted: [] };
+/* ================= AUTH ================= */
+let authMode = 'login'; // 'login' | 'register'
 
-let currentChatProductId = null;
-let currentChatBuyerId = null;
-let currentChatRole = null;
-let chatsFilterProductId = null;
-let realtimeChannel = null;
-let chatsRealtimeChannel = null;
-let lastMessagesHash = '';
+const authModal = document.getElementById('authModal');
+const authForm = document.getElementById('authForm');
+const authUsername = document.getElementById('authUsername');
+const authPassword = document.getElementById('authPassword');
+const authSubmit = document.getElementById('authSubmit');
+const authError = document.getElementById('authError');
+const authFooter = document.getElementById('authFooter');
+const tabLogin = document.getElementById('tabLogin');
+const tabRegister = document.getElementById('tabRegister');
+const userBox = document.getElementById('userBox');
+const whoamiEl = document.getElementById('whoami');
 
-/* =====================================================
-   API SUPABASE
-   ===================================================== */
+function setAuthMode(mode) {
+  authMode = mode;
+  tabLogin.classList.toggle('active', mode === 'login');
+  tabRegister.classList.toggle('active', mode === 'register');
+  authSubmit.textContent = mode === 'login' ? 'Войти' : 'Зарегистрироваться';
+  authFooter.textContent = mode === 'login'
+    ? 'Нет аккаунта? Нажмите «Регистрация» выше.'
+    : 'Уже есть аккаунт? Нажмите «Вход» выше.';
+  hideAuthError();
+}
+
+function showAuthError(msg) {
+  authError.textContent = msg;
+  authError.classList.add('show');
+}
+function hideAuthError() {
+  authError.classList.remove('show');
+  authError.textContent = '';
+}
+
+tabLogin.addEventListener('click', () => setAuthMode('login'));
+tabRegister.addEventListener('click', () => setAuthMode('register'));
+
+function validateUsername(u) {
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(u)) {
+    return 'Ник: 3–20 символов, только латиница, цифры и _';
+  }
+  return null;
+}
+function validatePassword(p) {
+  if (!p || p.length < 6) return 'Пароль: минимум 6 символов';
+  return null;
+}
+
+async function registerUser(username, password) {
+  const unameLower = username.toLowerCase();
+
+  // Проверяем, не занят ли ник
+  const { data: existing } = await supabase
+    .from('profiles')
+    .select('username')
+    .ilike('username', unameLower)
+    .maybeSingle();
+
+  if (existing) {
+    throw new Error('Этот ник уже занят');
+  }
+
+  const email = unameLower + EMAIL_DOMAIN;
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) {
+    if (String(error.message).toLowerCase().includes('already')) {
+      throw new Error('Этот ник уже занят');
+    }
+    throw error;
+  }
+  if (!data.user) throw new Error('Не удалось создать аккаунт');
+
+  // Профиль
+  const { error: profError } = await supabase
+    .from('profiles')
+    .insert([{ id: data.user.id, username: username }]);
+  if (profError) {
+    console.error('profile insert:', profError);
+    // даже если не удалось — возвращаем юзера
+  }
+
+  return data.user;
+}
+
+async function loginUser(username, password) {
+  const email = username.toLowerCase() + EMAIL_DOMAIN;
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    const msg = String(error.message).toLowerCase();
+    if (msg.includes('invalid')) throw new Error('Неверный ник или пароль');
+    throw error;
+  }
+  return data.user;
+}
+
+authForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideAuthError();
+
+  const username = authUsername.value.trim();
+  const password = authPassword.value;
+
+  const uErr = validateUsername(username);
+  if (uErr) { showAuthError(uErr); return; }
+  const pErr = validatePassword(password);
+  if (pErr) { showAuthError(pErr); return; }
+
+  authSubmit.disabled = true;
+  authSubmit.textContent = authMode === 'login' ? 'Вход...' : 'Создание...';
+
+  try {
+    if (authMode === 'register') {
+      await registerUser(username, password);
+      showToast('✅ Аккаунт создан');
+      // после signUp пользователь уже залогинен (если confirm email выключен)
+    } else {
+      await loginUser(username, password);
+      showToast('✅ Добро пожаловать, ' + username);
+    }
+    await onAuthenticated();
+  } catch (err) {
+    console.error('auth error:', err);
+    showAuthError(err.message || 'Ошибка авторизации');
+  } finally {
+    authSubmit.disabled = false;
+    authSubmit.textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  if (!confirm('Выйти из аккаунта?')) return;
+  await supabase.auth.signOut();
+  location.reload();
+});
+
+async function loadProfile(userId) {
+  if (profilesCache[userId]) return profilesCache[userId];
+  const { data } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', userId)
+    .maybeSingle();
+  const name = data?.username || 'user';
+  profilesCache[userId] = name;
+  return name;
+}
+
+async function getUsernameById(userId) {
+  if (!userId) return '—';
+  if (profilesCache[userId]) return profilesCache[userId];
+  return await loadProfile(userId);
+}
+
+async function loadProfilesByIds(ids) {
+  const need = ids.filter(id => id && !profilesCache[id]);
+  if (!need.length) return;
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, username')
+    .in('id', need);
+  (data || []).forEach(p => { profilesCache[p.id] = p.username; });
+}
+
+async function onAuthenticated() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || !session.user) {
+    // не авторизован — показываем модалку
+    authModal.classList.add('open');
+    userBox.style.display = 'none';
+    return;
+  }
+
+  MY_OWNER_ID = session.user.id;
+  MY_USERNAME = await loadProfile(MY_OWNER_ID);
+
+  authModal.classList.remove('open');
+  userBox.style.display = 'flex';
+  whoamiEl.textContent = '👤 ' + MY_USERNAME;
+
+  if (document.getElementById('loadingBadge')) {
+    document.getElementById('loadingBadge').classList.remove('visible');
+  }
+
+  await bootApp();
+}
+
+/* ================= INIT ================= */
+async function init() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session && session.user) {
+    await onAuthenticated();
+  } else {
+    // Показываем только модалку
+    authModal.classList.add('open');
+  }
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+      location.reload();
+    }
+  });
+}
+
+let appBooted = false;
+async function bootApp() {
+  if (appBooted) {
+    // если уже загружено — просто перерисуем
+    loadCartLocal(); loadActivityLocal();
+    products = await loadProductsFromServer();
+    renderAll();
+    return;
+  }
+  appBooted = true;
+
+  loadCartLocal();
+  loadActivityLocal();
+  products = await loadProductsFromServer();
+  renderAll();
+  subscribeToProducts();
+  subscribeToChatsList();
+}
+
+function renderAll() {
+  renderCategoryFilters();
+  renderProducts();
+  renderNetworkStats();
+  renderCart();
+  renderRecommendations();
+  updateCartCount();
+  updateCategoryDatalist();
+}
+
+/* ================= API ================= */
 async function loadProductsFromServer() {
   const { data, error } = await supabase
     .from('products')
     .select('*')
     .order('createdAt', { ascending: false });
   if (error) { console.error('loadProducts:', error); return []; }
-  return (data || []).map(row => ({
+  const list = (data || []).map(row => ({
     id: row.id,
     title: row.title,
     desc: row.description,
@@ -928,6 +1127,10 @@ async function loadProductsFromServer() {
     icon: null,
     ownerId: row.ownerId,
   }));
+  // подгружаем имена владельцев
+  const ownerIds = [...new Set(list.map(p => p.ownerId).filter(Boolean))];
+  if (ownerIds.length) await loadProfilesByIds(ownerIds);
+  return list;
 }
 
 async function createProductInServer(product) {
@@ -969,11 +1172,7 @@ async function sendMessageToServer(productId, buyerId, role, text) {
   const { data, error } = await supabase
     .from('messages')
     .insert([{
-      productId: productId,
-      buyerId: buyerId,
-      role: role,
-      text: text,
-      time: Date.now(),
+      productId, buyerId, role, text, time: Date.now(),
     }])
     .select()
     .single();
@@ -983,10 +1182,8 @@ async function sendMessageToServer(productId, buyerId, role, text) {
 
 async function clearChatOnServer(productId, buyerId) {
   const { error } = await supabase
-    .from('messages')
-    .delete()
-    .eq('productId', productId)
-    .eq('buyerId', buyerId);
+    .from('messages').delete()
+    .eq('productId', productId).eq('buyerId', buyerId);
   if (error) throw new Error(error.message);
 }
 
@@ -1015,11 +1212,15 @@ async function loadChatsList() {
     if (!map[k]) map[k] = m;
   });
 
+  const buyerIds = [...new Set(Object.values(map).map(m => m.buyerId))];
+  if (buyerIds.length) await loadProfilesByIds(buyerIds);
+
   return Object.values(map).map(m => {
     const prod = productsMap[m.productId];
     return {
       productId: m.productId,
       buyerId: m.buyerId,
+      buyerName: profilesCache[m.buyerId] || '—',
       title: prod ? prod.title : '—',
       image: prod ? prod.image : null,
       lastText: m.text,
@@ -1029,9 +1230,7 @@ async function loadChatsList() {
   }).sort((a, b) => b.lastTime - a.lastTime);
 }
 
-/* =====================================================
-   REALTIME
-   ===================================================== */
+/* ================= REALTIME ================= */
 function subscribeToChat(productId, buyerId) {
   if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
   realtimeChannel = supabase
@@ -1054,13 +1253,14 @@ function subscribeToChatsList() {
     .channel('chats-list-live')
     .on('postgres_changes',
       { event: '*', schema: 'public', table: 'messages' },
-      () => { if (chatsModal.classList.contains('open')) renderChatsList(); }
+      () => { if (document.getElementById('chatsModal').classList.contains('open')) renderChatsList(); }
     )
     .subscribe();
 }
 
 function subscribeToProducts() {
-  supabase
+  if (productsChannel) return;
+  productsChannel = supabase
     .channel('products-live')
     .on('postgres_changes',
       { event: '*', schema: 'public', table: 'products' },
@@ -1072,9 +1272,7 @@ function subscribeToProducts() {
     .subscribe();
 }
 
-/* =====================================================
-   LOCAL STORAGE
-   ===================================================== */
+/* ================= LOCAL STORAGE ================= */
 function loadCartLocal() {
   const raw = localStorage.getItem(CART_KEY);
   if (!raw) return;
@@ -1095,38 +1293,7 @@ function saveActivityLocal() {
   try { localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activity)); } catch (e) {}
 }
 
-/* =====================================================
-   INIT
-   ===================================================== */
-async function init() {
-  const loadingBadge = document.getElementById('loadingBadge');
-  loadingBadge.classList.add('visible');
-  try {
-    await initAuth();
-    loadCartLocal();
-    loadActivityLocal();
-    products = await loadProductsFromServer();
-    renderCategoryFilters();
-    renderProducts();
-    renderNetworkStats();
-    renderCart();
-    renderRecommendations();
-    updateCartCount();
-    updateCategoryDatalist();
-    subscribeToProducts();
-    subscribeToChatsList();
-    console.log('✅ Готово. Товаров:', products.length);
-  } catch (err) {
-    console.error('Init error:', err);
-    showToast('❌ ' + err.message, true);
-  } finally {
-    loadingBadge.classList.remove('visible');
-  }
-}
-
-/* =====================================================
-   КАТЕГОРИИ
-   ===================================================== */
+/* ================= КАТЕГОРИИ ================= */
 function categoryLabel(p) {
   if (p.categoryName) return p.categoryName;
   for (const c of STANDARD_CATEGORIES) if (c.key === p.category) return c.name;
@@ -1151,9 +1318,7 @@ function collectUsedCategories() {
   return list;
 }
 
-/* =====================================================
-   АКТИВНОСТЬ
-   ===================================================== */
+/* ================= АКТИВНОСТЬ ================= */
 function trackView(id) {
   if (!id) return;
   activity.viewed = activity.viewed.filter(x => x !== id);
@@ -1169,11 +1334,8 @@ function trackCart(id) {
   saveActivityLocal(); scheduleRecommendations();
 }
 
-/* =====================================================
-   DOM
-   ===================================================== */
+/* ================= DOM ================= */
 const $ = id => document.getElementById(id);
-
 const productsEl = $('products');
 const resultsInfo = $('resultsInfo');
 const searchInput = $('searchInput');
@@ -1211,17 +1373,13 @@ const heroTitle = $('heroTitle');
 const hintModal = $('hintModal');
 const hintClose = $('hintClose');
 
-/* =====================================================
-   HINT
-   ===================================================== */
+/* ================= HINT ================= */
 heroTitle.addEventListener('click', e => { e.preventDefault(); hintModal.classList.add('open'); });
 heroTitle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hintModal.classList.add('open'); } });
 hintClose.addEventListener('click', () => hintModal.classList.remove('open'));
 hintModal.addEventListener('click', e => { if (e.target === hintModal) hintModal.classList.remove('open'); });
 
-/* =====================================================
-   КОНСТРУКТОР
-   ===================================================== */
+/* ================= КОНСТРУКТОР ================= */
 const builderToggle = $('builderToggle');
 const builderFormWrap = $('builderFormWrap');
 const builderForm = $('builderForm');
@@ -1293,6 +1451,7 @@ fieldCategory.addEventListener('input', () => { if (fieldCategory.value.trim()) 
 async function handlePublish(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (publishing) return;
+  if (!MY_OWNER_ID) { showToast('❌ Сначала войдите', true); return; }
   publishing = true;
   const btn = $('publishBtn');
   btn.disabled = true;
@@ -1327,6 +1486,7 @@ async function handlePublish(e) {
     const saved = await createProductInServer(newProduct);
     newProduct.id = saved.id;
     products.unshift(newProduct);
+    profilesCache[MY_OWNER_ID] = MY_USERNAME;
 
     builderForm.reset(); clearPhoto();
     [fieldTitle, fieldDesc, fieldCategory].forEach(el => el.classList.remove('invalid'));
@@ -1365,9 +1525,7 @@ $('builderReset').addEventListener('click', () => {
   photoUpload.classList.remove('invalid'); errorPhoto.classList.remove('show');
 });
 
-/* =====================================================
-   ФИЛЬТРЫ / СТАТИСТИКА
-   ===================================================== */
+/* ================= ФИЛЬТРЫ ================= */
 function renderCategoryFilters() {
   const items = [{ key: 'all', name: 'Все' }];
   for (const c of STANDARD_CATEGORIES) items.push({ key: c.key, name: c.emoji + ' ' + c.name });
@@ -1413,9 +1571,7 @@ function getFiltered() {
   return list;
 }
 
-/* =====================================================
-   ОТРИСОВКА
-   ===================================================== */
+/* ================= ОТРИСОВКА ================= */
 function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
@@ -1428,6 +1584,8 @@ function buildCardHtml(p, opts) {
   if (opts.rec && opts.recText) badgeHtml = '<div class="rec-label">✨ ' + escapeHtml(opts.recText) + '</div>';
   else if (p.badge) badgeHtml = '<div class="badge' + (p.custom ? ' custom' : '') + '">' + escapeHtml(p.badge) + '</div>';
   const deleteBtn = (isMyCard(p) && !opts.rec) ? '<button class="delete-card-btn" data-delete="' + p.id + '" title="Удалить" type="button">🗑️</button>' : '';
+  const ownerName = profilesCache[p.ownerId] || '';
+  const ownerHtml = ownerName ? '<div class="card-owner">Продавец: <strong>' + escapeHtml(ownerName) + '</strong></div>' : '';
   return (
     '<article class="card" data-id="' + p.id + '">' + badgeHtml + deleteBtn +
       '<div class="card-image" data-action="open">' + imgContent + '</div>' +
@@ -1435,6 +1593,7 @@ function buildCardHtml(p, opts) {
         '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
         '<h3 class="card-title" data-action="open">' + escapeHtml(p.title) + '</h3>' +
         '<p class="card-desc">' + escapeHtml(p.desc) + '</p>' +
+        ownerHtml +
         '<div class="card-footer">' +
           '<div class="card-actions">' +
             '<button class="chat-btn" data-action="chat" data-id="' + p.id + '" title="Чат" type="button">💬</button>' +
@@ -1462,9 +1621,7 @@ function renderProducts() {
   productsEl.innerHTML = list.map(p => buildCardHtml(p)).join('');
 }
 
-/* =====================================================
-   РЕКОМЕНДАЦИИ
-   ===================================================== */
+/* ================= РЕКОМЕНДАЦИИ ================= */
 function findProduct(id) { return products.find(p => p.id === id) || null; }
 function getRecommendations(limit = 4) {
   if (!products.length) return [];
@@ -1508,9 +1665,7 @@ function renderRecommendations() {
   recommendationsEl.classList.add('visible');
 }
 
-/* =====================================================
-   КЛИКИ ПО КАРТОЧКАМ
-   ===================================================== */
+/* ================= КЛИКИ ================= */
 async function handleProductClick(e) {
   const delBtn = e.target.closest('[data-delete]');
   if (delBtn) {
@@ -1542,9 +1697,7 @@ async function handleProductClick(e) {
 productsEl.addEventListener('click', handleProductClick);
 recommendationsGrid.addEventListener('click', handleProductClick);
 
-/* =====================================================
-   КОРЗИНА
-   ===================================================== */
+/* ================= КОРЗИНА ================= */
 function addToCart(id) {
   const item = state.cart.find(i => i.id === id);
   if (item) item.qty++; else state.cart.push({ id, qty: 1 });
@@ -1610,19 +1763,20 @@ $('cartBtn').addEventListener('click', openCart);
 $('closeCart').addEventListener('click', closeCart);
 overlay.addEventListener('click', closeCart);
 
-/* =====================================================
-   МОДАЛКА
-   ===================================================== */
+/* ================= МОДАЛКА ================= */
 function openModal(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
   trackView(id);
   const imgContent = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
+  const ownerName = profilesCache[p.ownerId] || '';
+  const ownerHtml = ownerName ? '<p>Продавец: <strong style="color:#90ee90;">' + escapeHtml(ownerName) + '</strong></p>' : '';
   modalContent.innerHTML =
     '<div class="modal-img">' + imgContent + '</div>' +
     '<div class="modal-body">' +
       '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
       '<h2>' + escapeHtml(p.title) + '</h2>' +
+      ownerHtml +
       '<p>' + escapeHtml(p.desc) + '</p>' +
       '<div class="modal-actions">' +
         '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ В понравившиеся</button>' +
@@ -1639,9 +1793,7 @@ modal.addEventListener('click', e => {
   if (chatEl) { const pid = Number(chatEl.getAttribute('data-id')); modal.classList.remove('open'); handleChatButton(pid); }
 });
 
-/* =====================================================
-   ЧАТ
-   ===================================================== */
+/* ================= ЧАТ ================= */
 function emptyChatHtml() {
   return '<div class="chat-placeholder">' +
     '<div class="chat-placeholder-icon">💬</div>' +
@@ -1773,9 +1925,7 @@ $('closeChat').addEventListener('click', () => closeChatModal(false));
 chatBack.addEventListener('click', () => closeChatModal(true));
 chatModal.addEventListener('click', e => { if (e.target === chatModal) closeChatModal(false); });
 
-/* =====================================================
-   СПИСОК ЧАТОВ
-   ===================================================== */
+/* ================= СПИСОК ЧАТОВ ================= */
 function openChatsList(filterProductId) {
   chatsFilterProductId = filterProductId || null;
   chatsModalTitle.textContent = chatsFilterProductId ? '💬 Покупатели товара' : '💬 Все чаты';
@@ -1803,8 +1953,11 @@ async function renderChatsList() {
     let prefix = '';
     if (row.lastFrom === 'seller') prefix = '<span class="prefix-seller">Продавец: </span>';
     else if (row.lastFrom === 'buyer') prefix = '<span class="prefix">Покупатель: </span>';
-    let sub = '';
-    if (row.buyerId && row.buyerId !== MY_OWNER_ID) sub = '<div class="chat-item-sub">👤 Покупатель #' + escapeHtml(String(row.buyerId).slice(-4)) + '</div>';
+    const prod = products.find(p => p.id === row.productId);
+    const iAmSeller = prod && prod.ownerId === MY_OWNER_ID;
+    const sub = iAmSeller
+      ? '<div class="chat-item-sub">👤 Покупатель: <strong>' + escapeHtml(row.buyerName) + '</strong></div>'
+      : '';
     return '<div class="chat-item" data-chat-id="' + row.productId + '" data-buyer-id="' + escapeHtml(row.buyerId) + '">' +
       '<div class="chat-item-img">' + imgContent + '</div>' +
       '<div class="chat-item-info">' +
@@ -1827,9 +1980,7 @@ chatsList.addEventListener('click', e => {
   setTimeout(() => openChat(pid, bid), 150);
 });
 
-/* =====================================================
-   ВРЕМЯ
-   ===================================================== */
+/* ================= ВРЕМЯ ================= */
 function formatChatTime(ms) {
   const d = new Date(ms); const now = new Date();
   const diff = now.getTime() - d.getTime();
@@ -1841,9 +1992,7 @@ function formatChatTime(ms) {
   return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0');
 }
 
-/* =====================================================
-   ФИЛЬТРЫ
-   ===================================================== */
+/* ================= ФИЛЬТРЫ ================= */
 categoriesEl.addEventListener('click', e => {
   const btn = e.target.closest('.category'); if (!btn) return;
   document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
@@ -1864,9 +2013,7 @@ clearSearch.addEventListener('click', () => {
 });
 sortSelect.addEventListener('change', () => { state.sort = sortSelect.value; renderProducts(); });
 
-/* =====================================================
-   ESC
-   ===================================================== */
+/* ================= ESC ================= */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (hintModal.classList.contains('open')) { hintModal.classList.remove('open'); return; }
@@ -1876,9 +2023,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-/* =====================================================
-   TOAST
-   ===================================================== */
+/* ================= TOAST ================= */
 let toastTimer = null;
 function showToast(message, isError = false) {
   toast.textContent = message;
@@ -1889,9 +2034,7 @@ function showToast(message, isError = false) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-/* =====================================================
-   СТАРТ
-   ===================================================== */
+/* ================= СТАРТ ================= */
 init();
 </script>
 
