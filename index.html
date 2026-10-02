@@ -716,18 +716,14 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
    НАСТРОЙКИ SUPABASE
    ===================================================== */
 const SUPABASE_URL = 'https://rftkmwuwbnnapihxqmb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_WDkjvjFZsO3KW5j0tXubqQ_faOoY_sa';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmcHRrbXd1d2JubmFwaWh4cW1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4Nzc5ODYsImV4cCI6MjEwNjQ1Mzk4Nn0.4rCq_Ic2pXmonY9cVPRV-hdDQA4x23tKtXyB3nTt8eE';
 
 /* =====================================================
-   ИДЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЯ
-   ?as=name → отдельный пользователь в отдельной вкладке
-   иначе → единый пользователь (localStorage)
+   IDENT ПОЛЬЗОВАТЕЛЯ
    ===================================================== */
 const params = new URLSearchParams(location.search);
 const asName = params.get('as');
 const STORAGE_PREFIX = asName ? `sb-${asName}-` : 'sb-default-';
-
-// Если ?as=name — используем sessionStorage, чтобы каждый таб был отдельным юзером
 const authStorage = asName ? window.sessionStorage : window.localStorage;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -743,33 +739,27 @@ let MY_OWNER_ID = null;
 let MY_NAME = '—';
 
 async function initAuth() {
-  // Проверяем, есть ли уже сессия
   const { data: { session } } = await supabase.auth.getSession();
-
   if (session && session.user) {
     MY_OWNER_ID = session.user.id;
   } else {
-    // Пробуем анонимный вход
     try {
       const { data, error } = await supabase.auth.signInAnonymously();
       if (error) throw error;
       MY_OWNER_ID = data.user.id;
     } catch (err) {
-      console.warn('Anonymous auth недоступен, используем fallback UUID:', err.message);
-      // Fallback: генерим UUID и храним в localStorage/sessionStorage
+      console.warn('Anonymous auth недоступен, fallback:', err.message);
       let fallbackId = authStorage.getItem(STORAGE_PREFIX + 'fallback-id');
       if (!fallbackId) {
-        fallbackId = 'anon-' + crypto.randomUUID();
+        fallbackId = 'anon-' + (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
         authStorage.setItem(STORAGE_PREFIX + 'fallback-id', fallbackId);
       }
       MY_OWNER_ID = fallbackId;
     }
   }
-
-  MY_NAME = asName || ('user-' + MY_OWNER_ID.slice(0, 6));
+  MY_NAME = asName || ('user-' + String(MY_OWNER_ID).slice(0, 6));
   const whoami = document.getElementById('whoami');
   if (whoami) whoami.textContent = 'Вы: ' + MY_NAME;
-
   console.log('✅ ownerId:', MY_OWNER_ID);
 }
 
@@ -884,7 +874,7 @@ async function initAuth() {
 })();
 
 /* =====================================================
-   ДАННЫЕ / КАТЕГОРИИ
+   КАТЕГОРИИ
    ===================================================== */
 const STANDARD_CATEGORIES = [
   { key: 'book', name: 'Книги', emoji: '📚' },
@@ -917,19 +907,14 @@ let chatsRealtimeChannel = null;
 let lastMessagesHash = '';
 
 /* =====================================================
-   SUPABASE API
+   API SUPABASE
    ===================================================== */
 async function loadProductsFromServer() {
   const { data, error } = await supabase
     .from('products')
     .select('*')
     .order('createdAt', { ascending: false });
-
-  if (error) {
-    console.error('loadProducts:', error);
-    return [];
-  }
-  // Приводим поля к формату фронта
+  if (error) { console.error('loadProducts:', error); return []; }
   return (data || []).map(row => ({
     id: row.id,
     title: row.title,
@@ -1006,19 +991,14 @@ async function clearChatOnServer(productId, buyerId) {
 }
 
 async function loadChatsList() {
-  // Забираем все сообщения, где я участник
-  const { data: productsOwned } = await supabase
-    .from('products')
-    .select('id, title, image, ownerId');
+  const { data: allProducts } = await supabase.from('products').select('id, title, image, ownerId');
+  const productsMap = {};
+  (allProducts || []).forEach(p => { productsMap[p.id] = p; });
 
-  const myProductIds = (productsOwned || [])
+  const myProductIds = (allProducts || [])
     .filter(p => p.ownerId === MY_OWNER_ID)
     .map(p => p.id);
 
-  const allProducts = {};
-  (productsOwned || []).forEach(p => { allProducts[p.id] = p; });
-
-  // Запрос: либо buyerId = me, либо productId в моих товарах
   let query = supabase.from('messages').select('*').order('time', { ascending: false }).limit(500);
   if (myProductIds.length) {
     query = query.or(`buyerId.eq.${MY_OWNER_ID},productId.in.(${myProductIds.join(',')})`);
@@ -1029,7 +1009,6 @@ async function loadChatsList() {
   const { data: messages, error } = await query;
   if (error) { console.error(error); return []; }
 
-  // Группируем по (productId, buyerId) — берём последнее сообщение
   const map = {};
   (messages || []).forEach(m => {
     const k = m.productId + ':' + m.buyerId;
@@ -1037,7 +1016,7 @@ async function loadChatsList() {
   });
 
   return Object.values(map).map(m => {
-    const prod = allProducts[m.productId];
+    const prod = productsMap[m.productId];
     return {
       productId: m.productId,
       buyerId: m.buyerId,
@@ -1054,18 +1033,15 @@ async function loadChatsList() {
    REALTIME
    ===================================================== */
 function subscribeToChat(productId, buyerId) {
-  if (realtimeChannel) {
-    supabase.removeChannel(realtimeChannel);
-    realtimeChannel = null;
-  }
+  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
   realtimeChannel = supabase
-    .channel('chat:' + productId + ':' + buyerId)
+    .channel('chat-' + productId + '-' + buyerId + '-' + Date.now())
     .on('postgres_changes',
       { event: '*', schema: 'public', table: 'messages', filter: `productId=eq.${productId}` },
       (payload) => {
         const row = payload.new;
         if (!row) return;
-        if (row.buyerId !== buyerId) return;
+        if (String(row.buyerId) !== String(buyerId)) return;
         refreshChat();
       }
     )
@@ -1075,12 +1051,10 @@ function subscribeToChat(productId, buyerId) {
 function subscribeToChatsList() {
   if (chatsRealtimeChannel) return;
   chatsRealtimeChannel = supabase
-    .channel('chats-list')
+    .channel('chats-list-live')
     .on('postgres_changes',
       { event: '*', schema: 'public', table: 'messages' },
-      () => {
-        if (chatsModal.classList.contains('open')) renderChatsList();
-      }
+      () => { if (chatsModal.classList.contains('open')) renderChatsList(); }
     )
     .subscribe();
 }
@@ -1092,17 +1066,14 @@ function subscribeToProducts() {
       { event: '*', schema: 'public', table: 'products' },
       async () => {
         products = await loadProductsFromServer();
-        renderProducts();
-        renderNetworkStats();
-        updateCategoryDatalist();
-        renderRecommendations();
+        renderProducts(); renderNetworkStats(); updateCategoryDatalist(); renderRecommendations();
       }
     )
     .subscribe();
 }
 
 /* =====================================================
-   LOCAL STORAGE (cart / activity)
+   LOCAL STORAGE
    ===================================================== */
 function loadCartLocal() {
   const raw = localStorage.getItem(CART_KEY);
@@ -1117,10 +1088,7 @@ function loadActivityLocal() {
   if (!raw) return;
   try {
     const obj = JSON.parse(raw);
-    if (obj) {
-      activity.viewed = obj.viewed || [];
-      activity.carted = obj.carted || [];
-    }
+    if (obj) { activity.viewed = obj.viewed || []; activity.carted = obj.carted || []; }
   } catch (e) {}
 }
 function saveActivityLocal() {
@@ -1133,27 +1101,27 @@ function saveActivityLocal() {
 async function init() {
   const loadingBadge = document.getElementById('loadingBadge');
   loadingBadge.classList.add('visible');
-
-  await initAuth();
-
-  loadCartLocal();
-  loadActivityLocal();
-
-  products = await loadProductsFromServer();
-
-  renderCategoryFilters();
-  renderProducts();
-  renderNetworkStats();
-  renderCart();
-  renderRecommendations();
-  updateCartCount();
-  updateCategoryDatalist();
-
-  subscribeToProducts();
-  subscribeToChatsList();
-
-  loadingBadge.classList.remove('visible');
-  console.log('✅ Готово. Товаров:', products.length);
+  try {
+    await initAuth();
+    loadCartLocal();
+    loadActivityLocal();
+    products = await loadProductsFromServer();
+    renderCategoryFilters();
+    renderProducts();
+    renderNetworkStats();
+    renderCart();
+    renderRecommendations();
+    updateCartCount();
+    updateCategoryDatalist();
+    subscribeToProducts();
+    subscribeToChatsList();
+    console.log('✅ Готово. Товаров:', products.length);
+  } catch (err) {
+    console.error('Init error:', err);
+    showToast('❌ ' + err.message, true);
+  } finally {
+    loadingBadge.classList.remove('visible');
+  }
 }
 
 /* =====================================================
@@ -1161,9 +1129,7 @@ async function init() {
    ===================================================== */
 function categoryLabel(p) {
   if (p.categoryName) return p.categoryName;
-  for (const c of STANDARD_CATEGORIES) {
-    if (c.key === p.category) return c.name;
-  }
+  for (const c of STANDARD_CATEGORIES) if (c.key === p.category) return c.name;
   return p.category || 'Разное';
 }
 function resolveCategory(inputText) {
@@ -1180,14 +1146,8 @@ function resolveCategory(inputText) {
   return { key: 'custom_' + slug, name: text };
 }
 function collectUsedCategories() {
-  const seen = {};
-  const list = [];
-  for (const p of products) {
-    if (!seen[p.category]) {
-      seen[p.category] = true;
-      list.push({ key: p.category, name: categoryLabel(p) });
-    }
-  }
+  const seen = {}; const list = [];
+  for (const p of products) if (!seen[p.category]) { seen[p.category] = true; list.push({ key: p.category, name: categoryLabel(p) }); }
   return list;
 }
 
@@ -1199,16 +1159,14 @@ function trackView(id) {
   activity.viewed = activity.viewed.filter(x => x !== id);
   activity.viewed.push(id);
   if (activity.viewed.length > 30) activity.viewed = activity.viewed.slice(-30);
-  saveActivityLocal();
-  scheduleRecommendations();
+  saveActivityLocal(); scheduleRecommendations();
 }
 function trackCart(id) {
   if (!id) return;
   activity.carted = activity.carted.filter(x => x !== id);
   activity.carted.push(id);
   if (activity.carted.length > 30) activity.carted = activity.carted.slice(-30);
-  saveActivityLocal();
-  scheduleRecommendations();
+  saveActivityLocal(); scheduleRecommendations();
 }
 
 /* =====================================================
@@ -1257,9 +1215,7 @@ const hintClose = $('hintClose');
    HINT
    ===================================================== */
 heroTitle.addEventListener('click', e => { e.preventDefault(); hintModal.classList.add('open'); });
-heroTitle.addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hintModal.classList.add('open'); }
-});
+heroTitle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hintModal.classList.add('open'); } });
 hintClose.addEventListener('click', () => hintModal.classList.remove('open'));
 hintModal.addEventListener('click', e => { if (e.target === hintModal) hintModal.classList.remove('open'); });
 
@@ -1289,23 +1245,15 @@ builderToggle.addEventListener('click', e => {
   builderToggle.textContent = isOpen ? '✖ Закрыть конструктор' : '➕ Открыть конструктор';
   if (isOpen) {
     updateCategoryDatalist();
-    setTimeout(() => {
-      try { builderFormWrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-      catch (err) { builderFormWrap.scrollIntoView(); }
-    }, 250);
+    setTimeout(() => { try { builderFormWrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) { builderFormWrap.scrollIntoView(); } }, 250);
   }
 });
 
 function updateCategoryDatalist() {
   const names = {};
   for (const c of STANDARD_CATEGORIES) names[c.name] = true;
-  for (const p of products) {
-    const label = categoryLabel(p);
-    if (label) names[label] = true;
-  }
-  categoryList.innerHTML = Object.keys(names).map(n =>
-    '<option value="' + escapeHtml(n) + '">'
-  ).join('');
+  for (const p of products) { const label = categoryLabel(p); if (label) names[label] = true; }
+  categoryList.innerHTML = Object.keys(names).map(n => '<option value="' + escapeHtml(n) + '">').join('');
 }
 
 function setPhoto(dataUrl) {
@@ -1326,12 +1274,8 @@ function clearPhoto() {
 photoInput.addEventListener('change', e => {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
-  if (!file.type || !file.type.startsWith('image/')) {
-    showToast('❌ Только изображение', true); photoInput.value = ''; return;
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('❌ Максимум 5 МБ', true); photoInput.value = ''; return;
-  }
+  if (!file.type || !file.type.startsWith('image/')) { showToast('❌ Только изображение', true); photoInput.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { showToast('❌ Максимум 5 МБ', true); photoInput.value = ''; return; }
   const reader = new FileReader();
   reader.onload = ev => setPhoto(ev.target.result);
   reader.readAsDataURL(file);
@@ -1339,24 +1283,12 @@ photoInput.addEventListener('change', e => {
 photoRemove.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); clearPhoto(); });
 
 function validateField(input, errorEl, isInvalid) {
-  if (isInvalid) {
-    if (input) input.classList.add('invalid');
-    if (errorEl) errorEl.classList.add('show');
-    return false;
-  }
-  if (input) input.classList.remove('invalid');
-  if (errorEl) errorEl.classList.remove('show');
-  return true;
+  if (isInvalid) { if (input) input.classList.add('invalid'); if (errorEl) errorEl.classList.add('show'); return false; }
+  if (input) input.classList.remove('invalid'); if (errorEl) errorEl.classList.remove('show'); return true;
 }
-fieldTitle.addEventListener('input', () => {
-  if (fieldTitle.value.trim()) { fieldTitle.classList.remove('invalid'); errorTitle.classList.remove('show'); }
-});
-fieldDesc.addEventListener('input', () => {
-  if (fieldDesc.value.trim()) { fieldDesc.classList.remove('invalid'); errorDesc.classList.remove('show'); }
-});
-fieldCategory.addEventListener('input', () => {
-  if (fieldCategory.value.trim()) { fieldCategory.classList.remove('invalid'); errorCategory.classList.remove('show'); }
-});
+fieldTitle.addEventListener('input', () => { if (fieldTitle.value.trim()) { fieldTitle.classList.remove('invalid'); errorTitle.classList.remove('show'); } });
+fieldDesc.addEventListener('input', () => { if (fieldDesc.value.trim()) { fieldDesc.classList.remove('invalid'); errorDesc.classList.remove('show'); } });
+fieldCategory.addEventListener('input', () => { if (fieldCategory.value.trim()) { fieldCategory.classList.remove('invalid'); errorCategory.classList.remove('show'); } });
 
 async function handlePublish(e) {
   if (e && e.preventDefault) e.preventDefault();
@@ -1366,14 +1298,11 @@ async function handlePublish(e) {
   btn.disabled = true;
   try {
     let photoOk = true;
-    if (!uploadedImage) {
-      photoUpload.classList.add('invalid'); errorPhoto.classList.add('show'); photoOk = false;
-    }
+    if (!uploadedImage) { photoUpload.classList.add('invalid'); errorPhoto.classList.add('show'); photoOk = false; }
     const titleOk = validateField(fieldTitle, errorTitle, !fieldTitle.value.trim());
     const descOk = validateField(fieldDesc, errorDesc, !fieldDesc.value.trim());
     const resolvedCat = resolveCategory(fieldCategory.value);
     const catOk = validateField(fieldCategory, errorCategory, !resolvedCat);
-
     if (!photoOk || !titleOk || !descOk || !catOk) {
       const missing = [];
       if (!photoOk) missing.push('фото');
@@ -1397,34 +1326,27 @@ async function handlePublish(e) {
 
     const saved = await createProductInServer(newProduct);
     newProduct.id = saved.id;
-
     products.unshift(newProduct);
 
-    builderForm.reset();
-    clearPhoto();
+    builderForm.reset(); clearPhoto();
     [fieldTitle, fieldDesc, fieldCategory].forEach(el => el.classList.remove('invalid'));
     [errorTitle, errorDesc, errorCategory].forEach(el => el.classList.remove('show'));
-
     builderFormWrap.classList.remove('open');
     builderToggle.classList.remove('open');
     builderToggle.textContent = '➕ Открыть конструктор';
-
     state.category = 'all'; state.search = ''; state.sort = 'default';
     searchInput.value = ''; sortSelect.value = 'default';
     clearSearch.classList.remove('visible');
-
     renderCategoryFilters(); renderProducts(); renderNetworkStats(); updateCategoryDatalist();
 
     setTimeout(() => {
       const cardEl = productsEl.querySelector('.card[data-id="' + newProduct.id + '"]');
       if (cardEl) {
         cardEl.classList.add('just-added');
-        try { cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-        catch (err) { cardEl.scrollIntoView(); }
+        try { cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) { cardEl.scrollIntoView(); }
         setTimeout(() => cardEl.classList.remove('just-added'), 1600);
       }
     }, 60);
-
     showToast('📡 «' + newProduct.title + '» опубликован');
   } catch (err) {
     console.error('Publish error:', err);
@@ -1448,16 +1370,13 @@ $('builderReset').addEventListener('click', () => {
    ===================================================== */
 function renderCategoryFilters() {
   const items = [{ key: 'all', name: 'Все' }];
-  for (const c of STANDARD_CATEGORIES) {
-    items.push({ key: c.key, name: c.emoji + ' ' + c.name });
-  }
+  for (const c of STANDARD_CATEGORIES) items.push({ key: c.key, name: c.emoji + ' ' + c.name });
   const used = collectUsedCategories();
   for (const u of used) {
     const isStd = STANDARD_CATEGORIES.some(c => c.key === u.key);
     if (!isStd) items.push({ key: u.key, name: '🏷️ ' + u.name });
   }
   if (!items.some(i => i.key === state.category)) state.category = 'all';
-
   categoriesEl.innerHTML = items.map(i => {
     const active = i.key === state.category ? ' active' : '';
     return '<div class="category' + active + '" data-category="' + escapeHtml(i.key) + '">' + escapeHtml(i.name) + '</div>';
@@ -1465,8 +1384,7 @@ function renderCategoryFilters() {
 }
 
 function renderNetworkStats() {
-  const counts = {};
-  let custom = 0;
+  const counts = {}; let custom = 0;
   for (const p of products) {
     if (p.custom) custom++;
     if (!counts[p.category]) counts[p.category] = { name: categoryLabel(p), count: 0 };
@@ -1480,9 +1398,7 @@ function renderNetworkStats() {
     html += '<div class="stat-chip">' + s.emoji + ' ' + s.name + ': <strong>' + c + '</strong></div>';
     delete counts[s.key];
   }
-  for (const k in counts) {
-    html += '<div class="stat-chip">🏷️ ' + escapeHtml(counts[k].name) + ': <strong>' + counts[k].count + '</strong></div>';
-  }
+  for (const k in counts) html += '<div class="stat-chip">🏷️ ' + escapeHtml(counts[k].name) + ': <strong>' + counts[k].count + '</strong></div>';
   networkStatsEl.innerHTML = html;
 }
 
@@ -1491,15 +1407,9 @@ function getFiltered() {
   if (state.category !== 'all') list = list.filter(p => p.category === state.category);
   if (state.search.trim()) {
     const q = state.search.trim().toLowerCase();
-    list = list.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.desc.toLowerCase().includes(q) ||
-      categoryLabel(p).toLowerCase().includes(q)
-    );
+    list = list.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || categoryLabel(p).toLowerCase().includes(q));
   }
-  if (state.sort === 'name') {
-    list.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
-  }
+  if (state.sort === 'name') list.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
   return list;
 }
 
@@ -1507,32 +1417,19 @@ function getFiltered() {
    ОТРИСОВКА
    ===================================================== */
 function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 function isMyCard(p) { return p.custom && p.ownerId && p.ownerId === MY_OWNER_ID; }
 
 function buildCardHtml(p, opts) {
   opts = opts || {};
-  const imgContent = p.image
-    ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
-    : (p.icon || '🆕');
-
+  const imgContent = p.image ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">' : (p.icon || '🆕');
   let badgeHtml = '';
-  if (opts.rec && opts.recText) {
-    badgeHtml = '<div class="rec-label">✨ ' + escapeHtml(opts.recText) + '</div>';
-  } else if (p.badge) {
-    badgeHtml = '<div class="badge' + (p.custom ? ' custom' : '') + '">' + escapeHtml(p.badge) + '</div>';
-  }
-
-  const deleteBtn = (isMyCard(p) && !opts.rec)
-    ? '<button class="delete-card-btn" data-delete="' + p.id + '" title="Удалить" type="button">🗑️</button>'
-    : '';
-
+  if (opts.rec && opts.recText) badgeHtml = '<div class="rec-label">✨ ' + escapeHtml(opts.recText) + '</div>';
+  else if (p.badge) badgeHtml = '<div class="badge' + (p.custom ? ' custom' : '') + '">' + escapeHtml(p.badge) + '</div>';
+  const deleteBtn = (isMyCard(p) && !opts.rec) ? '<button class="delete-card-btn" data-delete="' + p.id + '" title="Удалить" type="button">🗑️</button>' : '';
   return (
-    '<article class="card" data-id="' + p.id + '">' +
-      badgeHtml + deleteBtn +
+    '<article class="card" data-id="' + p.id + '">' + badgeHtml + deleteBtn +
       '<div class="card-image" data-action="open">' + imgContent + '</div>' +
       '<div class="card-body">' +
         '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
@@ -1558,9 +1455,7 @@ function renderProducts() {
       '<div class="empty">' +
         '<div class="empty-icon">' + (isEmptyNetwork ? '✨' : '🔍') + '</div>' +
         '<h3>' + (isEmptyNetwork ? 'В сети пока нет карточек' : 'Ничего не найдено') + '</h3>' +
-        '<p>' + (isEmptyNetwork
-          ? 'Создайте первую карточку через конструктор выше 👆'
-          : 'Попробуйте изменить запрос или выбрать другую категорию.') + '</p>' +
+        '<p>' + (isEmptyNetwork ? 'Создайте первую карточку через конструктор выше 👆' : 'Попробуйте изменить запрос или выбрать другую категорию.') + '</p>' +
       '</div>';
     return;
   }
@@ -1570,25 +1465,13 @@ function renderProducts() {
 /* =====================================================
    РЕКОМЕНДАЦИИ
    ===================================================== */
-function findProduct(id) {
-  return products.find(p => p.id === id) || null;
-}
+function findProduct(id) { return products.find(p => p.id === id) || null; }
 function getRecommendations(limit = 4) {
   if (!products.length) return [];
-  const weights = {};
-  let hasActivity = false;
-  const bump = (cat, amount) => {
-    if (!cat) return;
-    weights[cat] = (weights[cat] || 0) + amount;
-  };
-  for (const id of activity.carted) {
-    const cp = findProduct(id);
-    if (cp) { bump(cp.category, 2); hasActivity = true; }
-  }
-  for (const id of activity.viewed) {
-    const vp = findProduct(id);
-    if (vp) { bump(vp.category, 1); hasActivity = true; }
-  }
+  const weights = {}; let hasActivity = false;
+  const bump = (cat, amount) => { if (!cat) return; weights[cat] = (weights[cat] || 0) + amount; };
+  for (const id of activity.carted) { const cp = findProduct(id); if (cp) { bump(cp.category, 2); hasActivity = true; } }
+  for (const id of activity.viewed) { const vp = findProduct(id); if (vp) { bump(vp.category, 1); hasActivity = true; } }
   const excluded = new Set([...activity.viewed, ...activity.carted]);
   const candidates = products.filter(p => !excluded.has(p.id));
   if (!hasActivity) return [];
@@ -1598,57 +1481,30 @@ function getRecommendations(limit = 4) {
   });
   scored.sort((a, b) => b.score - a.score);
   const result = [];
-  for (const s of scored) {
-    if (result.length >= limit) break;
-    if (s.score >= 10) result.push(s.p);
-  }
+  for (const s of scored) { if (result.length >= limit) break; if (s.score >= 10) result.push(s.p); }
   return result;
 }
 function getRecommendationReason() {
-  const cartedCats = {};
-  const viewedCats = {};
-  for (const id of activity.carted) {
-    const cp = findProduct(id);
-    if (cp) cartedCats[cp.category] = categoryLabel(cp);
-  }
-  for (const id of activity.viewed) {
-    const vp = findProduct(id);
-    if (vp) viewedCats[vp.category] = categoryLabel(vp);
-  }
-  const cartedList = Object.values(cartedCats);
-  const viewedList = Object.values(viewedCats);
+  const cartedCats = {}; const viewedCats = {};
+  for (const id of activity.carted) { const cp = findProduct(id); if (cp) cartedCats[cp.category] = categoryLabel(cp); }
+  for (const id of activity.viewed) { const vp = findProduct(id); if (vp) viewedCats[vp.category] = categoryLabel(vp); }
+  const cartedList = Object.values(cartedCats); const viewedList = Object.values(viewedCats);
   if (cartedList.length) return '❤️ По вашим понравившимся: ' + cartedList.slice(0, 2).join(', ');
   if (viewedList.length) return '👁️ На основе просмотров: ' + viewedList.slice(0, 2).join(', ');
   return '✨ На основе ваших интересов';
 }
 let recTimeout = null;
-function scheduleRecommendations() {
-  if (recTimeout) clearTimeout(recTimeout);
-  recTimeout = setTimeout(renderRecommendations, 250);
-}
+function scheduleRecommendations() { if (recTimeout) clearTimeout(recTimeout); recTimeout = setTimeout(renderRecommendations, 250); }
 function renderRecommendations() {
   const recs = getRecommendations(4);
-  if (!recs.length) {
-    recommendationsEl.classList.remove('visible');
-    recommendationsGrid.innerHTML = '';
-    return;
-  }
+  if (!recs.length) { recommendationsEl.classList.remove('visible'); recommendationsGrid.innerHTML = ''; return; }
   recReason.textContent = getRecommendationReason();
-  const html = recs.map(p => {
+  recommendationsGrid.innerHTML = recs.map(p => {
     let reason = 'Похожее';
-    for (const id of activity.carted) {
-      const cp = findProduct(id);
-      if (cp && cp.category === p.category) { reason = 'Вам нравится'; break; }
-    }
-    if (reason === 'Похожее') {
-      for (const id of activity.viewed) {
-        const vp = findProduct(id);
-        if (vp && vp.category === p.category) { reason = 'Вы смотрели'; break; }
-      }
-    }
+    for (const id of activity.carted) { const cp = findProduct(id); if (cp && cp.category === p.category) { reason = 'Вам нравится'; break; } }
+    if (reason === 'Похожее') for (const id of activity.viewed) { const vp = findProduct(id); if (vp && vp.category === p.category) { reason = 'Вы смотрели'; break; } }
     return buildCardHtml(p, { rec: true, recText: reason });
   }).join('');
-  recommendationsGrid.innerHTML = html;
   recommendationsEl.classList.add('visible');
 }
 
@@ -1666,11 +1522,9 @@ async function handleProductClick(e) {
       const name = target.title;
       products.splice(idx, 1);
       try { await deleteProductFromServer(id); } catch (err) { console.error(err); }
-      state.cart = state.cart.filter(x => x.id !== id);
-      saveCartLocal();
+      state.cart = state.cart.filter(x => x.id !== id); saveCartLocal();
       renderCategoryFilters(); renderCart(); updateCartCount();
-      renderProducts(); renderNetworkStats(); updateCategoryDatalist();
-      scheduleRecommendations();
+      renderProducts(); renderNetworkStats(); updateCategoryDatalist(); scheduleRecommendations();
       showToast('🗑️ «' + name + '» удалён из сети');
     }
     return;
@@ -1693,10 +1547,8 @@ recommendationsGrid.addEventListener('click', handleProductClick);
    ===================================================== */
 function addToCart(id) {
   const item = state.cart.find(i => i.id === id);
-  if (item) item.qty++;
-  else state.cart.push({ id, qty: 1 });
-  saveCartLocal();
-  renderCart(); updateCartCount(); trackCart(id);
+  if (item) item.qty++; else state.cart.push({ id, qty: 1 });
+  saveCartLocal(); renderCart(); updateCartCount(); trackCart(id);
   const product = products.find(p => p.id === id);
   if (product) showToast('❤️ «' + product.title + '» добавлено');
 }
@@ -1707,13 +1559,9 @@ function changeQty(id, delta) {
   if (item.qty <= 0) state.cart = state.cart.filter(i => i.id !== id);
   saveCartLocal(); renderCart(); updateCartCount();
 }
-function removeFromCart(id) {
-  state.cart = state.cart.filter(i => i.id !== id);
-  saveCartLocal(); renderCart(); updateCartCount();
-}
+function removeFromCart(id) { state.cart = state.cart.filter(i => i.id !== id); saveCartLocal(); renderCart(); updateCartCount(); }
 function updateCartCount() {
-  let total = 0;
-  for (const i of state.cart) total += i.qty;
+  let total = 0; for (const i of state.cart) total += i.qty;
   cartCountEl.textContent = total;
   cartCountEl.style.display = total > 0 ? 'flex' : 'none';
 }
@@ -1723,47 +1571,38 @@ function renderCart() {
     cartTotalEl.textContent = '0';
     return;
   }
-  let totalItems = 0;
-  let html = '';
+  let totalItems = 0; let html = '';
   for (const item of state.cart) {
     const p = products.find(x => x.id === item.id);
     if (!p) continue;
     totalItems += item.qty;
     const img = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
-    html +=
-      '<div class="cart-item">' +
-        '<div class="cart-item-img">' + img + '</div>' +
-        '<div class="cart-item-info">' +
-          '<div class="cart-item-title">' + escapeHtml(p.title) + '</div>' +
-          '<div class="qty">' +
-            '<button data-qty="-1" data-id="' + p.id + '" type="button">−</button>' +
-            '<span>' + item.qty + '</span>' +
-            '<button data-qty="1" data-id="' + p.id + '" type="button">+</button>' +
-          '</div>' +
+    html += '<div class="cart-item">' +
+      '<div class="cart-item-img">' + img + '</div>' +
+      '<div class="cart-item-info">' +
+        '<div class="cart-item-title">' + escapeHtml(p.title) + '</div>' +
+        '<div class="qty">' +
+          '<button data-qty="-1" data-id="' + p.id + '" type="button">−</button>' +
+          '<span>' + item.qty + '</span>' +
+          '<button data-qty="1" data-id="' + p.id + '" type="button">+</button>' +
         '</div>' +
-        '<div class="cart-item-actions">' +
-          '<button class="cart-chat-btn" data-cart-chat="' + p.id + '" title="Написать продавцу" type="button">💬</button>' +
-          '<button class="remove-btn" data-remove="' + p.id + '" title="Убрать" type="button">🗑️</button>' +
-        '</div>' +
-      '</div>';
+      '</div>' +
+      '<div class="cart-item-actions">' +
+        '<button class="cart-chat-btn" data-cart-chat="' + p.id + '" title="Написать продавцу" type="button">💬</button>' +
+        '<button class="remove-btn" data-remove="' + p.id + '" title="Убрать" type="button">🗑️</button>' +
+      '</div>' +
+    '</div>';
   }
   cartItemsEl.innerHTML = html;
   cartTotalEl.textContent = totalItems;
 }
 cartItemsEl.addEventListener('click', e => {
   const qtyBtn = e.target.closest('[data-qty]');
-  if (qtyBtn) {
-    changeQty(Number(qtyBtn.getAttribute('data-id')), Number(qtyBtn.getAttribute('data-qty')));
-    return;
-  }
+  if (qtyBtn) { changeQty(Number(qtyBtn.getAttribute('data-id')), Number(qtyBtn.getAttribute('data-qty'))); return; }
   const removeBtn = e.target.closest('[data-remove]');
   if (removeBtn) { removeFromCart(Number(removeBtn.getAttribute('data-remove'))); return; }
   const chatBtn = e.target.closest('[data-cart-chat]');
-  if (chatBtn) {
-    const pid = Number(chatBtn.getAttribute('data-cart-chat'));
-    closeCart();
-    setTimeout(() => handleChatButton(pid), 250);
-  }
+  if (chatBtn) { const pid = Number(chatBtn.getAttribute('data-cart-chat')); closeCart(); setTimeout(() => handleChatButton(pid), 250); }
 });
 function openCart() { cartPanel.classList.add('open'); overlay.classList.add('open'); }
 function closeCart() { cartPanel.classList.remove('open'); overlay.classList.remove('open'); }
@@ -1772,7 +1611,7 @@ $('closeCart').addEventListener('click', closeCart);
 overlay.addEventListener('click', closeCart);
 
 /* =====================================================
-   МОДАЛКА ТОВАРА
+   МОДАЛКА
    ===================================================== */
 function openModal(id) {
   const p = products.find(x => x.id === id);
@@ -1797,11 +1636,7 @@ modal.addEventListener('click', e => {
   const addEl = e.target.closest('[data-action="add"]');
   if (addEl) { addToCart(Number(addEl.getAttribute('data-id'))); modal.classList.remove('open'); openCart(); return; }
   const chatEl = e.target.closest('[data-action="chat"]');
-  if (chatEl) {
-    const pid = Number(chatEl.getAttribute('data-id'));
-    modal.classList.remove('open');
-    handleChatButton(pid);
-  }
+  if (chatEl) { const pid = Number(chatEl.getAttribute('data-id')); modal.classList.remove('open'); handleChatButton(pid); }
 });
 
 /* =====================================================
@@ -1812,39 +1647,25 @@ function emptyChatHtml() {
     '<div class="chat-placeholder-icon">💬</div>' +
     '<p>Здесь пока пусто</p>' +
     '<p class="hint">Напишите первое сообщение — оно появится здесь и сохранится</p>' +
-    '</div>';
+  '</div>';
 }
 function updateChatRoleBadge() {
   if (!chatRoleBadge) return;
-  if (currentChatRole === 'seller') {
-    chatRoleBadge.textContent = '🏪 Вы — Продавец';
-    chatRoleBadge.className = 'chat-role-badge seller';
-  } else if (currentChatRole === 'buyer') {
-    chatRoleBadge.textContent = '👤 Вы — Покупатель';
-    chatRoleBadge.className = 'chat-role-badge buyer';
-  } else {
-    chatRoleBadge.textContent = '';
-    chatRoleBadge.className = 'chat-role-badge';
-  }
+  if (currentChatRole === 'seller') { chatRoleBadge.textContent = '🏪 Вы — Продавец'; chatRoleBadge.className = 'chat-role-badge seller'; }
+  else if (currentChatRole === 'buyer') { chatRoleBadge.textContent = '👤 Вы — Покупатель'; chatRoleBadge.className = 'chat-role-badge buyer'; }
+  else { chatRoleBadge.textContent = ''; chatRoleBadge.className = 'chat-role-badge'; }
 }
 
 async function handleChatButton(productId) {
   const p = findProduct(productId);
   if (!p) { showToast('❌ Товар не найден', true); return; }
-
-  if (p.ownerId === MY_OWNER_ID) {
-    // Я продавец — открываем список покупателей
-    openChatsList(productId);
-  } else {
-    // Я покупатель — мой личный чат
-    openChat(productId, MY_OWNER_ID);
-  }
+  if (p.ownerId === MY_OWNER_ID) openChatsList(productId);
+  else openChat(productId, MY_OWNER_ID);
 }
 
 async function openChat(productId, buyerId) {
   const p = findProduct(productId);
   if (!p) { showToast('❌ Товар не найден', true); return; }
-
   if (p.ownerId === MY_OWNER_ID) {
     currentChatRole = 'seller';
     currentChatBuyerId = buyerId;
@@ -1853,20 +1674,15 @@ async function openChat(productId, buyerId) {
     currentChatRole = 'buyer';
     currentChatBuyerId = MY_OWNER_ID;
   }
-
   currentChatProductId = productId;
   lastMessagesHash = '';
-
   chatProductImg.innerHTML = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
   chatProductTitle.textContent = p.title;
   updateChatRoleBadge();
-
   chatModal.classList.add('open');
   chatBody.innerHTML = '<div class="chat-placeholder"><p>Загрузка...</p></div>';
-
   subscribeToChat(productId, currentChatBuyerId);
   await refreshChat();
-
   setTimeout(() => { chatInput.focus(); scrollChatToBottom(); }, 150);
 }
 
@@ -1877,17 +1693,11 @@ async function refreshChat() {
 }
 
 function renderMessagesFromArray(messages) {
-  if (!messages || !messages.length) {
-    chatBody.innerHTML = emptyChatHtml();
-    lastMessagesHash = '';
-    return;
-  }
+  if (!messages || !messages.length) { chatBody.innerHTML = emptyChatHtml(); lastMessagesHash = ''; return; }
   const hash = JSON.stringify(messages.map(m => [m.id, m.role, m.text]));
   if (hash === lastMessagesHash) return;
   lastMessagesHash = hash;
-
   const wasNearBottom = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight < 80;
-
   const html = messages.map(m => {
     const isMine = (m.role === currentChatRole);
     const cls = isMine ? 'me' : 'unit';
@@ -1898,29 +1708,20 @@ function renderMessagesFromArray(messages) {
     '</div>';
   }).join('');
   chatBody.innerHTML = html;
-  if (wasNearBottom || chatBody.scrollHeight <= chatBody.clientHeight + 10) {
-    scrollChatToBottom();
-  }
+  if (wasNearBottom || chatBody.scrollHeight <= chatBody.clientHeight + 10) scrollChatToBottom();
 }
 
 function scrollChatToBottom() { chatBody.scrollTop = chatBody.scrollHeight; }
 
 chatForm.addEventListener('submit', async e => {
   e.preventDefault();
-  if (currentChatProductId === null || !currentChatRole || !currentChatBuyerId) {
-    showToast('❌ Не выбран чат', true);
-    return;
-  }
+  if (currentChatProductId === null || !currentChatRole || !currentChatBuyerId) { showToast('❌ Не выбран чат', true); return; }
   const text = chatInput.value.trim();
   if (!text) return;
-
   chatInput.value = '';
   chatSendBtn.disabled = true;
-
   try {
-    const saved = await sendMessageToServer(
-      currentChatProductId, currentChatBuyerId, currentChatRole, text
-    );
+    const saved = await sendMessageToServer(currentChatProductId, currentChatBuyerId, currentChatRole, text);
     appendMessageToUI(saved);
   } catch (err) {
     console.error(err);
@@ -1935,19 +1736,15 @@ chatForm.addEventListener('submit', async e => {
 function appendMessageToUI(m) {
   if (!m || !m.text) return;
   if (m.id && chatBody.querySelector('.msg[data-id="' + m.id + '"]')) return;
-
   const placeholder = chatBody.querySelector('.chat-placeholder');
   if (placeholder) placeholder.remove();
-
   const isMine = (m.role === currentChatRole);
   const cls = isMine ? 'me' : 'unit';
   const extraCls = isMine ? '' : (m.role === 'seller' ? ' from-seller' : ' from-buyer');
-
   const el = document.createElement('div');
   el.className = 'msg ' + cls + extraCls;
   el.setAttribute('data-id', String(m.id));
-  el.innerHTML =
-    '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span>' +
+  el.innerHTML = '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span>' +
     '<span class="msg-time">' + formatChatTime(m.time) + '</span>';
   chatBody.appendChild(el);
   scrollChatToBottom();
@@ -1962,20 +1759,13 @@ chatClearBtn.addEventListener('click', async () => {
     chatBody.innerHTML = emptyChatHtml();
     lastMessagesHash = '';
     showToast('🗑️ История очищена');
-  } catch (err) {
-    showToast('❌ ' + err.message, true);
-  }
+  } catch (err) { showToast('❌ ' + err.message, true); }
 });
 
 function closeChatModal(goBack) {
-  if (realtimeChannel) {
-    supabase.removeChannel(realtimeChannel);
-    realtimeChannel = null;
-  }
+  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
   chatModal.classList.remove('open');
-  currentChatProductId = null;
-  currentChatBuyerId = null;
-  currentChatRole = null;
+  currentChatProductId = null; currentChatBuyerId = null; currentChatRole = null;
   lastMessagesHash = '';
   if (goBack) setTimeout(() => openChatsList(null), 200);
 }
@@ -1992,41 +1782,29 @@ function openChatsList(filterProductId) {
   renderChatsList();
   chatsModal.classList.add('open');
 }
-function closeChatsList() {
-  chatsModal.classList.remove('open');
-  chatsFilterProductId = null;
-}
+function closeChatsList() { chatsModal.classList.remove('open'); chatsFilterProductId = null; }
 chatsBtn.addEventListener('click', () => openChatsList(null));
 closeChats.addEventListener('click', closeChatsList);
 chatsModal.addEventListener('click', e => { if (e.target === chatsModal) closeChatsList(); });
 
 async function renderChatsList() {
   let rows = await loadChatsList();
-  if (chatsFilterProductId) {
-    rows = rows.filter(r => r.productId === chatsFilterProductId);
-  }
-
+  if (chatsFilterProductId) rows = rows.filter(r => r.productId === chatsFilterProductId);
   if (!rows.length) {
-    chatsList.innerHTML =
-      '<div class="chats-empty">' +
-        '<div class="chats-empty-icon">💬</div>' +
-        '<p>' + (chatsFilterProductId ? 'Пока никто не написал по этому товару' : 'Пока нет ни одного чата') + '</p>' +
-        '<p class="hint">' + (chatsFilterProductId ? 'Когда покупатель напишет — чат появится здесь' : 'Нажмите 💬 на любой карточке') + '</p>' +
-      '</div>';
+    chatsList.innerHTML = '<div class="chats-empty">' +
+      '<div class="chats-empty-icon">💬</div>' +
+      '<p>' + (chatsFilterProductId ? 'Пока никто не написал по этому товару' : 'Пока нет ни одного чата') + '</p>' +
+      '<p class="hint">' + (chatsFilterProductId ? 'Когда покупатель напишет — чат появится здесь' : 'Нажмите 💬 на любой карточке') + '</p>' +
+    '</div>';
     return;
   }
-
-  const html = rows.map(row => {
+  chatsList.innerHTML = rows.map(row => {
     const imgContent = row.image ? '<img src="' + row.image + '" alt="">' : '🆕';
     let prefix = '';
     if (row.lastFrom === 'seller') prefix = '<span class="prefix-seller">Продавец: </span>';
     else if (row.lastFrom === 'buyer') prefix = '<span class="prefix">Покупатель: </span>';
-
     let sub = '';
-    if (row.buyerId && row.buyerId !== MY_OWNER_ID) {
-      sub = '<div class="chat-item-sub">👤 Покупатель #' + escapeHtml(row.buyerId.slice(-4)) + '</div>';
-    }
-
+    if (row.buyerId && row.buyerId !== MY_OWNER_ID) sub = '<div class="chat-item-sub">👤 Покупатель #' + escapeHtml(String(row.buyerId).slice(-4)) + '</div>';
     return '<div class="chat-item" data-chat-id="' + row.productId + '" data-buyer-id="' + escapeHtml(row.buyerId) + '">' +
       '<div class="chat-item-img">' + imgContent + '</div>' +
       '<div class="chat-item-info">' +
@@ -2034,12 +1812,9 @@ async function renderChatsList() {
         sub +
         '<div class="chat-item-last">' + prefix + escapeHtml(row.lastText) + '</div>' +
       '</div>' +
-      '<div class="chat-item-meta">' +
-        '<div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div>' +
-      '</div>' +
+      '<div class="chat-item-meta"><div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div></div>' +
     '</div>';
   }).join('');
-  chatsList.innerHTML = html;
 }
 
 chatsList.addEventListener('click', e => {
@@ -2056,17 +1831,12 @@ chatsList.addEventListener('click', e => {
    ВРЕМЯ
    ===================================================== */
 function formatChatTime(ms) {
-  const d = new Date(ms);
-  const now = new Date();
+  const d = new Date(ms); const now = new Date();
   const diff = now.getTime() - d.getTime();
   const dayMs = 24 * 60 * 60 * 1000;
   if (diff < 60 * 1000) return 'только что';
   if (diff < 60 * 60 * 1000) return Math.floor(diff / 60000) + ' мин назад';
-  if (d.toDateString() === now.toDateString()) {
-    const hh = String(d.getHours()).padStart(2, '0');
-    const mm = String(d.getMinutes()).padStart(2, '0');
-    return hh + ':' + mm;
-  }
+  if (d.toDateString() === now.toDateString()) return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   if (diff < 2 * dayMs) return 'вчера';
   return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0');
 }
@@ -2075,18 +1845,13 @@ function formatChatTime(ms) {
    ФИЛЬТРЫ
    ===================================================== */
 categoriesEl.addEventListener('click', e => {
-  const btn = e.target.closest('.category');
-  if (!btn) return;
+  const btn = e.target.closest('.category'); if (!btn) return;
   document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   state.category = btn.getAttribute('data-category');
   renderProducts();
 });
-$('searchForm').addEventListener('submit', e => {
-  e.preventDefault();
-  state.search = searchInput.value;
-  renderProducts();
-});
+$('searchForm').addEventListener('submit', e => { e.preventDefault(); state.search = searchInput.value; renderProducts(); });
 searchInput.addEventListener('input', () => {
   state.search = searchInput.value;
   clearSearch.classList.toggle('visible', searchInput.value.length > 0);
@@ -2097,10 +1862,7 @@ clearSearch.addEventListener('click', () => {
   clearSearch.classList.remove('visible');
   renderProducts(); searchInput.focus();
 });
-sortSelect.addEventListener('change', () => {
-  state.sort = sortSelect.value;
-  renderProducts();
-});
+sortSelect.addEventListener('change', () => { state.sort = sortSelect.value; renderProducts(); });
 
 /* =====================================================
    ESC
@@ -2110,8 +1872,7 @@ document.addEventListener('keydown', e => {
     if (hintModal.classList.contains('open')) { hintModal.classList.remove('open'); return; }
     if (chatModal.classList.contains('open')) { closeChatModal(false); return; }
     if (chatsModal.classList.contains('open')) { closeChatsList(); return; }
-    modal.classList.remove('open');
-    closeCart();
+    modal.classList.remove('open'); closeCart();
   }
 });
 
@@ -2131,10 +1892,7 @@ function showToast(message, isError = false) {
 /* =====================================================
    СТАРТ
    ===================================================== */
-init().catch(err => {
-  console.error('Init error:', err);
-  showToast('❌ Ошибка инициализации: ' + err.message, true);
-});
+init();
 </script>
 
 </body>
