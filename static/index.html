@@ -21,7 +21,6 @@
     position: sticky; top: 0; z-index: 100; padding: 14px 40px; color: #fff;
     background: linear-gradient(135deg, rgba(10, 22, 16, 0.75), rgba(3, 8, 5, 0.85));
     backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-bottom: 1px solid rgba(144, 238, 144, 0.22);
     box-shadow: 0 6px 30px rgba(0, 0, 0, 0.55);
   }
@@ -308,27 +307,21 @@
   .qty button { width: 24px; height: 24px; border: 1px solid #e5e7eb; background: #fff; border-radius: 5px; cursor: pointer; font-weight: bold; }
   .qty button:hover { background: #ec4899; color: #fff; border-color: #ec4899; }
   .qty span { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
-  .cart-item-actions {
-    display: flex; flex-direction: column; gap: 6px; align-items: center; flex-shrink: 0;
-  }
+  .cart-item-actions { display: flex; flex-direction: column; gap: 6px; align-items: center; flex-shrink: 0; }
   .cart-chat-btn {
     width: 32px; height: 32px; border-radius: 8px;
     border: 1px solid rgba(16, 185, 129, 0.5);
     background: rgba(16, 185, 129, 0.08);
     color: #059669; font-size: 15px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-family: inherit;
   }
-  .cart-chat-btn:hover {
-    background: rgba(16, 185, 129, 0.25); border-color: #10b981; color: #10b981;
-  }
+  .cart-chat-btn:hover { background: rgba(16, 185, 129, 0.25); border-color: #10b981; color: #10b981; }
   .remove-btn {
     width: 32px; height: 32px; border-radius: 8px;
     border: 1px solid rgba(239, 68, 68, 0.35);
     background: rgba(239, 68, 68, 0.06);
     color: #ef4444; cursor: pointer; font-size: 15px;
     display: flex; align-items: center; justify-content: center;
-    font-family: inherit;
   }
   .remove-btn:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
   .cart-empty { text-align: center; padding: 60px 20px; color: #6b7280; }
@@ -513,14 +506,13 @@
     text-align: center; padding: 24px; font-size: 13px;
     border-top: 1px solid rgba(144, 238, 144, 0.15);
   }
-  .offline-badge, .loading-badge {
+  .loading-badge {
     position: fixed; top: 80px; right: 20px; padding: 8px 14px;
     border-radius: 8px; font-size: 12px; font-weight: 600;
     z-index: 999; display: none; color: #fff;
+    background: rgba(16, 185, 129, 0.9);
   }
-  .offline-badge { background: rgba(239, 68, 68, 0.9); }
-  .loading-badge { background: rgba(16, 185, 129, 0.9); }
-  .offline-badge.visible, .loading-badge.visible { display: block; }
+  .loading-badge.visible { display: block; }
   @media (max-width: 900px) {
     .header-top { gap: 10px; }
     .search { order: 5; flex-basis: 100%; max-width: 100%; }
@@ -550,8 +542,7 @@
 
 <canvas id="bgCanvas"></canvas>
 
-<div class="offline-badge" id="offlineBadge">⚠️ Оффлайн-режим (без сервера)</div>
-<div class="loading-badge" id="loadingBadge">⏳ Загрузка с сервера...</div>
+<div class="loading-badge" id="loadingBadge">⏳ Подключение к Supabase...</div>
 
 <header>
   <div class="header-top">
@@ -583,7 +574,6 @@
   <div class="categories" id="categories"></div>
   <select class="sort-select" id="sortSelect">
     <option value="default">Сортировка: по умолчанию</option>
-    <option value="rating">По рейтингу</option>
     <option value="name">По названию (А-Я)</option>
   </select>
 </div>
@@ -719,77 +709,91 @@
 
 <footer>© 2025 МаркетПлейс. Все права защищены.</footer>
 
-<script>
-'use strict';
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-var MODE = 'local';
-var wsClient = null;
+/* =====================================================
+   НАСТРОЙКИ SUPABASE
+   ===================================================== */
+const SUPABASE_URL = 'https://rftkmwuwbnnapihxqmb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_WDkjvjFZsO3KW5j0tXubqQ_faOoY_sa';
 
-/* ============ ID ПОЛЬЗОВАТЕЛЯ ============ */
-var OWNER_KEY = 'marketplace_owner_id_v1';
+/* =====================================================
+   ИДЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЯ
+   ?as=name → отдельный пользователь в отдельной вкладке
+   иначе → единый пользователь (localStorage)
+   ===================================================== */
+const params = new URLSearchParams(location.search);
+const asName = params.get('as');
+const STORAGE_PREFIX = asName ? `sb-${asName}-` : 'sb-default-';
 
-var SafeStorage = (function() {
-  var available = false;
-  try {
-    var t = '__test__' + Date.now();
-    window.localStorage.setItem(t, 'x');
-    window.localStorage.removeItem(t);
-    available = true;
-  } catch (e) {}
-  return {
-    available: available,
-    get: function(key, fallback) {
-      if (fallback === undefined) fallback = null;
-      if (!available) return fallback;
-      try { var v = window.localStorage.getItem(key); return v === null ? fallback : v; }
-      catch (e) { return fallback; }
-    },
-    set: function(key, value) {
-      if (!available) return false;
-      try { window.localStorage.setItem(key, value); return true; }
-      catch (e) { return false; }
-    }
-  };
-})();
+// Если ?as=name — используем sessionStorage, чтобы каждый таб был отдельным юзером
+const authStorage = asName ? window.sessionStorage : window.localStorage;
 
-function getOwnerId() {
-  var override = null;
-  try { override = new URLSearchParams(location.search).get('as'); } catch (e) {}
-  if (override) return 'u_' + override;
-  var id = SafeStorage.get(OWNER_KEY, null);
-  if (!id) {
-    id = 'u_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    SafeStorage.set(OWNER_KEY, id);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    storage: authStorage,
+    storageKey: STORAGE_PREFIX + 'auth',
+    persistSession: true,
+    autoRefreshToken: true,
   }
-  return id;
+});
+
+let MY_OWNER_ID = null;
+let MY_NAME = '—';
+
+async function initAuth() {
+  // Проверяем, есть ли уже сессия
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (session && session.user) {
+    MY_OWNER_ID = session.user.id;
+  } else {
+    // Пробуем анонимный вход
+    try {
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+      MY_OWNER_ID = data.user.id;
+    } catch (err) {
+      console.warn('Anonymous auth недоступен, используем fallback UUID:', err.message);
+      // Fallback: генерим UUID и храним в localStorage/sessionStorage
+      let fallbackId = authStorage.getItem(STORAGE_PREFIX + 'fallback-id');
+      if (!fallbackId) {
+        fallbackId = 'anon-' + crypto.randomUUID();
+        authStorage.setItem(STORAGE_PREFIX + 'fallback-id', fallbackId);
+      }
+      MY_OWNER_ID = fallbackId;
+    }
+  }
+
+  MY_NAME = asName || ('user-' + MY_OWNER_ID.slice(0, 6));
+  const whoami = document.getElementById('whoami');
+  if (whoami) whoami.textContent = 'Вы: ' + MY_NAME;
+
+  console.log('✅ ownerId:', MY_OWNER_ID);
 }
-var MY_OWNER_ID = getOwnerId();
-var MY_NAME = MY_OWNER_ID.replace(/^u_/, '');
 
+/* =====================================================
+   ФОН
+   ===================================================== */
 (function() {
-  var el = document.getElementById('whoami');
-  if (el) el.textContent = 'Вы: ' + MY_NAME;
-})();
-
-/* ============ ФОН ============ */
-(function() {
-  var canvas = document.getElementById('bgCanvas');
+  const canvas = document.getElementById('bgCanvas');
   if (!canvas || !canvas.getContext) return;
-  var ctx = canvas.getContext('2d');
-  var W = 0, H = 0;
-  var dpr = Math.min(window.devicePixelRatio || 1, 2);
-  var particles = [];
-  var mouse = { x: -9999, y: -9999 };
-  var time = 0;
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let particles = [];
+  const mouse = { x: -9999, y: -9999 };
+  let time = 0;
 
   function resize() {
     W = window.innerWidth; H = window.innerHeight;
     canvas.width = W * dpr; canvas.height = H * dpr;
     canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    var count = Math.min(90, Math.max(35, Math.floor((W * H) / 18000)));
+    const count = Math.min(90, Math.max(35, Math.floor((W * H) / 18000)));
     particles = [];
-    for (var i = 0; i < count; i++) particles.push(makeP());
+    for (let i = 0; i < count; i++) particles.push(makeP());
   }
   function makeP() {
     return {
@@ -803,10 +807,10 @@ var MY_NAME = MY_OWNER_ID.replace(/^u_/, '');
     };
   }
   function drawConn(a, b, dist) {
-    var alpha = (1 - dist / 150) * 0.55;
-    var hue = 120 + Math.sin(time * 0.5 + a.x * 0.01) * 25;
-    var lightness = 55 + Math.sin(time + a.y * 0.02) * 15;
-    var g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+    const alpha = (1 - dist / 150) * 0.55;
+    const hue = 120 + Math.sin(time * 0.5 + a.x * 0.01) * 25;
+    const lightness = 55 + Math.sin(time + a.y * 0.02) * 15;
+    const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
     g.addColorStop(0, 'hsla(' + hue + ',90%,' + lightness + '%,' + alpha + ')');
     g.addColorStop(1, 'hsla(' + (hue + 20) + ',90%,' + lightness + '%,' + (alpha * 0.5) + ')');
     ctx.strokeStyle = g; ctx.lineWidth = 0.8;
@@ -814,11 +818,11 @@ var MY_NAME = MY_OWNER_ID.replace(/^u_/, '');
   }
   function drawP(p) {
     p.pulse += p.pulseSpeed;
-    var pulseFactor = 1 + Math.sin(p.pulse) * 0.4;
-    var hue = p.hue + Math.sin(time * 0.8 + p.x * 0.01) * 20;
-    var lightBase = 60 + Math.sin(p.pulse) * 12;
-    var glow = p.r * 8 * pulseFactor;
-    var grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
+    const pulseFactor = 1 + Math.sin(p.pulse) * 0.4;
+    const hue = p.hue + Math.sin(time * 0.8 + p.x * 0.01) * 20;
+    const lightBase = 60 + Math.sin(p.pulse) * 12;
+    const glow = p.r * 8 * pulseFactor;
+    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
     if (p.isBlack) {
       grd.addColorStop(0, 'rgba(0,0,0,1)');
       grd.addColorStop(0.35, 'rgba(10,20,15,0.85)');
@@ -847,15 +851,14 @@ var MY_NAME = MY_OWNER_ID.replace(/^u_/, '');
     time += 0.016;
     ctx.fillStyle = 'rgba(0,0,0,0.18)';
     ctx.fillRect(0, 0, W, H);
-    var i, j, p, dx, dy, dSq, d, force;
-    for (i = 0; i < particles.length; i++) {
-      p = particles[i];
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
       p.x += p.vx; p.y += p.vy;
-      dx = p.x - mouse.x; dy = p.y - mouse.y;
-      dSq = dx * dx + dy * dy;
+      const dx = p.x - mouse.x, dy = p.y - mouse.y;
+      const dSq = dx * dx + dy * dy;
       if (dSq < 32400 && dSq > 0) {
-        d = Math.sqrt(dSq);
-        force = (1 - d / 180) * 0.6;
+        const d = Math.sqrt(dSq);
+        const force = (1 - d / 180) * 0.6;
         p.x += (dx / d) * force; p.y += (dy / d) * force;
       }
       if (p.x < 0) { p.x = 0; p.vx *= -1; }
@@ -863,394 +866,430 @@ var MY_NAME = MY_OWNER_ID.replace(/^u_/, '');
       if (p.y < 0) { p.y = 0; p.vy *= -1; }
       if (p.y > H) { p.y = H; p.vy *= -1; }
     }
-    for (i = 0; i < particles.length; i++) {
-      for (j = i + 1; j < particles.length; j++) {
-        dx = particles[i].x - particles[j].x;
-        dy = particles[i].y - particles[j].y;
-        dSq = dx * dx + dy * dy;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dSq = dx * dx + dy * dy;
         if (dSq < 22500) drawConn(particles[i], particles[j], Math.sqrt(dSq));
       }
     }
-    for (i = 0; i < particles.length; i++) drawP(particles[i]);
+    for (let i = 0; i < particles.length; i++) drawP(particles[i]);
     requestAnimationFrame(animate);
   }
   window.addEventListener('resize', resize);
-  window.addEventListener('mousemove', function(e) { mouse.x = e.clientX; mouse.y = e.clientY; });
-  window.addEventListener('mouseleave', function() { mouse.x = -9999; mouse.y = -9999; });
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('mouseleave', () => { mouse.x = -9999; mouse.y = -9999; });
   resize(); animate();
 })();
 
-/* ============ ДАННЫЕ ============ */
-var BASE_PRODUCTS = [];
-var STANDARD_CATEGORIES = [
+/* =====================================================
+   ДАННЫЕ / КАТЕГОРИИ
+   ===================================================== */
+const STANDARD_CATEGORIES = [
   { key: 'book', name: 'Книги', emoji: '📚' },
   { key: 'pen',  name: 'Ручки', emoji: '🖊️' },
   { key: 'set',  name: 'Наборы', emoji: '🎁' },
   { key: 'dz',   name: 'ДЗ', emoji: '📝' }
 ];
-var CATEGORY_SYNONYMS = {
+const CATEGORY_SYNONYMS = {
   'книга': 'book', 'книги': 'book', 'book': 'book', 'books': 'book',
   'ручка': 'pen', 'ручки': 'pen', 'pen': 'pen', 'pens': 'pen',
   'набор': 'set', 'наборы': 'set', 'set': 'set', 'sets': 'set',
   'дз': 'dz', 'домашка': 'dz', 'домашнее задание': 'dz',
   'домашняя работа': 'dz', 'homework': 'dz', 'hw': 'dz'
 };
-var STORAGE_KEY = 'marketplace_custom_cards_v12';
-var STORAGE_ID_KEY = 'marketplace_next_id_v12';
-var ACTIVITY_KEY = 'marketplace_activity_v1';
-var CHATS_KEY = 'marketplace_chats_by_product_v2';
+const CART_KEY = 'marketplace_cart_v1';
+const ACTIVITY_KEY = 'marketplace_activity_v1';
 
-var products = [];
-var nextId = 100;
-var uploadedImage = null;
-var publishing = false;
-var state = { category: 'all', search: '', sort: 'default', cart: [] };
+let products = [];
+let uploadedImage = null;
+let publishing = false;
+const state = { category: 'all', search: '', sort: 'default', cart: [] };
+let activity = { viewed: [], carted: [] };
 
-var chatsByProduct = {};
-var currentChatProductId = null;
-var currentChatBuyerId = null;
-var currentChatRole = null;
-var chatsFilterProductId = null;
-var chatPollTimer = null;
-var lastMessagesHash = '';
+let currentChatProductId = null;
+let currentChatBuyerId = null;
+let currentChatRole = null;
+let chatsFilterProductId = null;
+let realtimeChannel = null;
+let chatsRealtimeChannel = null;
+let lastMessagesHash = '';
 
-var activity = { viewed: [], carted: [] };
+/* =====================================================
+   SUPABASE API
+   ===================================================== */
+async function loadProductsFromServer() {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('createdAt', { ascending: false });
 
-/* ============ LOCAL STORAGE ============ */
-function loadCustomCardsLocal() {
-  var raw = SafeStorage.get(STORAGE_KEY, null);
-  if (!raw) return [];
-  try {
-    var arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return [];
-    return arr.map(function(p) {
-      var copy = {};
-      for (var k in p) if (Object.prototype.hasOwnProperty.call(p, k)) copy[k] = p[k];
-      copy.custom = true;
-      if (!copy.category) copy.category = 'set';
-      return copy;
-    });
-  } catch (e) { return []; }
+  if (error) {
+    console.error('loadProducts:', error);
+    return [];
+  }
+  // Приводим поля к формату фронта
+  return (data || []).map(row => ({
+    id: row.id,
+    title: row.title,
+    desc: row.description,
+    category: row.category,
+    categoryName: row.categoryName,
+    rating: row.rating,
+    badge: row.badge,
+    custom: row.custom,
+    image: row.image,
+    icon: null,
+    ownerId: row.ownerId,
+  }));
 }
-function saveCustomCardsLocal() {
-  var customOnly = products.filter(function(p) { return p.custom; });
-  try { SafeStorage.set(STORAGE_KEY, JSON.stringify(customOnly)); } catch (e) {}
+
+async function createProductInServer(product) {
+  const row = {
+    id: Date.now(),
+    title: product.title,
+    description: product.desc,
+    category: product.category,
+    categoryName: product.categoryName,
+    rating: product.rating,
+    badge: product.badge,
+    custom: true,
+    image: product.image,
+    ownerId: product.ownerId,
+    createdAt: Date.now(),
+  };
+  const { data, error } = await supabase.from('products').insert([row]).select().single();
+  if (error) throw new Error(error.message);
+  return data;
 }
-function loadNextIdLocal() {
-  var v = Number(SafeStorage.get(STORAGE_ID_KEY, null));
-  return v && v >= 100 ? v : 100;
+
+async function deleteProductFromServer(id) {
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) throw new Error(error.message);
 }
-function saveNextIdLocal() { SafeStorage.set(STORAGE_ID_KEY, String(nextId)); }
+
+async function loadChatHistory(productId, buyerId) {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('productId', productId)
+    .eq('buyerId', buyerId)
+    .order('time', { ascending: true });
+  if (error) { console.error(error); return []; }
+  return data || [];
+}
+
+async function sendMessageToServer(productId, buyerId, role, text) {
+  const { data, error } = await supabase
+    .from('messages')
+    .insert([{
+      productId: productId,
+      buyerId: buyerId,
+      role: role,
+      text: text,
+      time: Date.now(),
+    }])
+    .select()
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+async function clearChatOnServer(productId, buyerId) {
+  const { error } = await supabase
+    .from('messages')
+    .delete()
+    .eq('productId', productId)
+    .eq('buyerId', buyerId);
+  if (error) throw new Error(error.message);
+}
+
+async function loadChatsList() {
+  // Забираем все сообщения, где я участник
+  const { data: productsOwned } = await supabase
+    .from('products')
+    .select('id, title, image, ownerId');
+
+  const myProductIds = (productsOwned || [])
+    .filter(p => p.ownerId === MY_OWNER_ID)
+    .map(p => p.id);
+
+  const allProducts = {};
+  (productsOwned || []).forEach(p => { allProducts[p.id] = p; });
+
+  // Запрос: либо buyerId = me, либо productId в моих товарах
+  let query = supabase.from('messages').select('*').order('time', { ascending: false }).limit(500);
+  if (myProductIds.length) {
+    query = query.or(`buyerId.eq.${MY_OWNER_ID},productId.in.(${myProductIds.join(',')})`);
+  } else {
+    query = query.eq('buyerId', MY_OWNER_ID);
+  }
+
+  const { data: messages, error } = await query;
+  if (error) { console.error(error); return []; }
+
+  // Группируем по (productId, buyerId) — берём последнее сообщение
+  const map = {};
+  (messages || []).forEach(m => {
+    const k = m.productId + ':' + m.buyerId;
+    if (!map[k]) map[k] = m;
+  });
+
+  return Object.values(map).map(m => {
+    const prod = allProducts[m.productId];
+    return {
+      productId: m.productId,
+      buyerId: m.buyerId,
+      title: prod ? prod.title : '—',
+      image: prod ? prod.image : null,
+      lastText: m.text,
+      lastFrom: m.role,
+      lastTime: m.time,
+    };
+  }).sort((a, b) => b.lastTime - a.lastTime);
+}
+
+/* =====================================================
+   REALTIME
+   ===================================================== */
+function subscribeToChat(productId, buyerId) {
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+  realtimeChannel = supabase
+    .channel('chat:' + productId + ':' + buyerId)
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'messages', filter: `productId=eq.${productId}` },
+      (payload) => {
+        const row = payload.new;
+        if (!row) return;
+        if (row.buyerId !== buyerId) return;
+        refreshChat();
+      }
+    )
+    .subscribe();
+}
+
+function subscribeToChatsList() {
+  if (chatsRealtimeChannel) return;
+  chatsRealtimeChannel = supabase
+    .channel('chats-list')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'messages' },
+      () => {
+        if (chatsModal.classList.contains('open')) renderChatsList();
+      }
+    )
+    .subscribe();
+}
+
+function subscribeToProducts() {
+  supabase
+    .channel('products-live')
+    .on('postgres_changes',
+      { event: '*', schema: 'public', table: 'products' },
+      async () => {
+        products = await loadProductsFromServer();
+        renderProducts();
+        renderNetworkStats();
+        updateCategoryDatalist();
+        renderRecommendations();
+      }
+    )
+    .subscribe();
+}
+
+/* =====================================================
+   LOCAL STORAGE (cart / activity)
+   ===================================================== */
+function loadCartLocal() {
+  const raw = localStorage.getItem(CART_KEY);
+  if (!raw) return;
+  try { state.cart = JSON.parse(raw) || []; } catch (e) {}
+}
+function saveCartLocal() {
+  try { localStorage.setItem(CART_KEY, JSON.stringify(state.cart)); } catch (e) {}
+}
 function loadActivityLocal() {
-  var raw = SafeStorage.get(ACTIVITY_KEY, null);
+  const raw = localStorage.getItem(ACTIVITY_KEY);
   if (!raw) return;
   try {
-    var obj = JSON.parse(raw);
-    if (obj && typeof obj === 'object') {
-      activity.viewed = Array.isArray(obj.viewed) ? obj.viewed.slice(-30) : [];
-      activity.carted = Array.isArray(obj.carted) ? obj.carted.slice(-30) : [];
+    const obj = JSON.parse(raw);
+    if (obj) {
+      activity.viewed = obj.viewed || [];
+      activity.carted = obj.carted || [];
     }
   } catch (e) {}
 }
 function saveActivityLocal() {
-  try {
-    SafeStorage.set(ACTIVITY_KEY, JSON.stringify({
-      viewed: activity.viewed.slice(-30),
-      carted: activity.carted.slice(-30)
-    }));
-  } catch (e) {}
-}
-function loadChatsLocal() {
-  var raw = SafeStorage.get(CHATS_KEY, null);
-  if (!raw) return;
-  try {
-    var obj = JSON.parse(raw);
-    if (obj && obj.chats && typeof obj.chats === 'object') chatsByProduct = obj.chats;
-  } catch (e) {}
-}
-function saveChatsLocal() {
-  try { SafeStorage.set(CHATS_KEY, JSON.stringify({ chats: chatsByProduct })); } catch (e) {}
-}
-function addMessageLocal(pid, role, text) {
-  if (!chatsByProduct[pid]) chatsByProduct[pid] = [];
-  chatsByProduct[pid].push({ id: 'local_' + Date.now() + '_' + Math.random(), role: role, text: text, time: Date.now() });
-  if (chatsByProduct[pid].length > 200) chatsByProduct[pid].splice(0, chatsByProduct[pid].length - 200);
-  saveChatsLocal();
+  try { localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activity)); } catch (e) {}
 }
 
-/* ============ INIT ============ */
-function detectModeAndInit() {
-  var loadingBadge = document.getElementById('loadingBadge');
-  if (loadingBadge) loadingBadge.classList.add('visible');
+/* =====================================================
+   INIT
+   ===================================================== */
+async function init() {
+  const loadingBadge = document.getElementById('loadingBadge');
+  loadingBadge.classList.add('visible');
 
-  var done = false;
-  function finish() {
-    if (done) return;
-    done = true;
-    if (loadingBadge) loadingBadge.classList.remove('visible');
-  }
-  var timeout = setTimeout(function() {
-    if (done) return;
-    finish();
-    console.warn('Сервер не ответил за 15 сек — оффлайн');
-    initLocalMode();
-  }, 15000);
+  await initAuth();
 
-  fetch('/api/products')
-    .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
-    .then(function(data) {
-      if (done) return;
-      clearTimeout(timeout); finish();
-      MODE = 'server';
-      console.log('✅ Режим: сервер. Товаров:', data.length);
-      initServerMode(data);
-    })
-    .catch(function(err) {
-      if (done) return;
-      clearTimeout(timeout); finish();
-      console.warn('⚠️ Сервер недоступен:', err.message);
-      initLocalMode();
-    });
-}
-
-function initLocalMode() {
-  MODE = 'local';
-  document.getElementById('offlineBadge').classList.add('visible');
-  products = BASE_PRODUCTS.concat(loadCustomCardsLocal());
-  loadActivityLocal(); loadChatsLocal();
-  nextId = loadNextIdLocal();
-  renderCategoryFilters(); renderProducts(); renderNetworkStats();
-  renderCart(); renderRecommendations(); updateCartCount(); updateCategoryDatalist();
-}
-
-function initServerMode(serverProducts) {
-  MODE = 'server';
-  initWS();
-  products = BASE_PRODUCTS.concat(serverProducts);
-  nextId = Date.now();
+  loadCartLocal();
   loadActivityLocal();
-  renderCategoryFilters(); renderProducts(); renderNetworkStats();
-  renderCart(); renderRecommendations(); updateCartCount(); updateCategoryDatalist();
+
+  products = await loadProductsFromServer();
+
+  renderCategoryFilters();
+  renderProducts();
+  renderNetworkStats();
+  renderCart();
+  renderRecommendations();
+  updateCartCount();
+  updateCategoryDatalist();
+
+  subscribeToProducts();
+  subscribeToChatsList();
+
+  loadingBadge.classList.remove('visible');
+  console.log('✅ Готово. Товаров:', products.length);
 }
 
-/* ============ WEBSOCKET ============ */
-function initWS() {
-  var proto = (location.protocol === 'https:') ? 'wss://' : 'ws://';
-  var url = proto + location.host + '/ws/chat';
-  var ws = null;
-  var handlers = {};
-  var pending = [];
-  var rooms = {};
-  var reconnectTimer = null;
-
-  function sendRaw(obj) {
-    var s = JSON.stringify(obj);
-    if (ws && ws.readyState === 1) ws.send(s);
-    else pending.push(s);
-  }
-  function connect() {
-    ws = new WebSocket(url);
-    ws.onopen = function() {
-      console.log('[WS] подключён');
-      Object.keys(rooms).forEach(function(k) {
-        var r = rooms[k];
-        ws.send(JSON.stringify({ type: 'join', productId: r.productId, buyerId: r.buyerId }));
-      });
-      while (pending.length) ws.send(pending.shift());
-    };
-    ws.onmessage = function(e) {
-      try {
-        var data = JSON.parse(e.data);
-        if (handlers[data.type]) handlers[data.type](data);
-      } catch (err) { console.error('[WS] parse:', err); }
-    };
-    ws.onclose = function() {
-      console.log('[WS] закрыт, переподключение...');
-      if (!reconnectTimer) reconnectTimer = setTimeout(function() {
-        reconnectTimer = null; connect();
-      }, 2000);
-    };
-    ws.onerror = function() {};
-  }
-  connect();
-
-  wsClient = {
-    on: function(t, fn) { handlers[t] = fn; },
-    joinRoom: function(productId, buyerId) {
-      var k = productId + '::' + buyerId;
-      rooms[k] = { productId: productId, buyerId: buyerId };
-      sendRaw({ type: 'join', productId: productId, buyerId: buyerId });
-    },
-    leaveRoom: function(productId, buyerId) {
-      var k = productId + '::' + buyerId;
-      delete rooms[k];
-      sendRaw({ type: 'leave', productId: productId, buyerId: buyerId });
-    },
-    sendMessage: function(productId, buyerId, role, text, ownerId) {
-      sendRaw({
-        type: 'message',
-        productId: productId,
-        buyerId: buyerId,
-        role: role,
-        text: text,
-        ownerId: ownerId
-      });
-    }
-  };
-
-  wsClient.on('message', function(m) {
-    if (currentChatProductId === m.productId && currentChatBuyerId === m.buyerId) {
-      refreshChat();
-    }
-    if (chatsModal.classList.contains('open')) renderChatsList();
-  });
-  wsClient.on('chat_cleared', function(data) {
-    if (currentChatProductId === data.productId && currentChatBuyerId === data.buyerId) {
-      chatBody.innerHTML = emptyChatHtml();
-      lastMessagesHash = '';
-    }
-    if (chatsModal.classList.contains('open')) renderChatsList();
-  });
-  wsClient.on('chats_updated', function() {
-    if (chatsModal.classList.contains('open')) renderChatsList();
-  });
-  wsClient.on('products_updated', function() { loadProductsFromServer(); });
-}
-
-function loadProductsFromServer() {
-  fetch('/api/products')
-    .then(function(res) { return res.json(); })
-    .then(function(fromServer) {
-      products = BASE_PRODUCTS.concat(fromServer);
-      renderProducts(); renderNetworkStats(); updateCategoryDatalist(); renderRecommendations();
-    })
-    .catch(function(err) { console.error('Ошибка загрузки товаров:', err); });
-}
-
-/* ============ КАТЕГОРИИ ============ */
+/* =====================================================
+   КАТЕГОРИИ
+   ===================================================== */
 function categoryLabel(p) {
   if (p.categoryName) return p.categoryName;
-  for (var i = 0; i < STANDARD_CATEGORIES.length; i++) {
-    if (STANDARD_CATEGORIES[i].key === p.category) return STANDARD_CATEGORIES[i].name;
+  for (const c of STANDARD_CATEGORIES) {
+    if (c.key === p.category) return c.name;
   }
   return p.category || 'Разное';
 }
 function resolveCategory(inputText) {
-  var text = String(inputText || '').trim();
+  const text = String(inputText || '').trim();
   if (!text) return null;
-  var lower = text.toLowerCase();
-  if (CATEGORY_SYNONYMS.hasOwnProperty(lower)) {
-    var stdKey = CATEGORY_SYNONYMS[lower];
-    for (var i = 0; i < STANDARD_CATEGORIES.length; i++) {
-      if (STANDARD_CATEGORIES[i].key === stdKey) {
-        return { key: stdKey, name: STANDARD_CATEGORIES[i].name };
-      }
-    }
+  const lower = text.toLowerCase();
+  if (CATEGORY_SYNONYMS[lower]) {
+    const stdKey = CATEGORY_SYNONYMS[lower];
+    const std = STANDARD_CATEGORIES.find(c => c.key === stdKey);
+    if (std) return { key: stdKey, name: std.name };
   }
-  var slug = text.toLowerCase().replace(/\s+/g, '_').replace(/[^a-zа-яё0-9_]/gi, '');
+  let slug = text.toLowerCase().replace(/\s+/g, '_').replace(/[^a-zа-яё0-9_]/gi, '');
   if (!slug) slug = 'cat_' + Date.now();
   return { key: 'custom_' + slug, name: text };
 }
 function collectUsedCategories() {
-  var seen = {}; var list = [];
-  for (var i = 0; i < products.length; i++) {
-    var p = products[i];
-    if (!seen[p.category]) { seen[p.category] = true; list.push({ key: p.category, name: categoryLabel(p) }); }
+  const seen = {};
+  const list = [];
+  for (const p of products) {
+    if (!seen[p.category]) {
+      seen[p.category] = true;
+      list.push({ key: p.category, name: categoryLabel(p) });
+    }
   }
   return list;
 }
 
-/* ============ АКТИВНОСТЬ ============ */
+/* =====================================================
+   АКТИВНОСТЬ
+   ===================================================== */
 function trackView(id) {
   if (!id) return;
-  activity.viewed = activity.viewed.filter(function(x) { return x !== id; });
+  activity.viewed = activity.viewed.filter(x => x !== id);
   activity.viewed.push(id);
   if (activity.viewed.length > 30) activity.viewed = activity.viewed.slice(-30);
-  if (MODE === 'local') saveActivityLocal();
+  saveActivityLocal();
   scheduleRecommendations();
 }
 function trackCart(id) {
   if (!id) return;
-  activity.carted = activity.carted.filter(function(x) { return x !== id; });
+  activity.carted = activity.carted.filter(x => x !== id);
   activity.carted.push(id);
   if (activity.carted.length > 30) activity.carted = activity.carted.slice(-30);
-  if (MODE === 'local') saveActivityLocal();
+  saveActivityLocal();
   scheduleRecommendations();
 }
 
-/* ============ DOM ============ */
-function $(id) { return document.getElementById(id); }
+/* =====================================================
+   DOM
+   ===================================================== */
+const $ = id => document.getElementById(id);
 
-var productsEl = $('products');
-var resultsInfo = $('resultsInfo');
-var searchInput = $('searchInput');
-var clearSearch = $('clearSearch');
-var categoriesEl = $('categories');
-var sortSelect = $('sortSelect');
-var cartPanel = $('cartPanel');
-var overlay = $('overlay');
-var cartItemsEl = $('cartItems');
-var cartTotalEl = $('cartTotal');
-var cartCountEl = $('cartCount');
-var modal = $('modal');
-var modalContent = $('modalContent');
-var toast = $('toast');
-var networkStatsEl = $('networkStats');
-var recommendationsEl = $('recommendations');
-var recommendationsGrid = $('recommendationsGrid');
-var recReason = $('recReason');
-var chatsBtn = $('chatsBtn');
-var chatsModal = $('chatsModal');
-var chatsModalTitle = $('chatsModalTitle');
-var closeChats = $('closeChats');
-var chatsList = $('chatsList');
-var chatModal = $('chatModal');
-var chatBody = $('chatBody');
-var chatForm = $('chatForm');
-var chatInput = $('chatInput');
-var chatSendBtn = $('chatSendBtn');
-var chatClearBtn = $('chatClearBtn');
-var chatBack = $('chatBack');
-var chatProductImg = $('chatProductImg');
-var chatProductTitle = $('chatProductTitle');
-var chatRoleBadge = $('chatRoleBadge');
-var heroTitle = $('heroTitle');
-var hintModal = $('hintModal');
-var hintClose = $('hintClose');
+const productsEl = $('products');
+const resultsInfo = $('resultsInfo');
+const searchInput = $('searchInput');
+const clearSearch = $('clearSearch');
+const categoriesEl = $('categories');
+const sortSelect = $('sortSelect');
+const cartPanel = $('cartPanel');
+const overlay = $('overlay');
+const cartItemsEl = $('cartItems');
+const cartTotalEl = $('cartTotal');
+const cartCountEl = $('cartCount');
+const modal = $('modal');
+const modalContent = $('modalContent');
+const toast = $('toast');
+const networkStatsEl = $('networkStats');
+const recommendationsEl = $('recommendations');
+const recommendationsGrid = $('recommendationsGrid');
+const recReason = $('recReason');
+const chatsBtn = $('chatsBtn');
+const chatsModal = $('chatsModal');
+const chatsModalTitle = $('chatsModalTitle');
+const closeChats = $('closeChats');
+const chatsList = $('chatsList');
+const chatModal = $('chatModal');
+const chatBody = $('chatBody');
+const chatForm = $('chatForm');
+const chatInput = $('chatInput');
+const chatSendBtn = $('chatSendBtn');
+const chatClearBtn = $('chatClearBtn');
+const chatBack = $('chatBack');
+const chatProductImg = $('chatProductImg');
+const chatProductTitle = $('chatProductTitle');
+const chatRoleBadge = $('chatRoleBadge');
+const heroTitle = $('heroTitle');
+const hintModal = $('hintModal');
+const hintClose = $('hintClose');
 
-/* ============ HINT ============ */
-heroTitle.addEventListener('click', function(e) { e.preventDefault(); hintModal.classList.add('open'); });
-heroTitle.addEventListener('keydown', function(e) {
+/* =====================================================
+   HINT
+   ===================================================== */
+heroTitle.addEventListener('click', e => { e.preventDefault(); hintModal.classList.add('open'); });
+heroTitle.addEventListener('keydown', e => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hintModal.classList.add('open'); }
 });
-hintClose.addEventListener('click', function() { hintModal.classList.remove('open'); });
-hintModal.addEventListener('click', function(e) { if (e.target === hintModal) hintModal.classList.remove('open'); });
+hintClose.addEventListener('click', () => hintModal.classList.remove('open'));
+hintModal.addEventListener('click', e => { if (e.target === hintModal) hintModal.classList.remove('open'); });
 
-/* ============ КОНСТРУКТОР ============ */
-var builderToggle = $('builderToggle');
-var builderFormWrap = $('builderFormWrap');
-var builderForm = $('builderForm');
-var photoUpload = $('photoUpload');
-var photoInput = $('photoInput');
-var photoPreview = $('photoPreview');
-var photoRemove = $('photoRemove');
-var fieldTitle = $('fieldTitle');
-var fieldDesc = $('fieldDesc');
-var fieldCategory = $('fieldCategory');
-var categoryList = $('categoryList');
-var errorTitle = $('errorTitle');
-var errorDesc = $('errorDesc');
-var errorCategory = $('errorCategory');
-var errorPhoto = $('errorPhoto');
+/* =====================================================
+   КОНСТРУКТОР
+   ===================================================== */
+const builderToggle = $('builderToggle');
+const builderFormWrap = $('builderFormWrap');
+const builderForm = $('builderForm');
+const photoUpload = $('photoUpload');
+const photoInput = $('photoInput');
+const photoPreview = $('photoPreview');
+const photoRemove = $('photoRemove');
+const fieldTitle = $('fieldTitle');
+const fieldDesc = $('fieldDesc');
+const fieldCategory = $('fieldCategory');
+const categoryList = $('categoryList');
+const errorTitle = $('errorTitle');
+const errorDesc = $('errorDesc');
+const errorCategory = $('errorCategory');
+const errorPhoto = $('errorPhoto');
 
-builderToggle.addEventListener('click', function(e) {
+builderToggle.addEventListener('click', e => {
   e.preventDefault();
-  var isOpen = builderFormWrap.classList.toggle('open');
+  const isOpen = builderFormWrap.classList.toggle('open');
   builderToggle.classList.toggle('open', isOpen);
   builderToggle.textContent = isOpen ? '✖ Закрыть конструктор' : '➕ Открыть конструктор';
   if (isOpen) {
     updateCategoryDatalist();
-    setTimeout(function() {
+    setTimeout(() => {
       try { builderFormWrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
       catch (err) { builderFormWrap.scrollIntoView(); }
     }, 250);
@@ -1258,17 +1297,15 @@ builderToggle.addEventListener('click', function(e) {
 });
 
 function updateCategoryDatalist() {
-  var names = {};
-  for (var i = 0; i < STANDARD_CATEGORIES.length; i++) names[STANDARD_CATEGORIES[i].name] = true;
-  for (var j = 0; j < products.length; j++) {
-    var label = categoryLabel(products[j]);
+  const names = {};
+  for (const c of STANDARD_CATEGORIES) names[c.name] = true;
+  for (const p of products) {
+    const label = categoryLabel(p);
     if (label) names[label] = true;
   }
-  var html = '';
-  for (var n in names) if (Object.prototype.hasOwnProperty.call(names, n)) {
-    html += '<option value="' + escapeHtml(n) + '">';
-  }
-  categoryList.innerHTML = html;
+  categoryList.innerHTML = Object.keys(names).map(n =>
+    '<option value="' + escapeHtml(n) + '">'
+  ).join('');
 }
 
 function setPhoto(dataUrl) {
@@ -1286,20 +1323,20 @@ function clearPhoto() {
   photoPreview.classList.remove('visible');
   photoUpload.classList.remove('has-image');
 }
-photoInput.addEventListener('change', function(e) {
-  var file = e.target.files && e.target.files[0];
+photoInput.addEventListener('change', e => {
+  const file = e.target.files && e.target.files[0];
   if (!file) return;
-  if (!file.type || file.type.indexOf('image/') !== 0) {
-    showToast('❌ Можно загрузить только изображение', true); photoInput.value = ''; return;
+  if (!file.type || !file.type.startsWith('image/')) {
+    showToast('❌ Только изображение', true); photoInput.value = ''; return;
   }
   if (file.size > 5 * 1024 * 1024) {
-    showToast('❌ Файл слишком большой (макс. 5 МБ)', true); photoInput.value = ''; return;
+    showToast('❌ Максимум 5 МБ', true); photoInput.value = ''; return;
   }
-  var reader = new FileReader();
-  reader.onload = function(ev) { setPhoto(ev.target.result); };
+  const reader = new FileReader();
+  reader.onload = ev => setPhoto(ev.target.result);
   reader.readAsDataURL(file);
 });
-photoRemove.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); clearPhoto(); });
+photoRemove.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); clearPhoto(); });
 
 function validateField(input, errorEl, isInvalid) {
   if (isInvalid) {
@@ -1311,13 +1348,13 @@ function validateField(input, errorEl, isInvalid) {
   if (errorEl) errorEl.classList.remove('show');
   return true;
 }
-fieldTitle.addEventListener('input', function() {
+fieldTitle.addEventListener('input', () => {
   if (fieldTitle.value.trim()) { fieldTitle.classList.remove('invalid'); errorTitle.classList.remove('show'); }
 });
-fieldDesc.addEventListener('input', function() {
+fieldDesc.addEventListener('input', () => {
   if (fieldDesc.value.trim()) { fieldDesc.classList.remove('invalid'); errorDesc.classList.remove('show'); }
 });
-fieldCategory.addEventListener('input', function() {
+fieldCategory.addEventListener('input', () => {
   if (fieldCategory.value.trim()) { fieldCategory.classList.remove('invalid'); errorCategory.classList.remove('show'); }
 });
 
@@ -1325,20 +1362,20 @@ async function handlePublish(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (publishing) return;
   publishing = true;
-  var btn = $('publishBtn');
+  const btn = $('publishBtn');
   btn.disabled = true;
   try {
-    var photoOk = true;
+    let photoOk = true;
     if (!uploadedImage) {
       photoUpload.classList.add('invalid'); errorPhoto.classList.add('show'); photoOk = false;
     }
-    var titleOk = validateField(fieldTitle, errorTitle, !fieldTitle.value.trim());
-    var descOk = validateField(fieldDesc, errorDesc, !fieldDesc.value.trim());
-    var resolvedCat = resolveCategory(fieldCategory.value);
-    var catOk = validateField(fieldCategory, errorCategory, !resolvedCat);
+    const titleOk = validateField(fieldTitle, errorTitle, !fieldTitle.value.trim());
+    const descOk = validateField(fieldDesc, errorDesc, !fieldDesc.value.trim());
+    const resolvedCat = resolveCategory(fieldCategory.value);
+    const catOk = validateField(fieldCategory, errorCategory, !resolvedCat);
 
     if (!photoOk || !titleOk || !descOk || !catOk) {
-      var missing = [];
+      const missing = [];
       if (!photoOk) missing.push('фото');
       if (!titleOk) missing.push('название');
       if (!descOk) missing.push('описание');
@@ -1347,46 +1384,26 @@ async function handlePublish(e) {
       return;
     }
 
-    var newProduct = {
-      id: null,
+    const newProduct = {
       title: fieldTitle.value.trim(),
       desc: fieldDesc.value.trim(),
       category: resolvedCat.key,
       categoryName: resolvedCat.name,
       rating: 5.0,
       badge: 'ВАШ ТОВАР',
-      custom: true,
       image: uploadedImage,
-      icon: null,
       ownerId: MY_OWNER_ID
     };
 
-    if (MODE === 'server') {
-      var res = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProduct)
-      });
-      if (!res.ok) {
-        var txt = await res.text();
-        throw new Error('HTTP ' + res.status + ': ' + txt.slice(0, 150));
-      }
-      var saved = await res.json();
-      newProduct.id = saved.id;
-    } else {
-      newProduct.id = nextId++;
-      saveNextIdLocal();
-    }
+    const saved = await createProductInServer(newProduct);
+    newProduct.id = saved.id;
 
     products.unshift(newProduct);
-    if (MODE === 'local') saveCustomCardsLocal();
-
-    var justAddedId = newProduct.id;
 
     builderForm.reset();
     clearPhoto();
-    [fieldTitle, fieldDesc, fieldCategory].forEach(function(el) { el.classList.remove('invalid'); });
-    [errorTitle, errorDesc, errorCategory].forEach(function(el) { el.classList.remove('show'); });
+    [fieldTitle, fieldDesc, fieldCategory].forEach(el => el.classList.remove('invalid'));
+    [errorTitle, errorDesc, errorCategory].forEach(el => el.classList.remove('show'));
 
     builderFormWrap.classList.remove('open');
     builderToggle.classList.remove('open');
@@ -1398,103 +1415,97 @@ async function handlePublish(e) {
 
     renderCategoryFilters(); renderProducts(); renderNetworkStats(); updateCategoryDatalist();
 
-    setTimeout(function() {
-      var cardEl = productsEl.querySelector('.card[data-id="' + justAddedId + '"]');
+    setTimeout(() => {
+      const cardEl = productsEl.querySelector('.card[data-id="' + newProduct.id + '"]');
       if (cardEl) {
         cardEl.classList.add('just-added');
         try { cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
         catch (err) { cardEl.scrollIntoView(); }
-        setTimeout(function() { cardEl.classList.remove('just-added'); }, 1600);
+        setTimeout(() => cardEl.classList.remove('just-added'), 1600);
       }
     }, 60);
 
     showToast('📡 «' + newProduct.title + '» опубликован');
   } catch (err) {
     console.error('Publish error:', err);
-    showToast('❌ ' + (err.message || 'что-то пошло не так'), true);
+    showToast('❌ ' + (err.message || 'Ошибка'), true);
   } finally {
     publishing = false;
     btn.disabled = false;
   }
 }
-
 $('publishBtn').addEventListener('click', handlePublish);
 builderForm.addEventListener('submit', handlePublish);
-$('builderReset').addEventListener('click', function() {
+$('builderReset').addEventListener('click', () => {
   builderForm.reset(); clearPhoto();
-  [fieldTitle, fieldDesc, fieldCategory].forEach(function(el) { el.classList.remove('invalid'); });
-  [errorTitle, errorDesc, errorCategory].forEach(function(el) { el.classList.remove('show'); });
+  [fieldTitle, fieldDesc, fieldCategory].forEach(el => el.classList.remove('invalid'));
+  [errorTitle, errorDesc, errorCategory].forEach(el => el.classList.remove('show'));
   photoUpload.classList.remove('invalid'); errorPhoto.classList.remove('show');
 });
 
-/* ============ ФИЛЬТРЫ ============ */
+/* =====================================================
+   ФИЛЬТРЫ / СТАТИСТИКА
+   ===================================================== */
 function renderCategoryFilters() {
-  var items = [{ key: 'all', name: 'Все' }];
-  for (var i = 0; i < STANDARD_CATEGORIES.length; i++) {
-    items.push({ key: STANDARD_CATEGORIES[i].key, name: STANDARD_CATEGORIES[i].emoji + ' ' + STANDARD_CATEGORIES[i].name });
+  const items = [{ key: 'all', name: 'Все' }];
+  for (const c of STANDARD_CATEGORIES) {
+    items.push({ key: c.key, name: c.emoji + ' ' + c.name });
   }
-  var used = collectUsedCategories();
-  for (var j = 0; j < used.length; j++) {
-    var u = used[j]; var isStandard = false;
-    for (var k = 0; k < STANDARD_CATEGORIES.length; k++) {
-      if (STANDARD_CATEGORIES[k].key === u.key) { isStandard = true; break; }
-    }
-    if (!isStandard) items.push({ key: u.key, name: '🏷️ ' + u.name });
+  const used = collectUsedCategories();
+  for (const u of used) {
+    const isStd = STANDARD_CATEGORIES.some(c => c.key === u.key);
+    if (!isStd) items.push({ key: u.key, name: '🏷️ ' + u.name });
   }
-  var exists = false;
-  for (var m = 0; m < items.length; m++) if (items[m].key === state.category) { exists = true; break; }
-  if (!exists) state.category = 'all';
+  if (!items.some(i => i.key === state.category)) state.category = 'all';
 
-  var html = '';
-  for (var n = 0; n < items.length; n++) {
-    var active = items[n].key === state.category ? ' active' : '';
-    html += '<div class="category' + active + '" data-category="' + escapeHtml(items[n].key) + '">' + escapeHtml(items[n].name) + '</div>';
-  }
-  categoriesEl.innerHTML = html;
+  categoriesEl.innerHTML = items.map(i => {
+    const active = i.key === state.category ? ' active' : '';
+    return '<div class="category' + active + '" data-category="' + escapeHtml(i.key) + '">' + escapeHtml(i.name) + '</div>';
+  }).join('');
 }
 
 function renderNetworkStats() {
-  var counts = {}; var custom = 0;
-  for (var i = 0; i < products.length; i++) {
-    var p = products[i];
+  const counts = {};
+  let custom = 0;
+  for (const p of products) {
     if (p.custom) custom++;
     if (!counts[p.category]) counts[p.category] = { name: categoryLabel(p), count: 0 };
     counts[p.category].count++;
   }
-  var html = '';
+  let html = '';
   html += '<div class="stat-chip">📦 Всего в сети: <strong>' + products.length + '</strong></div>';
   html += '<div class="stat-chip">✨ Ваших: <strong>' + custom + '</strong></div>';
-  for (var j = 0; j < STANDARD_CATEGORIES.length; j++) {
-    var s = STANDARD_CATEGORIES[j];
-    var c = counts[s.key] ? counts[s.key].count : 0;
+  for (const s of STANDARD_CATEGORIES) {
+    const c = counts[s.key] ? counts[s.key].count : 0;
     html += '<div class="stat-chip">' + s.emoji + ' ' + s.name + ': <strong>' + c + '</strong></div>';
-    if (counts[s.key]) delete counts[s.key];
+    delete counts[s.key];
   }
-  for (var k in counts) if (Object.prototype.hasOwnProperty.call(counts, k)) {
+  for (const k in counts) {
     html += '<div class="stat-chip">🏷️ ' + escapeHtml(counts[k].name) + ': <strong>' + counts[k].count + '</strong></div>';
   }
   networkStatsEl.innerHTML = html;
 }
 
 function getFiltered() {
-  var list = products.slice();
-  if (state.category !== 'all') list = list.filter(function(p) { return p.category === state.category; });
+  let list = products.slice();
+  if (state.category !== 'all') list = list.filter(p => p.category === state.category);
   if (state.search.trim()) {
-    var q = state.search.trim().toLowerCase();
-    list = list.filter(function(p) {
-      return p.title.toLowerCase().indexOf(q) !== -1 ||
-             p.desc.toLowerCase().indexOf(q) !== -1 ||
-             categoryLabel(p).toLowerCase().indexOf(q) !== -1;
-    });
+    const q = state.search.trim().toLowerCase();
+    list = list.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      p.desc.toLowerCase().includes(q) ||
+      categoryLabel(p).toLowerCase().includes(q)
+    );
   }
-  switch (state.sort) {
-    case 'rating': list.sort(function(a, b) { return b.rating - a.rating; }); break;
-    case 'name': list.sort(function(a, b) { return a.title.localeCompare(b.title, 'ru'); }); break;
+  if (state.sort === 'name') {
+    list.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
   }
   return list;
 }
 
-/* ============ ОТРИСОВКА ============ */
+/* =====================================================
+   ОТРИСОВКА
+   ===================================================== */
 function escapeHtml(s) {
   return String(s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -1504,18 +1515,18 @@ function isMyCard(p) { return p.custom && p.ownerId && p.ownerId === MY_OWNER_ID
 
 function buildCardHtml(p, opts) {
   opts = opts || {};
-  var imgContent = p.image
+  const imgContent = p.image
     ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '">'
     : (p.icon || '🆕');
 
-  var badgeHtml = '';
+  let badgeHtml = '';
   if (opts.rec && opts.recText) {
     badgeHtml = '<div class="rec-label">✨ ' + escapeHtml(opts.recText) + '</div>';
   } else if (p.badge) {
     badgeHtml = '<div class="badge' + (p.custom ? ' custom' : '') + '">' + escapeHtml(p.badge) + '</div>';
   }
 
-  var deleteBtn = (isMyCard(p) && !opts.rec)
+  const deleteBtn = (isMyCard(p) && !opts.rec)
     ? '<button class="delete-card-btn" data-delete="' + p.id + '" title="Удалить" type="button">🗑️</button>'
     : '';
 
@@ -1539,10 +1550,10 @@ function buildCardHtml(p, opts) {
 }
 
 function renderProducts() {
-  var list = getFiltered();
+  const list = getFiltered();
   resultsInfo.textContent = list.length ? 'Показано в сети: ' + list.length + ' из ' + products.length : '';
   if (!list.length) {
-    var isEmptyNetwork = products.length === 0;
+    const isEmptyNetwork = products.length === 0;
     productsEl.innerHTML =
       '<div class="empty">' +
         '<div class="empty-icon">' + (isEmptyNetwork ? '✨' : '🔍') + '</div>' +
@@ -1553,119 +1564,110 @@ function renderProducts() {
       '</div>';
     return;
   }
-  var html = '';
-  for (var i = 0; i < list.length; i++) html += buildCardHtml(list[i]);
-  productsEl.innerHTML = html;
+  productsEl.innerHTML = list.map(p => buildCardHtml(p)).join('');
 }
 
-/* ============ РЕКОМЕНДАЦИИ ============ */
-function getRecommendations(limit) {
-  if (limit === undefined) limit = 4;
+/* =====================================================
+   РЕКОМЕНДАЦИИ
+   ===================================================== */
+function findProduct(id) {
+  return products.find(p => p.id === id) || null;
+}
+function getRecommendations(limit = 4) {
   if (!products.length) return [];
-  var weights = {}; var hasActivity = false;
-  function bump(catKey, amount) {
-    if (!catKey) return;
-    if (!weights[catKey]) weights[catKey] = 0;
-    weights[catKey] += amount;
-  }
-  for (var i = 0; i < activity.carted.length; i++) {
-    var cp = findProduct(activity.carted[i]);
+  const weights = {};
+  let hasActivity = false;
+  const bump = (cat, amount) => {
+    if (!cat) return;
+    weights[cat] = (weights[cat] || 0) + amount;
+  };
+  for (const id of activity.carted) {
+    const cp = findProduct(id);
     if (cp) { bump(cp.category, 2); hasActivity = true; }
   }
-  for (var j = 0; j < activity.viewed.length; j++) {
-    var vp = findProduct(activity.viewed[j]);
+  for (const id of activity.viewed) {
+    const vp = findProduct(id);
     if (vp) { bump(vp.category, 1); hasActivity = true; }
   }
-  var excluded = {};
-  for (var m = 0; m < activity.viewed.length; m++) excluded[activity.viewed[m]] = true;
-  for (var n = 0; n < activity.carted.length; n++) excluded[activity.carted[n]] = true;
-  var candidates = products.filter(function(p) { return !excluded[p.id]; });
+  const excluded = new Set([...activity.viewed, ...activity.carted]);
+  const candidates = products.filter(p => !excluded.has(p.id));
   if (!hasActivity) return [];
-  var scored = candidates.map(function(p) {
-    var w = weights[p.category] || 0;
-    return { p: p, score: w * 10 + (p.rating || 0) * 0.3 + (p.custom ? 0.5 : 0) };
+  const scored = candidates.map(p => {
+    const w = weights[p.category] || 0;
+    return { p, score: w * 10 + (p.custom ? 0.5 : 0) };
   });
-  scored.sort(function(a, b) { return b.score - a.score; });
-  var result = [];
-  for (var k = 0; k < scored.length && result.length < limit; k++) {
-    if (scored[k].score >= 10) result.push(scored[k].p);
+  scored.sort((a, b) => b.score - a.score);
+  const result = [];
+  for (const s of scored) {
+    if (result.length >= limit) break;
+    if (s.score >= 10) result.push(s.p);
   }
   return result;
 }
-function findProduct(id) {
-  for (var i = 0; i < products.length; i++) if (products[i].id === id) return products[i];
-  return null;
-}
 function getRecommendationReason() {
-  var cartedCats = {}; var viewedCats = {};
-  for (var i = 0; i < activity.carted.length; i++) {
-    var cp = findProduct(activity.carted[i]);
+  const cartedCats = {};
+  const viewedCats = {};
+  for (const id of activity.carted) {
+    const cp = findProduct(id);
     if (cp) cartedCats[cp.category] = categoryLabel(cp);
   }
-  for (var j = 0; j < activity.viewed.length; j++) {
-    var vp = findProduct(activity.viewed[j]);
+  for (const id of activity.viewed) {
+    const vp = findProduct(id);
     if (vp) viewedCats[vp.category] = categoryLabel(vp);
   }
-  var cartedList = Object.keys(cartedCats).map(function(k) { return cartedCats[k]; });
-  var viewedList = Object.keys(viewedCats).map(function(k) { return viewedCats[k]; });
+  const cartedList = Object.values(cartedCats);
+  const viewedList = Object.values(viewedCats);
   if (cartedList.length) return '❤️ По вашим понравившимся: ' + cartedList.slice(0, 2).join(', ');
   if (viewedList.length) return '👁️ На основе просмотров: ' + viewedList.slice(0, 2).join(', ');
   return '✨ На основе ваших интересов';
 }
-var recTimeout = null;
+let recTimeout = null;
 function scheduleRecommendations() {
   if (recTimeout) clearTimeout(recTimeout);
   recTimeout = setTimeout(renderRecommendations, 250);
 }
 function renderRecommendations() {
-  var recs = getRecommendations(4);
-  if (!recs.length) { recommendationsEl.classList.remove('visible'); recommendationsGrid.innerHTML = ''; return; }
+  const recs = getRecommendations(4);
+  if (!recs.length) {
+    recommendationsEl.classList.remove('visible');
+    recommendationsGrid.innerHTML = '';
+    return;
+  }
   recReason.textContent = getRecommendationReason();
-  var html = '';
-  for (var i = 0; i < recs.length; i++) {
-    var reason = 'Похожее';
-    for (var j = 0; j < activity.carted.length; j++) {
-      var cp = findProduct(activity.carted[j]);
-      if (cp && cp.category === recs[i].category) { reason = 'Вам нравится'; break; }
+  const html = recs.map(p => {
+    let reason = 'Похожее';
+    for (const id of activity.carted) {
+      const cp = findProduct(id);
+      if (cp && cp.category === p.category) { reason = 'Вам нравится'; break; }
     }
     if (reason === 'Похожее') {
-      for (var k = 0; k < activity.viewed.length; k++) {
-        var vp = findProduct(activity.viewed[k]);
-        if (vp && vp.category === recs[i].category) { reason = 'Вы смотрели'; break; }
+      for (const id of activity.viewed) {
+        const vp = findProduct(id);
+        if (vp && vp.category === p.category) { reason = 'Вы смотрели'; break; }
       }
     }
-    html += buildCardHtml(recs[i], { rec: true, recText: reason });
-  }
+    return buildCardHtml(p, { rec: true, recText: reason });
+  }).join('');
   recommendationsGrid.innerHTML = html;
   recommendationsEl.classList.add('visible');
 }
 
-/* ============ КЛИКИ ПО КАРТОЧКАМ ============ */
+/* =====================================================
+   КЛИКИ ПО КАРТОЧКАМ
+   ===================================================== */
 async function handleProductClick(e) {
-  var delBtn = e.target.closest('[data-delete]');
+  const delBtn = e.target.closest('[data-delete]');
   if (delBtn) {
-    var id = Number(delBtn.getAttribute('data-delete'));
-    var idx = -1;
-    for (var i = 0; i < products.length; i++) if (products[i].id === id) { idx = i; break; }
+    const id = Number(delBtn.getAttribute('data-delete'));
+    const idx = products.findIndex(p => p.id === id);
     if (idx !== -1) {
-      var target = products[idx];
+      const target = products[idx];
       if (!isMyCard(target)) { showToast('🚫 Это не ваша карточка', true); return; }
-      var name = target.title;
+      const name = target.title;
       products.splice(idx, 1);
-      if (MODE === 'server') {
-        try {
-          await fetch('/api/products/' + id, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ownerId: MY_OWNER_ID })
-          });
-        } catch (err) { console.error('Ошибка удаления:', err); }
-      } else {
-        delete chatsByProduct[id];
-        saveChatsLocal();
-        saveCustomCardsLocal();
-      }
-      state.cart = state.cart.filter(function(x) { return x.id !== id; });
+      try { await deleteProductFromServer(id); } catch (err) { console.error(err); }
+      state.cart = state.cart.filter(x => x.id !== id);
+      saveCartLocal();
       renderCategoryFilters(); renderCart(); updateCartCount();
       renderProducts(); renderNetworkStats(); updateCategoryDatalist();
       scheduleRecommendations();
@@ -1673,12 +1675,12 @@ async function handleProductClick(e) {
     }
     return;
   }
-  var actionEl = e.target.closest('[data-action]');
+  const actionEl = e.target.closest('[data-action]');
   if (!actionEl) return;
-  var action = actionEl.getAttribute('data-action');
-  var card = e.target.closest('.card');
+  const action = actionEl.getAttribute('data-action');
+  const card = e.target.closest('.card');
   if (!card) return;
-  var pid = Number(card.getAttribute('data-id'));
+  const pid = Number(card.getAttribute('data-id'));
   if (action === 'add') addToCart(pid);
   else if (action === 'open') openModal(pid);
   else if (action === 'chat') handleChatButton(pid);
@@ -1686,29 +1688,32 @@ async function handleProductClick(e) {
 productsEl.addEventListener('click', handleProductClick);
 recommendationsGrid.addEventListener('click', handleProductClick);
 
-/* ============ КОРЗИНА ============ */
+/* =====================================================
+   КОРЗИНА
+   ===================================================== */
 function addToCart(id) {
-  var item = state.cart.find(function(i) { return i.id === id; });
+  const item = state.cart.find(i => i.id === id);
   if (item) item.qty++;
-  else state.cart.push({ id: id, qty: 1 });
+  else state.cart.push({ id, qty: 1 });
+  saveCartLocal();
   renderCart(); updateCartCount(); trackCart(id);
-  var product = products.find(function(p) { return p.id === id; });
+  const product = products.find(p => p.id === id);
   if (product) showToast('❤️ «' + product.title + '» добавлено');
 }
 function changeQty(id, delta) {
-  var item = state.cart.find(function(i) { return i.id === id; });
+  const item = state.cart.find(i => i.id === id);
   if (!item) return;
   item.qty += delta;
-  if (item.qty <= 0) state.cart = state.cart.filter(function(i) { return i.id !== id; });
-  renderCart(); updateCartCount();
+  if (item.qty <= 0) state.cart = state.cart.filter(i => i.id !== id);
+  saveCartLocal(); renderCart(); updateCartCount();
 }
 function removeFromCart(id) {
-  state.cart = state.cart.filter(function(i) { return i.id !== id; });
-  renderCart(); updateCartCount();
+  state.cart = state.cart.filter(i => i.id !== id);
+  saveCartLocal(); renderCart(); updateCartCount();
 }
 function updateCartCount() {
-  var total = 0;
-  for (var i = 0; i < state.cart.length; i++) total += state.cart[i].qty;
+  let total = 0;
+  for (const i of state.cart) total += i.qty;
   cartCountEl.textContent = total;
   cartCountEl.style.display = total > 0 ? 'flex' : 'none';
 }
@@ -1718,13 +1723,13 @@ function renderCart() {
     cartTotalEl.textContent = '0';
     return;
   }
-  var totalItems = 0; var html = '';
-  for (var i = 0; i < state.cart.length; i++) {
-    var item = state.cart[i];
-    var p = products.find(function(x) { return x.id === item.id; });
+  let totalItems = 0;
+  let html = '';
+  for (const item of state.cart) {
+    const p = products.find(x => x.id === item.id);
     if (!p) continue;
     totalItems += item.qty;
-    var img = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
+    const img = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
     html +=
       '<div class="cart-item">' +
         '<div class="cart-item-img">' + img + '</div>' +
@@ -1745,23 +1750,19 @@ function renderCart() {
   cartItemsEl.innerHTML = html;
   cartTotalEl.textContent = totalItems;
 }
-cartItemsEl.addEventListener('click', function(e) {
-  var qtyBtn = e.target.closest('[data-qty]');
+cartItemsEl.addEventListener('click', e => {
+  const qtyBtn = e.target.closest('[data-qty]');
   if (qtyBtn) {
     changeQty(Number(qtyBtn.getAttribute('data-id')), Number(qtyBtn.getAttribute('data-qty')));
     return;
   }
-  var removeBtn = e.target.closest('[data-remove]');
-  if (removeBtn) {
-    removeFromCart(Number(removeBtn.getAttribute('data-remove')));
-    return;
-  }
-  var chatBtn = e.target.closest('[data-cart-chat]');
+  const removeBtn = e.target.closest('[data-remove]');
+  if (removeBtn) { removeFromCart(Number(removeBtn.getAttribute('data-remove'))); return; }
+  const chatBtn = e.target.closest('[data-cart-chat]');
   if (chatBtn) {
-    var pid = Number(chatBtn.getAttribute('data-cart-chat'));
+    const pid = Number(chatBtn.getAttribute('data-cart-chat'));
     closeCart();
-    setTimeout(function() { handleChatButton(pid); }, 250);
-    return;
+    setTimeout(() => handleChatButton(pid), 250);
   }
 });
 function openCart() { cartPanel.classList.add('open'); overlay.classList.add('open'); }
@@ -1770,12 +1771,14 @@ $('cartBtn').addEventListener('click', openCart);
 $('closeCart').addEventListener('click', closeCart);
 overlay.addEventListener('click', closeCart);
 
-/* ============ МОДАЛКА ТОВАРА ============ */
+/* =====================================================
+   МОДАЛКА ТОВАРА
+   ===================================================== */
 function openModal(id) {
-  var p = products.find(function(x) { return x.id === id; });
+  const p = products.find(x => x.id === id);
   if (!p) return;
   trackView(id);
-  var imgContent = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
+  const imgContent = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
   modalContent.innerHTML =
     '<div class="modal-img">' + imgContent + '</div>' +
     '<div class="modal-body">' +
@@ -1789,13 +1792,13 @@ function openModal(id) {
     '</div>';
   modal.classList.add('open');
 }
-modal.addEventListener('click', function(e) {
+modal.addEventListener('click', e => {
   if (e.target === modal) modal.classList.remove('open');
-  var addEl = e.target.closest('[data-action="add"]');
+  const addEl = e.target.closest('[data-action="add"]');
   if (addEl) { addToCart(Number(addEl.getAttribute('data-id'))); modal.classList.remove('open'); openCart(); return; }
-  var chatEl = e.target.closest('[data-action="chat"]');
+  const chatEl = e.target.closest('[data-action="chat"]');
   if (chatEl) {
-    var pid = Number(chatEl.getAttribute('data-id'));
+    const pid = Number(chatEl.getAttribute('data-id'));
     modal.classList.remove('open');
     handleChatButton(pid);
   }
@@ -1825,59 +1828,30 @@ function updateChatRoleBadge() {
   }
 }
 
-async function joinChat(productId, buyerId) {
-  try {
-    var res = await fetch('/api/chats/' + productId + '/join', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ownerId: MY_OWNER_ID, buyerId: buyerId || null })
-    });
-    return await res.json();
-  } catch (err) {
-    console.error('joinChat error:', err);
-    return { allowed: false, reason: 'Ошибка соединения' };
-  }
-}
-
 async function handleChatButton(productId) {
-  var p = findProduct(productId);
+  const p = findProduct(productId);
   if (!p) { showToast('❌ Товар не найден', true); return; }
 
-  if (MODE === 'server') {
-    var join = await joinChat(productId, null);
-    if (!join || !join.allowed) {
-      showToast('🚫 ' + ((join && join.reason) || 'Доступ запрещён'), true);
-      return;
-    }
-    if (join.role === 'seller' && !join.buyerId) {
-      openChatsList(productId);
-      return;
-    }
-    openChat(productId, join.buyerId || null);
+  if (p.ownerId === MY_OWNER_ID) {
+    // Я продавец — открываем список покупателей
+    openChatsList(productId);
   } else {
-    openChat(productId, null);
+    // Я покупатель — мой личный чат
+    openChat(productId, MY_OWNER_ID);
   }
 }
 
 async function openChat(productId, buyerId) {
-  var p = findProduct(productId);
+  const p = findProduct(productId);
   if (!p) { showToast('❌ Товар не найден', true); return; }
 
-  if (MODE === 'server') {
-    var join = await joinChat(productId, buyerId);
-    if (!join || !join.allowed) {
-      showToast('🚫 ' + ((join && join.reason) || 'Доступ запрещён'), true);
-      return;
-    }
-    currentChatRole = join.role;
-    currentChatBuyerId = join.buyerId || buyerId;
-    if (currentChatRole === 'seller' && !currentChatBuyerId) {
-      openChatsList(productId);
-      return;
-    }
+  if (p.ownerId === MY_OWNER_ID) {
+    currentChatRole = 'seller';
+    currentChatBuyerId = buyerId;
+    if (!currentChatBuyerId) { openChatsList(productId); return; }
   } else {
-    currentChatRole = isMyCard(p) ? 'seller' : 'buyer';
-    currentChatBuyerId = currentChatRole === 'buyer' ? MY_OWNER_ID : (buyerId || MY_OWNER_ID);
+    currentChatRole = 'buyer';
+    currentChatBuyerId = MY_OWNER_ID;
   }
 
   currentChatProductId = productId;
@@ -1890,36 +1864,16 @@ async function openChat(productId, buyerId) {
   chatModal.classList.add('open');
   chatBody.innerHTML = '<div class="chat-placeholder"><p>Загрузка...</p></div>';
 
-  if (MODE === 'server' && wsClient) {
-    wsClient.joinRoom(productId, currentChatBuyerId);
-  }
-
+  subscribeToChat(productId, currentChatBuyerId);
   await refreshChat();
 
-  if (chatPollTimer) clearInterval(chatPollTimer);
-  chatPollTimer = setInterval(function() {
-    if (chatModal.classList.contains('open')) refreshChat();
-  }, 3000);
-
-  setTimeout(function() { chatInput.focus(); scrollChatToBottom(); }, 150);
+  setTimeout(() => { chatInput.focus(); scrollChatToBottom(); }, 150);
 }
 
 async function refreshChat() {
-  if (currentChatProductId === null) return;
-  if (!currentChatBuyerId) return;
-
-  if (MODE === 'server') {
-    try {
-      var res = await fetch('/api/chats/' + currentChatProductId + '/' + encodeURIComponent(currentChatBuyerId));
-      if (!res.ok) return;
-      var messages = await res.json();
-      renderMessagesFromArray(messages);
-    } catch (err) {
-      console.error('refreshChat error:', err);
-    }
-  } else {
-    renderMessagesFromArray(chatsByProduct[currentChatProductId] || []);
-  }
+  if (currentChatProductId === null || !currentChatBuyerId) return;
+  const messages = await loadChatHistory(currentChatProductId, currentChatBuyerId);
+  renderMessagesFromArray(messages);
 }
 
 function renderMessagesFromArray(messages) {
@@ -1928,29 +1882,21 @@ function renderMessagesFromArray(messages) {
     lastMessagesHash = '';
     return;
   }
-
-  var hash = JSON.stringify(messages.map(function(m) { return [m.id || '', m.role, m.text]; }));
+  const hash = JSON.stringify(messages.map(m => [m.id, m.role, m.text]));
   if (hash === lastMessagesHash) return;
   lastMessagesHash = hash;
 
-  var wasNearBottom = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight < 80;
+  const wasNearBottom = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight < 80;
 
-  var html = '';
-  for (var i = 0; i < messages.length; i++) {
-    var m = messages[i];
-    if (!m || !m.text) continue;
-
-    var isMine = (m.role === currentChatRole);
-    var cls = isMine ? 'me' : 'unit';
-    var extraCls = '';
-    if (!isMine) extraCls = (m.role === 'seller') ? ' from-seller' : ' from-buyer';
-
-    html +=
-      '<div class="msg ' + cls + extraCls + '" data-id="' + (m.id || '') + '">' +
-        '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span>' +
-        '<span class="msg-time">' + formatChatTime(m.time) + '</span>' +
-      '</div>';
-  }
+  const html = messages.map(m => {
+    const isMine = (m.role === currentChatRole);
+    const cls = isMine ? 'me' : 'unit';
+    const extraCls = isMine ? '' : (m.role === 'seller' ? ' from-seller' : ' from-buyer');
+    return '<div class="msg ' + cls + extraCls + '" data-id="' + m.id + '">' +
+      '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span>' +
+      '<span class="msg-time">' + formatChatTime(m.time) + '</span>' +
+    '</div>';
+  }).join('');
   chatBody.innerHTML = html;
   if (wasNearBottom || chatBody.scrollHeight <= chatBody.clientHeight + 10) {
     scrollChatToBottom();
@@ -1959,142 +1905,90 @@ function renderMessagesFromArray(messages) {
 
 function scrollChatToBottom() { chatBody.scrollTop = chatBody.scrollHeight; }
 
-/* ============ ОТПРАВКА ============ */
-chatForm.addEventListener('submit', async function(e) {
+chatForm.addEventListener('submit', async e => {
   e.preventDefault();
-  if (currentChatProductId === null) return;
-  if (!currentChatRole) return;
-  if (!currentChatBuyerId) {
-    showToast('❌ Не выбран покупатель', true);
+  if (currentChatProductId === null || !currentChatRole || !currentChatBuyerId) {
+    showToast('❌ Не выбран чат', true);
     return;
   }
-
-  var text = chatInput.value.trim();
+  const text = chatInput.value.trim();
   if (!text) return;
 
   chatInput.value = '';
   chatSendBtn.disabled = true;
 
-  var ok = false;
-
-  if (MODE === 'server') {
-    try {
-      var res = await fetch(
-        '/api/chats/' + currentChatProductId + '/' + encodeURIComponent(currentChatBuyerId) + '/messages',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            role: currentChatRole,
-            text: text,
-            ownerId: MY_OWNER_ID
-          })
-        }
-      );
-      if (res.ok) {
-        var saved = await res.json();
-        appendMessageToUI(saved);
-        ok = true;
-      } else {
-        var bodyText = await res.text();
-        console.warn('HTTP send failed:', res.status, bodyText);
-      }
-    } catch (err) {
-      console.warn('HTTP send error:', err);
-    }
-
-    if (!ok && wsClient) {
-      console.log('→ fallback via WS');
-      wsClient.sendMessage(
-        currentChatProductId,
-        currentChatBuyerId,
-        currentChatRole,
-        text,
-        MY_OWNER_ID
-      );
-      ok = true;
-    }
-
-    if (!ok) {
-      showToast('❌ Не удалось отправить сообщение', true);
-      chatInput.value = text;
-    }
-  } else {
-    addMessageLocal(currentChatProductId, currentChatRole, text);
-    refreshChat();
-    ok = true;
+  try {
+    const saved = await sendMessageToServer(
+      currentChatProductId, currentChatBuyerId, currentChatRole, text
+    );
+    appendMessageToUI(saved);
+  } catch (err) {
+    console.error(err);
+    showToast('❌ ' + err.message, true);
+    chatInput.value = text;
+  } finally {
+    chatSendBtn.disabled = false;
+    chatInput.focus();
   }
-
-  chatSendBtn.disabled = false;
-  chatInput.focus();
 });
 
 function appendMessageToUI(m) {
   if (!m || !m.text) return;
   if (m.id && chatBody.querySelector('.msg[data-id="' + m.id + '"]')) return;
 
-  var placeholder = chatBody.querySelector('.chat-placeholder');
+  const placeholder = chatBody.querySelector('.chat-placeholder');
   if (placeholder) placeholder.remove();
 
-  var isMine = (m.role === currentChatRole);
-  var cls = isMine ? 'me' : 'unit';
-  var extraCls = '';
-  if (!isMine) extraCls = (m.role === 'seller') ? ' from-seller' : ' from-buyer';
+  const isMine = (m.role === currentChatRole);
+  const cls = isMine ? 'me' : 'unit';
+  const extraCls = isMine ? '' : (m.role === 'seller' ? ' from-seller' : ' from-buyer');
 
-  var el = document.createElement('div');
+  const el = document.createElement('div');
   el.className = 'msg ' + cls + extraCls;
-  if (m.id) el.setAttribute('data-id', String(m.id));
+  el.setAttribute('data-id', String(m.id));
   el.innerHTML =
     '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span>' +
     '<span class="msg-time">' + formatChatTime(m.time) + '</span>';
   chatBody.appendChild(el);
   scrollChatToBottom();
-
   lastMessagesHash = '';
 }
 
-/* ============ ОЧИСТКА ============ */
-chatClearBtn.addEventListener('click', async function() {
+chatClearBtn.addEventListener('click', async () => {
   if (currentChatProductId === null || !currentChatBuyerId) return;
-  if (!window.confirm('Очистить всю историю этого чата?')) return;
-
-  if (MODE === 'server') {
-    try {
-      await fetch('/api/chats/' + currentChatProductId + '/' + encodeURIComponent(currentChatBuyerId), { method: 'DELETE' });
-      chatBody.innerHTML = emptyChatHtml();
-      lastMessagesHash = '';
-    } catch (err) { showToast('❌ Не удалось очистить', true); }
-  } else {
-    chatsByProduct[currentChatProductId] = [];
-    saveChatsLocal();
-    renderMessagesFromArray([]);
+  if (!confirm('Очистить всю историю этого чата?')) return;
+  try {
+    await clearChatOnServer(currentChatProductId, currentChatBuyerId);
+    chatBody.innerHTML = emptyChatHtml();
+    lastMessagesHash = '';
+    showToast('🗑️ История очищена');
+  } catch (err) {
+    showToast('❌ ' + err.message, true);
   }
-  showToast('🗑️ История чата очищена');
 });
 
-/* ============ ЗАКРЫТИЕ ЧАТА ============ */
 function closeChatModal(goBack) {
-  if (MODE === 'server' && wsClient && currentChatProductId !== null && currentChatBuyerId) {
-    wsClient.leaveRoom(currentChatProductId, currentChatBuyerId);
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+    realtimeChannel = null;
   }
-  if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; }
   chatModal.classList.remove('open');
   currentChatProductId = null;
   currentChatBuyerId = null;
   currentChatRole = null;
   lastMessagesHash = '';
-  if (goBack) setTimeout(function() { openChatsList(null); }, 200);
+  if (goBack) setTimeout(() => openChatsList(null), 200);
 }
-$('closeChat').addEventListener('click', function() { closeChatModal(false); });
-chatBack.addEventListener('click', function() { closeChatModal(true); });
-chatModal.addEventListener('click', function(e) { if (e.target === chatModal) closeChatModal(false); });
+$('closeChat').addEventListener('click', () => closeChatModal(false));
+chatBack.addEventListener('click', () => closeChatModal(true));
+chatModal.addEventListener('click', e => { if (e.target === chatModal) closeChatModal(false); });
 
-/* ============ СПИСОК ЧАТОВ ============ */
+/* =====================================================
+   СПИСОК ЧАТОВ
+   ===================================================== */
 function openChatsList(filterProductId) {
   chatsFilterProductId = filterProductId || null;
-  if (chatsModalTitle) {
-    chatsModalTitle.textContent = chatsFilterProductId ? '💬 Покупатели товара' : '💬 Все чаты';
-  }
+  chatsModalTitle.textContent = chatsFilterProductId ? '💬 Покупатели товара' : '💬 Все чаты';
   renderChatsList();
   chatsModal.classList.add('open');
 }
@@ -2102,44 +1996,14 @@ function closeChatsList() {
   chatsModal.classList.remove('open');
   chatsFilterProductId = null;
 }
-chatsBtn.addEventListener('click', function() { openChatsList(null); });
+chatsBtn.addEventListener('click', () => openChatsList(null));
 closeChats.addEventListener('click', closeChatsList);
-chatsModal.addEventListener('click', function(e) { if (e.target === chatsModal) closeChatsList(); });
+chatsModal.addEventListener('click', e => { if (e.target === chatsModal) closeChatsList(); });
 
 async function renderChatsList() {
-  var rows = [];
-
-  if (MODE === 'server') {
-    try {
-      var url = '/api/chats?ownerId=' + encodeURIComponent(MY_OWNER_ID);
-      var res = await fetch(url);
-      rows = await res.json();
-    } catch (err) {
-      console.error('Ошибка загрузки чатов:', err);
-      rows = [];
-    }
-    if (chatsFilterProductId) {
-      rows = rows.filter(function(r) { return r.productId === chatsFilterProductId; });
-    }
-  } else {
-    for (var pid in chatsByProduct) {
-      if (!Object.prototype.hasOwnProperty.call(chatsByProduct, pid)) continue;
-      var list = chatsByProduct[pid];
-      if (!list || !list.length) continue;
-      var p = findProduct(Number(pid));
-      if (!p) continue;
-      var last = list[list.length - 1];
-      rows.push({
-        productId: p.id,
-        buyerId: 'local',
-        title: p.title,
-        image: p.image,
-        lastText: last.text,
-        lastFrom: last.role,
-        lastTime: last.time
-      });
-    }
-    rows.sort(function(a, b) { return b.lastTime - a.lastTime; });
+  let rows = await loadChatsList();
+  if (chatsFilterProductId) {
+    rows = rows.filter(r => r.productId === chatsFilterProductId);
   }
 
   if (!rows.length) {
@@ -2147,113 +2011,101 @@ async function renderChatsList() {
       '<div class="chats-empty">' +
         '<div class="chats-empty-icon">💬</div>' +
         '<p>' + (chatsFilterProductId ? 'Пока никто не написал по этому товару' : 'Пока нет ни одного чата') + '</p>' +
-        '<p class="hint">' + (chatsFilterProductId ? 'Когда покупатель напишет — чат появится здесь' : 'Нажмите 💬 на любой карточке, чтобы начать диалог') + '</p>' +
+        '<p class="hint">' + (chatsFilterProductId ? 'Когда покупатель напишет — чат появится здесь' : 'Нажмите 💬 на любой карточке') + '</p>' +
       '</div>';
     return;
   }
 
-  var html = '';
-  for (var i = 0; i < rows.length; i++) {
-    var row = rows[i];
-    var imgContent = row.image ? '<img src="' + row.image + '" alt="">' : '🆕';
-
-    var prefix = '';
+  const html = rows.map(row => {
+    const imgContent = row.image ? '<img src="' + row.image + '" alt="">' : '🆕';
+    let prefix = '';
     if (row.lastFrom === 'seller') prefix = '<span class="prefix-seller">Продавец: </span>';
     else if (row.lastFrom === 'buyer') prefix = '<span class="prefix">Покупатель: </span>';
 
-    var sub = '';
-    if (row.buyerId && row.buyerId !== 'local') {
-      var shortId = String(row.buyerId).replace(/^u_/, '').slice(-6);
-      var prod = findProduct(row.productId);
-      if (prod && isMyCard(prod)) {
-        sub = '<div class="chat-item-sub">👤 Покупатель #' + escapeHtml(shortId) + '</div>';
-      }
+    let sub = '';
+    if (row.buyerId && row.buyerId !== MY_OWNER_ID) {
+      sub = '<div class="chat-item-sub">👤 Покупатель #' + escapeHtml(row.buyerId.slice(-4)) + '</div>';
     }
 
-    html +=
-      '<div class="chat-item" data-chat-id="' + row.productId + '" data-buyer-id="' + escapeHtml(row.buyerId || '') + '">' +
-        '<div class="chat-item-img">' + imgContent + '</div>' +
-        '<div class="chat-item-info">' +
-          '<div class="chat-item-title">' + escapeHtml(row.title) + '</div>' +
-          sub +
-          '<div class="chat-item-last">' + prefix + escapeHtml(row.lastText) + '</div>' +
-        '</div>' +
-        '<div class="chat-item-meta">' +
-          '<div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div>' +
-        '</div>' +
-      '</div>';
-  }
+    return '<div class="chat-item" data-chat-id="' + row.productId + '" data-buyer-id="' + escapeHtml(row.buyerId) + '">' +
+      '<div class="chat-item-img">' + imgContent + '</div>' +
+      '<div class="chat-item-info">' +
+        '<div class="chat-item-title">' + escapeHtml(row.title) + '</div>' +
+        sub +
+        '<div class="chat-item-last">' + prefix + escapeHtml(row.lastText) + '</div>' +
+      '</div>' +
+      '<div class="chat-item-meta">' +
+        '<div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
   chatsList.innerHTML = html;
 }
 
-chatsList.addEventListener('click', function(e) {
-  var item = e.target.closest('[data-chat-id]');
+chatsList.addEventListener('click', e => {
+  const item = e.target.closest('[data-chat-id]');
   if (!item) return;
-  var pid = Number(item.getAttribute('data-chat-id'));
-  var bid = item.getAttribute('data-buyer-id') || null;
-  if (bid === 'local') {
-    closeChatsList();
-    setTimeout(function() { openChat(pid, null); }, 150);
-    return;
-  }
-  if (!bid) { showToast('❌ Нет покупателя', true); return; }
+  const pid = Number(item.getAttribute('data-chat-id'));
+  const bid = item.getAttribute('data-buyer-id');
+  if (!bid) return;
   closeChatsList();
-  setTimeout(function() { openChat(pid, bid); }, 150);
+  setTimeout(() => openChat(pid, bid), 150);
 });
 
-/* ============ ВРЕМЯ ============ */
+/* =====================================================
+   ВРЕМЯ
+   ===================================================== */
 function formatChatTime(ms) {
-  var d = new Date(ms);
-  var now = new Date();
-  var diff = now.getTime() - d.getTime();
-  var dayMs = 24 * 60 * 60 * 1000;
+  const d = new Date(ms);
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  const dayMs = 24 * 60 * 60 * 1000;
   if (diff < 60 * 1000) return 'только что';
   if (diff < 60 * 60 * 1000) return Math.floor(diff / 60000) + ' мин назад';
   if (d.toDateString() === now.toDateString()) {
-    var hh = d.getHours(), mm = d.getMinutes();
-    if (hh < 10) hh = '0' + hh;
-    if (mm < 10) mm = '0' + mm;
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
     return hh + ':' + mm;
   }
   if (diff < 2 * dayMs) return 'вчера';
-  var dd = d.getDate(), mo = d.getMonth() + 1;
-  if (dd < 10) dd = '0' + dd;
-  if (mo < 10) mo = '0' + mo;
-  return dd + '.' + mo;
+  return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0');
 }
 
-/* ============ ФИЛЬТРЫ ============ */
-categoriesEl.addEventListener('click', function(e) {
-  var btn = e.target.closest('.category');
+/* =====================================================
+   ФИЛЬТРЫ
+   ===================================================== */
+categoriesEl.addEventListener('click', e => {
+  const btn = e.target.closest('.category');
   if (!btn) return;
-  var all = document.querySelectorAll('.category');
-  for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+  document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   state.category = btn.getAttribute('data-category');
   renderProducts();
 });
-$('searchForm').addEventListener('submit', function(e) {
+$('searchForm').addEventListener('submit', e => {
   e.preventDefault();
   state.search = searchInput.value;
   renderProducts();
 });
-searchInput.addEventListener('input', function() {
+searchInput.addEventListener('input', () => {
   state.search = searchInput.value;
   clearSearch.classList.toggle('visible', searchInput.value.length > 0);
   renderProducts();
 });
-clearSearch.addEventListener('click', function() {
+clearSearch.addEventListener('click', () => {
   searchInput.value = ''; state.search = '';
   clearSearch.classList.remove('visible');
   renderProducts(); searchInput.focus();
 });
-sortSelect.addEventListener('change', function() {
+sortSelect.addEventListener('change', () => {
   state.sort = sortSelect.value;
   renderProducts();
 });
 
-/* ============ ESC ============ */
-document.addEventListener('keydown', function(e) {
+/* =====================================================
+   ESC
+   ===================================================== */
+document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (hintModal.classList.contains('open')) { hintModal.classList.remove('open'); return; }
     if (chatModal.classList.contains('open')) { closeChatModal(false); return; }
@@ -2263,20 +2115,26 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-/* ============ TOAST ============ */
-var toastTimer = null;
-function showToast(message, isError) {
-  if (isError === undefined) isError = false;
+/* =====================================================
+   TOAST
+   ===================================================== */
+let toastTimer = null;
+function showToast(message, isError = false) {
   toast.textContent = message;
   toast.className = 'toast';
   if (isError) toast.classList.add('error');
   toast.classList.add('show');
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 3500);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-/* ============ СТАРТ ============ */
-detectModeAndInit();
+/* =====================================================
+   СТАРТ
+   ===================================================== */
+init().catch(err => {
+  console.error('Init error:', err);
+  showToast('❌ Ошибка инициализации: ' + err.message, true);
+});
 </script>
 
 </body>
