@@ -530,7 +530,7 @@
   .chat-placeholder { margin: auto; text-align: center; color: var(--text-3); font-size: 14px; }
   .chat-placeholder .i { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
 
-  /* ============ LIQUID GLASS СООБЩЕНИЯ ============ */
+  /* ===== LIQUID GLASS СООБЩЕНИЯ ===== */
   .msg {
     max-width: 75%; padding: 11px 15px;
     border-radius: 18px; font-size: 14px; line-height: 1.45;
@@ -549,7 +549,6 @@
   .msg .t { display: block; position: relative; z-index: 1; }
   .msg .time { display: block; font-size: 10px; opacity: 0.6; margin-top: 5px; text-align: right; position: relative; z-index: 1; }
 
-  /* Мои — плотное фиолетовое стекло с бликом */
   .msg.me {
     align-self: flex-end;
     background:
@@ -565,7 +564,6 @@
     text-shadow: 0 0 6px rgba(255,255,255,0.2);
   }
 
-  /* Входящие — полупрозрачное стекло с blur */
   .msg.unit {
     align-self: flex-start;
     background:
@@ -1036,8 +1034,13 @@ $('authModal').addEventListener('click', e => { if (e.target === $('authModal'))
 async function loadProfiles(ids) {
   const need = [...new Set(ids)].filter(id => id && !profilesCache[id]);
   if (!need.length) return;
-  const { data } = await supabase.from('profiles').select('id, username').in('id', need);
+  const { data, error } = await supabase.from('profiles').select('id, username').in('id', need);
+  if (error) {
+    console.error('❌ loadProfiles error:', error);
+    return;
+  }
   (data || []).forEach(p => { profilesCache[p.id] = p.username; });
+  console.log('✅ Профили загружены:', data);
 }
 
 async function onAuthed() {
@@ -1233,7 +1236,14 @@ function cardHtml(p) {
   const img = p.image
     ? `<img src="${p.image}" alt="${escapeHtml(p.title)}" loading="lazy">`
     : `<div class="placeholder">🆕</div>`;
-  const ownerName = profilesCache[p.ownerId] || '—';
+
+  // Автор: username из кеша, иначе короткий ID
+  let ownerName = profilesCache[p.ownerId];
+  if (!ownerName) {
+    const raw = String(p.ownerId || '');
+    ownerName = raw ? ('ID:' + raw.slice(-6)) : 'Неизвестный';
+  }
+
   const cat = catLabel(p);
   const del = canDelete(p)
     ? `<button class="card-del${(!isMine(p) && MY_ADMIN) ? ' admin' : ''}" data-del="${p.id}" title="Удалить" type="button">🗑️</button>`
@@ -1261,6 +1271,7 @@ function cardHtml(p) {
   </article>`;
 }
 
+let profilesRetryTimer = null;
 function renderProducts() {
   const list = filtered();
   const grid = $('productsGrid');
@@ -1273,6 +1284,20 @@ function renderProducts() {
     return;
   }
   grid.innerHTML = list.map(cardHtml).join('');
+
+  // Догружаем профили, если кого-то не хватает, и перерисовываем
+  const missing = list.map(p => p.ownerId).filter(id => id && !profilesCache[id]);
+  if (missing.length) {
+    if (profilesRetryTimer) clearTimeout(profilesRetryTimer);
+    profilesRetryTimer = setTimeout(async () => {
+      await loadProfiles(missing);
+      const stillMissing = list.map(p => p.ownerId).filter(id => id && !profilesCache[id]);
+      if (stillMissing.length < missing.length) {
+        grid.innerHTML = list.map(cardHtml).join('');
+        renderRecos();
+      }
+    }, 100);
+  }
 }
 
 function renderRecos() {
@@ -1312,7 +1337,13 @@ document.addEventListener('click', async e => {
 function openProduct(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
-  const ownerName = profilesCache[p.ownerId] || '—';
+
+  let ownerName = profilesCache[p.ownerId];
+  if (!ownerName) {
+    const raw = String(p.ownerId || '');
+    ownerName = raw ? ('ID:' + raw.slice(-6)) : 'Неизвестный';
+  }
+
   const img = p.image ? `<img src="${p.image}" alt="" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:80px;opacity:0.4;">🆕</div>`;
   $('productModalBody').innerHTML = `
     <div style="margin:-32px -32px 20px;height:240px;background:linear-gradient(135deg,rgba(55,25,100,0.6),rgba(20,8,35,0.8));display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:26px 26px 0 0;">
