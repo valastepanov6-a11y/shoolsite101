@@ -39,8 +39,6 @@
     pointer-events: none;
     z-index: 0;
   }
-
-  /* ============ HEADER ============ */
   .topbar {
     position: sticky; top: 0; z-index: 100;
     padding: 16px 32px;
@@ -66,10 +64,7 @@
     flex-shrink: 0;
   }
   .brand-text { display: flex; flex-direction: column; }
-  .brand-title {
-    font-size: 17px; font-weight: 800;
-    color: #fff; letter-spacing: -0.3px;
-  }
+  .brand-title { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
   .brand-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
   .online {
     display: flex; align-items: center; gap: 8px;
@@ -84,7 +79,6 @@
   }
   @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
   .online strong { color: #fff; }
-
   .topbar-right {
     display: flex; align-items: center; gap: 10px;
     margin-left: auto;
@@ -111,7 +105,6 @@
   }
   .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5); }
   .btn-primary:disabled { opacity: 0.6; cursor: wait; }
-
   .user-chip {
     display: flex; align-items: center; gap: 8px;
     padding: 8px 14px 8px 8px; border-radius: 999px;
@@ -127,11 +120,7 @@
   }
   .user-chip .name { font-size: 13px; font-weight: 600; color: #fff; }
   .user-chip .crown { color: #fbbf24; font-size: 14px; margin-left: 2px; }
-
-  /* ============ MAIN ============ */
   main { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 24px 32px 80px; }
-
-  /* ============ HERO ============ */
   .hero {
     position: relative;
     border-radius: 24px;
@@ -144,8 +133,7 @@
   }
   .hero::before {
     content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     background: radial-gradient(ellipse 600px 400px at 90% 50%, rgba(74, 222, 128, 0.06), transparent 70%);
     pointer-events: none;
   }
@@ -170,12 +158,10 @@
   }
   .hero-decor .ring::after {
     content: '';
-    position: absolute;
-    inset: 30px;
+    position: absolute; inset: 30px;
     border-radius: 50%;
     border: 1px solid rgba(74, 222, 128, 0.08);
   }
-
   .hero-tag {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 6px 14px; border-radius: 999px;
@@ -199,12 +185,7 @@
     max-width: 700px;
   }
   .hero h1 .accent { color: var(--green); }
-  .hero p {
-    font-size: 16px; color: var(--text-2);
-    max-width: 560px; line-height: 1.6;
-  }
-
-  /* ============ SECTION HEADER ============ */
+  .hero p { font-size: 16px; color: var(--text-2); max-width: 560px; line-height: 1.6; }
   .section-head {
     display: flex; align-items: flex-end; justify-content: space-between;
     gap: 20px; flex-wrap: wrap; margin-bottom: 24px;
@@ -214,12 +195,7 @@
     font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
     color: var(--green); text-transform: uppercase;
   }
-  .section-title {
-    font-size: 30px; font-weight: 800;
-    color: #fff; letter-spacing: -0.8px;
-  }
-
-  /* ============ TABS ============ */
+  .section-title { font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -0.8px; }
   .tabs-wrap {
     display: inline-flex; gap: 4px;
     padding: 5px; border-radius: 999px;
@@ -243,8 +219,6 @@
   }
   .tab .count { opacity: 0.75; font-weight: 500; margin-left: 3px; }
   .tab.active .count { opacity: 0.85; }
-
-  /* ============ PRODUCTS GRID ============ */
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -296,10 +270,7 @@
   .card-del:hover { background: #ef4444; color: #fff; }
   .card-del.admin { background: rgba(245,158,11,0.3); border-color: rgba(245,158,11,0.6); color: #fbbf24; }
   .card-del.admin:hover { background: #f59e0b; color: #fff; }
-
   .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
-
-  /* ============ AUTHOR (имя над названием) ============ */
   .card-author {
     display: flex; align-items: center; gap: 6px;
     font-size: 12px; margin-bottom: 8px;
@@ -316,7 +287,6 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     max-width: 160px;
   }
-
   .card-title {
     font-size: 16px; font-weight: 700; color: #fff;
     margin-bottom: 6px; cursor: pointer; line-height: 1.35;
@@ -348,7 +318,6 @@
     transition: 0.2s;
   }
   .card-actions .like:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4); }
-
   .empty {
     grid-column: 1 / -1;
     padding: 70px 20px; text-align: center;
@@ -359,8 +328,6 @@
   .empty-icon { font-size: 56px; margin-bottom: 14px; opacity: 0.5; }
   .empty h3 { color: #fff; font-size: 20px; margin-bottom: 6px; }
   .empty p { color: var(--text-3); font-size: 14px; }
-
-  /* ============ MODALS ============ */
   .modal-overlay {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.7);
@@ -370,7 +337,6 @@
     opacity: 0; visibility: hidden; transition: 0.25s;
   }
   .modal-overlay.open { opacity: 1; visibility: visible; }
-
   .modal {
     background: var(--card);
     border: 1px solid var(--border-2);
@@ -384,18 +350,10 @@
   }
   .modal-overlay.open .modal { transform: scale(1); }
   .modal.wide { max-width: 620px; }
-
-  .modal-title {
-    font-size: 22px; font-weight: 800;
-    color: #fff; margin-bottom: 6px; letter-spacing: -0.3px;
-  }
+  .modal-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; letter-spacing: -0.3px; }
   .modal-sub { font-size: 13px; color: var(--text-3); margin-bottom: 22px; }
-
   .field { margin-bottom: 14px; }
-  .field label {
-    display: block; font-size: 12px; font-weight: 600;
-    color: var(--text-2); margin-bottom: 6px;
-  }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
   .field input, .field textarea, .field select {
     width: 100%; padding: 12px 14px;
     background: var(--bg-2);
@@ -416,11 +374,9 @@
   .field .err { font-size: 12px; color: #f87171; margin-top: 5px; display: none; }
   .field .err.show { display: block; }
   .field input.invalid, .field textarea.invalid, .field select.invalid { border-color: #f87171; }
-
   .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
   .modal-actions .btn-primary { flex: 1; padding: 13px; justify-content: center; font-size: 15px; }
   .modal-actions .btn-ghost { padding: 13px 20px; font-size: 15px; }
-
   .auth-tabs { display: flex; background: var(--bg-2); border-radius: 12px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); }
   .auth-tab {
     flex: 1; padding: 10px; text-align: center;
@@ -441,7 +397,6 @@
     color: #fca5a5; border-radius: 10px; font-size: 13px;
   }
   .auth-err.show { display: block; }
-
   .upload {
     position: relative;
     height: 200px;
@@ -472,7 +427,6 @@
     z-index: 3; font-family: inherit;
   }
   .upload.has-image .rm { display: flex; }
-
   .chat-list { display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; }
   .chat-row {
     display: flex; gap: 12px; padding: 12px 14px;
@@ -495,7 +449,6 @@
   .chat-row .s { font-size: 11px; color: var(--text-3); margin: 2px 0; }
   .chat-row .s strong { color: var(--green); }
   .chat-row .last { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
   .chat-content-modal {
     background: var(--card);
     border: 1px solid var(--border-2);
@@ -591,7 +544,6 @@
     box-shadow: 0 4px 12px rgba(34,197,94,0.3);
   }
   .chat-input button:disabled { opacity: 0.5; cursor: wait; }
-
   .users-list { display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; }
   .user-row {
     display: flex; gap: 12px; padding: 12px 14px;
@@ -622,7 +574,6 @@
   .user-row .acts .block { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
   .user-row .acts .unblock { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.4); color: var(--green); }
   .user-row .acts .promote, .user-row .acts .demote { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.4); color: #fbbf24; }
-
   .toast {
     position: fixed; bottom: 30px; left: 50%;
     transform: translateX(-50%) translateY(100px);
@@ -635,7 +586,6 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   .toast.error { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-
   .loading {
     position: fixed; top: 88px; right: 24px;
     padding: 10px 16px; border-radius: 10px;
@@ -645,7 +595,6 @@
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   }
   .loading.visible { display: block; }
-
   .cart-modal .cart-items { max-height: 55vh; overflow-y: auto; margin: 0 -8px; padding: 0 8px; }
   .cart-item {
     display: flex; gap: 12px; padding: 12px 0;
@@ -661,14 +610,9 @@
   .cart-item .acts button { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-family: inherit; border: 1px solid; font-size: 14px; display: flex; align-items: center; justify-content: center; }
   .cart-item .acts .chat { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.4); color: var(--green); }
   .cart-item .acts .rm { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); color: #f87171; }
-
   .recos { margin-top: 48px; }
-  .recos-title {
-    font-size: 22px; font-weight: 800; color: #fff;
-    margin-bottom: 4px; letter-spacing: -0.4px;
-  }
+  .recos-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; letter-spacing: -0.4px; }
   .recos-sub { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
-
   @media (max-width: 900px) {
     .topbar { padding: 12px 16px; }
     main { padding: 20px 16px 60px; }
@@ -703,12 +647,10 @@
         <div class="brand-sub">МБОУ СОШ №101 · Воронеж</div>
       </div>
     </a>
-
     <div class="online">
       <span class="online-dot"></span>
       Сейчас на сайте: <strong id="onlineCount">1</strong>
     </div>
-
     <div class="topbar-right" id="topbarRight">
       <button class="btn-ghost" id="loginBtn" type="button">💬 <span class="txt">Войти</span></button>
       <button class="btn-primary" id="registerBtn" type="button">＋ <span class="txt">Задать ник</span></button>
@@ -737,7 +679,6 @@
   </div>
 
   <div class="tabs-wrap" id="tabsWrap"></div>
-
   <div class="grid" id="productsGrid"></div>
 
   <section class="recos" id="recos" style="display:none;">
@@ -751,14 +692,11 @@
   <div class="modal">
     <div class="modal-title" id="authTitle">Вход</div>
     <div class="modal-sub" id="authSub">Войдите по нику, чтобы создавать карточки и общаться</div>
-
     <div class="auth-tabs">
       <button class="auth-tab active" id="tabLogin" type="button">Вход</button>
       <button class="auth-tab" id="tabRegister" type="button">Регистрация</button>
     </div>
-
     <div class="auth-err" id="authErr"></div>
-
     <form id="authForm">
       <div class="field">
         <label>Ник</label>
@@ -780,7 +718,6 @@
   <div class="modal wide">
     <div class="modal-title">Разместить объявление</div>
     <div class="modal-sub">Заполните поля — карточка сразу появится в сети</div>
-
     <div class="upload" id="upload">
       <input type="file" id="fileInput" accept="image/*">
       <img class="preview" id="uploadPreview" alt="">
@@ -789,9 +726,7 @@
       <button type="button" class="rm" id="uploadRm">✕</button>
     </div>
     <div class="err" id="errPhoto" style="display:none;margin-top:6px;font-size:12px;color:#f87171;">Добавьте фото</div>
-
     <div style="height:16px"></div>
-
     <div class="field">
       <label>Название</label>
       <input type="text" id="addTitle" placeholder="Например: скетчбук А5" maxlength="60">
@@ -812,7 +747,6 @@
       </select>
       <div class="err" id="errCat">Выберите категорию</div>
     </div>
-
     <div class="modal-actions">
       <button type="button" class="btn-primary" id="addSubmit">📡 Опубликовать</button>
       <button type="button" class="btn-ghost" id="addCancel">Отмена</button>
@@ -934,7 +868,6 @@ function resizeImage(file, maxSize = 900, quality = 0.75) {
   });
 }
 
-/* AUTH */
 let authMode = 'login';
 function setAuthMode(mode) {
   authMode = mode;
@@ -1184,7 +1117,6 @@ function catLabel(p) {
   return c ? c.name : 'Разное';
 }
 
-/* ============ КАРТОЧКА — имя автора НАД названием ============ */
 function cardHtml(p) {
   const img = p.image
     ? `<img src="${p.image}" alt="${escapeHtml(p.title)}" loading="lazy">`
@@ -1211,7 +1143,7 @@ function cardHtml(p) {
       <div class="card-desc">${escapeHtml(p.desc)}</div>
       <div class="card-actions">
         <button class="chat" data-chat="${p.id}" title="Написать" type="button">💬</button>
-        <button class="like" data-like="${p.id}" type="button">❤️ Хочу</button>
+        <button class="like" data-like="${p.id}" type="button">❤️ Нравится</button>
       </div>
     </div>
   </article>`;
@@ -1282,7 +1214,7 @@ function openProduct(id) {
     </div>
     <p style="color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:22px;">${escapeHtml(p.desc)}</p>
     <div class="modal-actions">
-      <button type="button" class="btn-primary" data-like="${p.id}" style="justify-content:center;">❤️ Хочу</button>
+      <button type="button" class="btn-primary" data-like="${p.id}" style="justify-content:center;">❤️ Нравится</button>
       <button type="button" class="btn-ghost" data-chat="${p.id}">💬 Написать</button>
     </div>
   `;
