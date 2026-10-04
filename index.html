@@ -3,524 +3,911 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>МаркетПлейс — Сеть обмена 101</title>
+<title>Обмен 101 — МБОУ СОШ №101</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #070b14;
+    --bg-2: #0a0f1a;
+    --card: #0d1420;
+    --card-2: #101827;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-2: rgba(255, 255, 255, 0.12);
+    --green: #4ade80;
+    --green-2: #22c55e;
+    --green-dark: #14532d;
+    --green-glow: rgba(74, 222, 128, 0.35);
+    --text: #f1f5f9;
+    --text-2: #94a3b8;
+    --text-3: #64748b;
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
   html, body { min-height: 100%; }
-  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #040a07; color: #111827; line-height: 1.5; overflow-x: hidden; }
-  .blob-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: radial-gradient(ellipse at top, #071410 0%, #040a07 60%, #000 100%); }
-  .blob { position: absolute; border-radius: 50%; filter: blur(60px); mix-blend-mode: screen; opacity: 0.75; will-change: transform; }
-  .blob-1 { width: 55vmax; height: 55vmax; top: -15%; left: -15%; background: radial-gradient(circle at 30% 30%, #34d399 0%, #059669 40%, transparent 72%); animation: blobFloat1 24s ease-in-out infinite; }
-  .blob-2 { width: 48vmax; height: 48vmax; top: 30%; right: -20%; background: radial-gradient(circle at 60% 40%, #60a5fa 0%, #2563eb 45%, transparent 72%); animation: blobFloat2 28s ease-in-out infinite; }
-  .blob-3 { width: 42vmax; height: 42vmax; bottom: -18%; left: 20%; background: radial-gradient(circle at 40% 60%, #22d3ee 0%, #0891b2 45%, transparent 72%); animation: blobFloat3 32s ease-in-out infinite; }
-  .blob-4 { width: 38vmax; height: 38vmax; top: 50%; left: 35%; opacity: 0.55; background: radial-gradient(circle at 50% 50%, #10b981 0%, #0ea5e9 55%, transparent 75%); animation: blobFloat4 26s ease-in-out infinite; }
-  .blob-5 { width: 34vmax; height: 34vmax; top: 5%; left: 45%; opacity: 0.5; background: radial-gradient(circle at 50% 50%, #3b82f6 0%, #10b981 60%, transparent 78%); animation: blobFloat5 30s ease-in-out infinite; }
-  @keyframes blobFloat1 { 0%,100%{transform:translate(0,0) scale(1);} 25%{transform:translate(15vw,8vh) scale(1.15);} 50%{transform:translate(5vw,20vh) scale(0.95);} 75%{transform:translate(-8vw,10vh) scale(1.08);} }
-  @keyframes blobFloat2 { 0%,100%{transform:translate(0,0) scale(1);} 25%{transform:translate(-18vw,12vh) scale(1.1);} 50%{transform:translate(-6vw,-8vh) scale(0.9);} 75%{transform:translate(-12vw,18vh) scale(1.12);} }
-  @keyframes blobFloat3 { 0%,100%{transform:translate(0,0) scale(1);} 25%{transform:translate(12vw,-14vh) scale(1.08);} 50%{transform:translate(20vw,-6vh) scale(0.92);} 75%{transform:translate(8vw,-20vh) scale(1.05);} }
-  @keyframes blobFloat4 { 0%,100%{transform:translate(0,0) scale(1);} 33%{transform:translate(-14vw,-12vh) scale(1.18);} 66%{transform:translate(14vw,12vh) scale(0.88);} }
-  @keyframes blobFloat5 { 0%,100%{transform:translate(0,0) scale(0.9);} 50%{transform:translate(-20vw,16vh) scale(1.1);} }
-  .glass-tint { position: fixed; inset: 0; z-index: 1; pointer-events: none; backdrop-filter: blur(60px) saturate(140%); -webkit-backdrop-filter: blur(60px) saturate(140%); background: radial-gradient(ellipse at center, rgba(0,0,0,0.15), rgba(0,0,0,0.5)); }
-  header, .hero, .network-stats, .filter-bar, .builder-section, .network-title, .results-info, .products, .recommendations, footer { position: relative; z-index: 2; }
-  header { position: sticky; top: 0; z-index: 100; padding: 14px 40px; color: #fff; background: radial-gradient(ellipse at 15% 10%, rgba(52,211,153,0.18), transparent 55%), radial-gradient(ellipse at 85% 90%, rgba(96,165,250,0.16), transparent 55%), linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-bottom: 1px solid rgba(255,255,255,0.15); box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 8px 32px rgba(0,0,0,0.5); }
-  .header-top { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
-  .logo { font-size: 18px; font-weight: 700; padding: 10px 16px; border-radius: 14px; color: #fff; background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.22); text-shadow: 0 0 12px rgba(255,255,255,0.4), 0 0 24px rgba(52,211,153,0.55); }
-  .user-box { display: flex; align-items: center; gap: 8px; }
-  .whoami { font-size: 13px; padding: 8px 14px; border-radius: 10px; background: rgba(16,185,129,0.18); border: 1px solid rgba(52,211,153,0.5); color: #6ee7b7; font-weight: 700; }
-  .whoami.admin { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.55); color: #fbbf24; }
-  .logout-btn, .admin-btn { font-size: 12px; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; font-family: inherit; }
-  .logout-btn { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
-  .logout-btn:hover { background: rgba(239,68,68,0.28); color: #fff; }
-  .admin-btn { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.5); color: #fbbf24; }
-  .admin-btn:hover { background: rgba(245,158,11,0.32); color: #fff; }
-  .search { flex: 1; max-width: 500px; display: flex; position: relative; border-radius: 14px; overflow: hidden; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.18); }
-  .search input { flex: 1; padding: 12px 20px; border: none; outline: none; font-size: 14px; background: transparent; color: #f0fff6; }
-  .search input::placeholder { color: rgba(200,255,210,0.45); }
-  .search button { padding: 12px 24px; border: none; background: linear-gradient(135deg, rgba(16,185,129,0.9), rgba(5,150,105,0.95)); color: #fff; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; }
-  .clear-search { position: absolute; right: 100px; top: 50%; transform: translateY(-50%); background: none; border: none; color: rgba(200,255,210,0.5); font-size: 18px; cursor: pointer; display: none; z-index: 3; }
-  .clear-search.visible { display: block; }
-  .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .chats-btn, .cart-btn { font-size: 14px; padding: 11px 16px; border-radius: 14px; cursor: pointer; font-weight: 600; white-space: nowrap; color: #fff; position: relative; font-family: inherit; }
-  .chats-btn { background: linear-gradient(135deg, rgba(52,211,153,0.18), rgba(5,150,105,0.12)); border: 1px solid rgba(52,211,153,0.45); }
-  .cart-btn { background: linear-gradient(135deg, rgba(244,114,182,0.18), rgba(190,24,93,0.12)); border: 1px solid rgba(244,114,182,0.4); }
-  .cart-count { position: absolute; top: -6px; right: -6px; background: linear-gradient(135deg, #ec4899, #be185d); color: #fff; font-size: 11px; font-weight: bold; min-width: 20px; height: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2); }
-  .hero { max-width: 1200px; margin: 30px auto 10px; padding: 0 20px; text-align: center; }
-  .hero h1 { display: inline-block; font-size: 36px; color: #fff; letter-spacing: 2px; padding: 16px 44px; border-radius: 24px; cursor: pointer; background: radial-gradient(ellipse at 20% 15%, rgba(255,255,255,0.28), transparent 55%), linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.3); text-shadow: 0 0 15px rgba(255,255,255,0.5), 0 0 30px rgba(52,211,153,0.6); }
-  .hero p { color: rgba(200,255,210,0.75); font-size: 15px; }
-  .hint-modal, .auth-modal, .admin-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 900; }
-  .hint-modal { opacity: 0; visibility: hidden; transition: 0.3s; z-index: 460; }
-  .hint-modal.open { opacity: 1; visibility: visible; }
-  .hint-content { max-width: 520px; width: 100%; padding: 40px 36px; border-radius: 26px; text-align: center; color: #fff; background: radial-gradient(ellipse at 20% 15%, rgba(255,255,255,0.25), transparent 55%), linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.28); }
-  .hint-icon { font-size: 62px; margin-bottom: 16px; }
-  .hint-title { font-size: 22px; font-weight: 700; margin-bottom: 14px; }
-  .hint-text { font-size: 16px; color: rgba(240,255,246,0.92); margin-bottom: 26px; }
-  .hint-text .accent { color: #6ee7b7; font-weight: 700; }
-  .hint-btn { padding: 12px 32px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
-  .auth-modal, .admin-modal { display: none; }
-  .auth-modal.open, .admin-modal.open { display: flex; }
-  .auth-content { max-width: 420px; width: 100%; padding: 36px 32px; border-radius: 22px; background: radial-gradient(ellipse at 20% 15%, rgba(52,211,153,0.18), transparent 60%), linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.28); color: #fff; }
-  .admin-content { max-width: 640px; width: 100%; padding: 28px; border-radius: 22px; max-height: 85vh; overflow-y: auto; background: radial-gradient(ellipse at 20% 15%, rgba(245,158,11,0.15), transparent 60%), linear-gradient(160deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02)); border: 1px solid rgba(245,158,11,0.4); color: #fff; }
-  .admin-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(245,158,11,0.3); }
-  .admin-head h2 { font-size: 20px; color: #fbbf24; }
-  .admin-head .close-btn { color: #9ca3af; }
-  .auth-logo { text-align: center; font-size: 40px; margin-bottom: 6px; }
-  .auth-title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 6px; color: #fff; }
-  .auth-sub { text-align: center; font-size: 13px; color: rgba(200,255,210,0.6); margin-bottom: 24px; }
-  .auth-tabs { display: flex; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 4px; margin-bottom: 22px; border: 1px solid rgba(255,255,255,0.15); }
-  .auth-tab { flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 9px; color: rgba(200,255,210,0.65); }
-  .auth-tab.active { background: linear-gradient(135deg, #10b981, #059669); color: #fff; }
-  .auth-field { margin-bottom: 14px; }
-  .auth-field label { display: block; font-size: 12px; font-weight: 600; color: #d1fae5; margin-bottom: 6px; }
-  .auth-field input { width: 100%; padding: 12px 14px; background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; color: #f0fff6; font-size: 14px; outline: none; font-family: inherit; }
-  .auth-field input:focus { border-color: rgba(52,211,153,0.7); box-shadow: 0 0 0 3px rgba(52,211,153,0.18); }
-  .auth-hint { font-size: 11px; color: rgba(200,255,210,0.45); margin-top: 4px; }
-  .auth-error { display: none; padding: 10px 14px; margin-bottom: 14px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.45); color: #fca5a5; border-radius: 10px; font-size: 13px; }
-  .auth-error.show { display: block; }
-  .auth-submit { width: 100%; padding: 13px; margin-top: 8px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
-  .auth-submit:disabled { opacity: 0.6; cursor: wait; }
-  .auth-footer { text-align: center; font-size: 12px; color: rgba(200,255,210,0.5); margin-top: 16px; }
-  .users-list { display: flex; flex-direction: column; gap: 8px; }
-  .user-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; }
-  .user-row.blocked { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); }
-  .user-row .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #34d399, #059669); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 14px; flex-shrink: 0; }
-  .user-row.blocked .avatar { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-  .user-row .uinfo { flex: 1; min-width: 0; }
-  .user-row .uname { font-size: 14px; font-weight: 600; color: #f0fff6; }
-  .user-row .umeta { font-size: 11px; color: rgba(200,220,210,0.6); margin-top: 2px; }
-  .user-row .umeta .badge-admin { color: #fbbf24; font-weight: 700; }
-  .user-row .umeta .badge-blocked { color: #fca5a5; font-weight: 700; }
-  .user-row .uactions { display: flex; gap: 6px; flex-shrink: 0; }
-  .uactions button { padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; border: 1px solid; }
-  .btn-block { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
-  .btn-unblock { background: rgba(16,185,129,0.18); border-color: rgba(16,185,129,0.5); color: #6ee7b7; }
-  .btn-admin-toggle { background: rgba(245,158,11,0.18); border-color: rgba(245,158,11,0.5); color: #fbbf24; }
-  .network-stats { max-width: 1200px; margin: 10px auto 0; padding: 0 20px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-  .stat-chip { padding: 8px 16px; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; font-size: 12px; color: #d1fae5; display: flex; align-items: center; gap: 6px; }
-  .stat-chip strong { color: #6ee7b7; font-size: 14px; }
-  .filter-bar { max-width: 1200px; margin: 24px auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .categories { display: flex; gap: 10px; flex-wrap: wrap; }
-  .category { padding: 9px 18px; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 500; color: #d1fae5; transition: 0.2s; }
-  .category:hover { border-color: rgba(52,211,153,0.55); color: #fff; }
-  .category.active { background: linear-gradient(135deg, rgba(52,211,153,0.85), rgba(16,185,129,0.85)); color: #052e16; border-color: rgba(110,231,183,0.9); font-weight: 700; }
-  .sort-select { padding: 10px 14px; border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03)); color: #d1fae5; font-size: 14px; outline: none; }
-  .sort-select option { background: #0a1a10; color: #d1fae5; }
-  .builder-section { max-width: 1200px; margin: 30px auto 20px; padding: 0 20px; }
-  .builder-header { text-align: center; margin-bottom: 18px; }
-  .builder-header h2 { font-size: 24px; color: #fff; margin-bottom: 4px; text-shadow: 0 0 22px rgba(52,211,153,0.45); }
-  .builder-header p { color: rgba(200,255,210,0.65); font-size: 14px; }
-  .builder-toggle { display: block; margin: 0 auto; padding: 12px 28px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: 1px solid rgba(110,231,183,0.5); border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
-  .builder-form-wrap { display: grid; grid-template-rows: 0fr; transition: 0.4s; opacity: 0; margin-top: 0; }
-  .builder-form-wrap.open { grid-template-rows: 1fr; opacity: 1; margin-top: 20px; }
-  .builder-form-wrap > .builder-form { overflow: hidden; min-height: 0; }
-  .builder-form { background: linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.16); border-radius: 18px; padding: 28px; display: grid; grid-template-columns: 240px 1fr; gap: 28px; }
-  .photo-upload { position: relative; width: 100%; height: 240px; border: 2px dashed rgba(52,211,153,0.5); border-radius: 14px; background: rgba(0,0,0,0.25); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; text-align: center; padding: 12px; }
-  .photo-upload.invalid { border-color: #f87171; }
-  .photo-upload input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 1; }
-  .photo-upload-icon { font-size: 42px; margin-bottom: 8px; }
-  .photo-upload-text { font-size: 13px; color: rgba(200,255,210,0.75); }
-  .photo-upload-text strong { color: #6ee7b7; }
-  .photo-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 0; }
-  .photo-preview.visible { display: block; }
-  .photo-upload.has-image .photo-upload-icon, .photo-upload.has-image .photo-upload-text { display: none; }
-  .photo-remove { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(239,68,68,0.9); color: #fff; border: none; cursor: pointer; display: none; z-index: 3; }
-  .photo-upload.has-image .photo-remove { display: flex; align-items: center; justify-content: center; }
-  .photo-error { color: #f87171; font-size: 12px; margin-top: 6px; display: none; text-align: center; }
-  .photo-error.show { display: block; }
-  .builder-fields { display: flex; flex-direction: column; gap: 14px; }
-  .field-group { display: flex; flex-direction: column; gap: 6px; }
-  .field-group label { font-size: 13px; font-weight: 600; color: #d1fae5; }
-  .field-group label .required { color: #f87171; }
-  .field-group input[type="text"], .field-group textarea, .field-group select { padding: 10px 14px; background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; color: #f0fff6; font-size: 14px; outline: none; resize: vertical; font-family: inherit; }
-  .field-group select { cursor: pointer; }
-  .field-group select option { background: #0a1a10; color: #d1fae5; }
-  .field-group input::placeholder, .field-group textarea::placeholder { color: rgba(200,255,210,0.4); }
-  .field-group input:focus, .field-group textarea:focus, .field-group select:focus { border-color: rgba(52,211,153,0.7); box-shadow: 0 0 0 3px rgba(52,211,153,0.18); }
-  .builder-actions { display: flex; gap: 12px; margin-top: 6px; }
-  .btn-primary { flex: 1; padding: 12px 20px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% 0%, rgba(74, 222, 128, 0.08), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 85% 100%, rgba(34, 197, 94, 0.06), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ============ HEADER ============ */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    padding: 16px 32px;
+    background: rgba(7, 11, 20, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none; color: inherit;
+  }
+  .brand-logo {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .brand-text { display: flex; flex-direction: column; }
+  .brand-title {
+    font-size: 17px; font-weight: 800;
+    color: #fff; letter-spacing: -0.3px;
+  }
+  .brand-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+  .online {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text-2);
+    margin-left: 8px;
+  }
+  .online-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green-glow);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+  .online strong { color: #fff; }
+
+  .topbar-right {
+    display: flex; align-items: center; gap: 10px;
+    margin-left: auto;
+  }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 12px;
+    background: transparent; color: #fff;
+    border: 1px solid var(--border-2);
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+    transition: 0.2s;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 12px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; border: none;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    transition: 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5); }
   .btn-primary:disabled { opacity: 0.6; cursor: wait; }
-  .btn-secondary { padding: 12px 20px; background: rgba(255,255,255,0.08); color: #d1fae5; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; }
-  .field-error { color: #f87171; font-size: 12px; display: none; }
-  .field-error.show { display: block; }
-  .field-group input.invalid, .field-group textarea.invalid, .field-group select.invalid { border-color: #f87171; }
-  .network-title { max-width: 1200px; margin: 40px auto 16px; padding: 0 20px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-  .network-title h2 { font-size: 22px; color: #fff; text-shadow: 0 0 20px rgba(52,211,153,0.4); }
-  .network-title .sub { font-size: 13px; color: rgba(200,255,210,0.6); }
-  .results-info { max-width: 1200px; margin: 0 auto 16px; padding: 0 20px; color: rgba(200,255,210,0.75); font-size: 14px; }
-  .products { max-width: 1200px; margin: 0 auto 40px; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
-  .recommendations { max-width: 1200px; margin: 20px auto 60px; padding: 0 20px; display: none; }
-  .recommendations.visible { display: block; }
-  .recommendations-header { margin-bottom: 20px; }
-  .recommendations-title { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-  .recommendations-title h2 { font-size: 22px; color: #fff; text-shadow: 0 0 20px rgba(52,211,153,0.45); }
-  .recommendations-title .sub { font-size: 13px; color: rgba(200,255,210,0.6); }
-  .recommendations-title .reason { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(52,211,153,0.15); border: 1px solid rgba(110,231,183,0.45); border-radius: 20px; font-size: 12px; color: #6ee7b7; }
-  .recommendations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-  .recommendations .card .card-image { height: 160px; font-size: 60px; }
-  .card { background: radial-gradient(ellipse at 20% 0%, rgba(255,255,255,0.13), transparent 55%), linear-gradient(160deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02)); border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.16); transition: 0.3s; display: flex; flex-direction: column; position: relative; }
-  .card.just-added { border-color: rgba(110,231,183,0.9); }
-  .card:hover { transform: translateY(-6px); box-shadow: 0 16px 45px rgba(0,0,0,0.55), 0 0 50px rgba(52,211,153,0.35); border-color: rgba(110,231,183,0.7); }
-  .card-image { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 80px; background: radial-gradient(circle at 50% 50%, rgba(52,211,153,0.14), transparent 65%), linear-gradient(135deg, rgba(10,31,20,0.5), rgba(4,16,10,0.6)); cursor: pointer; position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.1); }
-  .card-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .card-body { padding: 16px; display: flex; flex-direction: column; flex: 1; position: relative; z-index: 2; }
-  .card-category { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #6ee7b7; font-weight: 700; margin-bottom: 6px; }
-  .card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #f0fff6; cursor: pointer; }
-  .card-title:hover { color: #6ee7b7; }
-  .card-desc { font-size: 13px; color: rgba(200,220,210,0.7); margin-bottom: 12px; flex: 1; }
-  .card-owner { display: flex; align-items: center; gap: 8px; padding: 7px 10px; margin-bottom: 12px; background: linear-gradient(135deg, rgba(52,211,153,0.18), rgba(96,165,250,0.1)); border: 1px solid rgba(110,231,183,0.4); border-radius: 10px; font-size: 12px; }
-  .card-owner .seller-avatar { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #34d399, #3b82f6); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; text-transform: uppercase; }
-  .card-owner .seller-label { color: rgba(200,255,210,0.65); font-weight: 500; margin-right: 2px; }
-  .card-owner strong { color: #6ee7b7; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .card-footer { display: flex; justify-content: flex-end; align-items: center; margin-top: auto; gap: 8px; }
-  .card-actions { display: flex; gap: 6px; align-items: center; }
-  .chat-btn { width: 34px; height: 34px; border-radius: 10px; background: rgba(52,211,153,0.15); border: 1px solid rgba(110,231,183,0.5); color: #6ee7b7; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; }
-  .chat-btn:hover { background: rgba(52,211,153,0.3); }
-  .buy-btn { background: linear-gradient(135deg, rgba(236,72,153,0.9), rgba(190,24,93,0.9)); color: #fff; border: none; padding: 9px 14px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; gap: 4px; font-family: inherit; }
-  .badge { position: absolute; top: 12px; left: 12px; background: rgba(239,68,68,0.9); color: #fff; font-size: 11px; padding: 4px 9px; border-radius: 6px; font-weight: 700; z-index: 3; border: 1px solid rgba(255,255,255,0.2); }
-  .badge.custom { background: linear-gradient(135deg, #10b981, #059669); }
-  .rec-label { position: absolute; top: 12px; left: 12px; background: linear-gradient(135deg, #f59e0b, #f97316); color: #fff; font-size: 11px; padding: 4px 9px; border-radius: 6px; font-weight: 700; z-index: 3; }
-  .delete-card-btn { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.55); color: #f87171; border: 1px solid rgba(239,68,68,0.5); cursor: pointer; z-index: 3; display: flex; align-items: center; justify-content: center; font-family: inherit; }
-  .delete-card-btn:hover { background: #ef4444; color: #fff; }
-  .delete-card-btn.admin-delete { background: rgba(245,158,11,0.3); border-color: rgba(245,158,11,0.7); color: #fbbf24; }
-  .delete-card-btn.admin-delete:hover { background: #f59e0b; color: #fff; }
-  .empty { grid-column: 1 / -1; text-align: center; padding: 70px 20px; color: rgba(200,255,210,0.8); background: rgba(255,255,255,0.04); border-radius: 18px; border: 1px dashed rgba(110,231,183,0.35); }
-  .empty-icon { font-size: 64px; margin-bottom: 14px; }
-  .empty h3 { color: #fff; margin-bottom: 8px; font-size: 20px; }
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; visibility: hidden; transition: 0.3s; z-index: 200; }
-  .overlay.open { opacity: 1; visibility: visible; }
-  .cart-panel { position: fixed; top: 0; right: -420px; width: 400px; max-width: 100%; height: 100%; background: linear-gradient(160deg, rgba(255,255,255,0.92), rgba(240,250,244,0.88)); display: flex; flex-direction: column; transition: 0.3s; z-index: 300; border-left: 1px solid rgba(255,255,255,0.4); }
-  .cart-panel.open { right: 0; }
-  .cart-header { padding: 20px; border-bottom: 1px solid rgba(16,185,129,0.15); display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(253,242,248,0.85), rgba(255,255,255,0.85)); }
-  .cart-header h2 { font-size: 18px; color: #9d174d; }
-  .close-btn { background: none; border: none; font-size: 26px; cursor: pointer; color: #6b7280; font-family: inherit; }
-  .cart-items { flex: 1; overflow-y: auto; padding: 16px 20px; }
-  .cart-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #e5e7eb; align-items: center; }
-  .cart-item-img { font-size: 34px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #fdf2f8; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
-  .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
-  .cart-item-info { flex: 1; min-width: 0; }
-  .cart-item-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .qty { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
-  .qty button { width: 24px; height: 24px; border: 1px solid #e5e7eb; background: #fff; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: inherit; }
-  .qty button:hover { background: #ec4899; color: #fff; border-color: #ec4899; }
-  .qty span { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
-  .cart-item-actions { display: flex; flex-direction: column; gap: 6px; align-items: center; flex-shrink: 0; }
-  .cart-chat-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.5); background: rgba(16,185,129,0.1); color: #059669; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; }
-  .remove-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.35); background: rgba(239,68,68,0.06); color: #ef4444; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; font-family: inherit; }
-  .cart-empty { text-align: center; padding: 60px 20px; color: #6b7280; }
-  .cart-empty-icon { font-size: 50px; margin-bottom: 10px; }
-  .cart-footer { padding: 20px; border-top: 1px solid #fce7f3; background: #fdf2f8; }
-  .cart-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; color: #9d174d; }
-  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.25s; padding: 20px; z-index: 400; }
-  .modal.open { opacity: 1; visibility: visible; }
-  .modal-content { background: linear-gradient(160deg, rgba(15,30,22,0.85), rgba(5,12,8,0.9)); border: 1px solid rgba(255,255,255,0.18); border-radius: 20px; max-width: 700px; width: 100%; display: flex; overflow: hidden; max-height: 90vh; }
-  .modal-img { width: 260px; display: flex; align-items: center; justify-content: center; font-size: 100px; background: linear-gradient(135deg, rgba(10,31,20,0.6), rgba(4,16,10,0.7)); flex-shrink: 0; overflow: hidden; }
-  .modal-img img { width: 100%; height: 100%; object-fit: cover; }
-  .modal-body { padding: 28px; flex: 1; overflow-y: auto; color: #f0fff6; }
-  .modal-body h2 { font-size: 22px; margin-bottom: 10px; color: #fff; }
-  .modal-body p { color: rgba(200,220,210,0.75); font-size: 14px; margin-bottom: 18px; }
-  .modal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-  .modal-actions .buy-btn { flex: 1; padding: 12px; font-size: 14px; min-width: 160px; justify-content: center; }
-  .modal-chat-btn { padding: 12px 18px; background: rgba(52,211,153,0.15); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.5); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
-  .chats-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.25s; padding: 20px; z-index: 455; }
-  .chats-modal.open { opacity: 1; visibility: visible; }
-  .chats-content { background: linear-gradient(160deg, rgba(15,30,22,0.85), rgba(5,12,8,0.9)); border: 1px solid rgba(110,231,183,0.25); border-radius: 20px; width: 100%; max-width: 560px; height: 80vh; max-height: 720px; display: flex; flex-direction: column; overflow: hidden; }
-  .chats-header { padding: 16px 20px; border-bottom: 1px solid rgba(110,231,183,0.2); display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(0,0,0,0.25); }
-  .chats-header h2 { font-size: 17px; color: #fff; display: flex; align-items: center; gap: 8px; }
-  .chats-header .close-btn { color: #9ca3af; }
-  .chats-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
-  .chats-empty { margin: auto; text-align: center; color: rgba(200,255,210,0.5); font-size: 14px; padding: 40px 20px; }
-  .chats-empty-icon { font-size: 56px; margin-bottom: 14px; opacity: 0.5; }
-  .chats-empty .hint { font-size: 12px; color: rgba(200,255,210,0.35); margin-top: 8px; }
-  .chat-item { display: flex; gap: 12px; padding: 12px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; cursor: pointer; transition: 0.2s; align-items: center; }
-  .chat-item:hover { background: rgba(52,211,153,0.15); border-color: rgba(110,231,183,0.55); transform: translateX(3px); }
-  .chat-item-img { width: 54px; height: 54px; border-radius: 12px; background: linear-gradient(135deg, #0a1f14, #04100a); display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; overflow: hidden; border: 1px solid rgba(110,231,183,0.3); }
-  .chat-item-img img { width: 100%; height: 100%; object-fit: cover; }
-  .chat-item-info { flex: 1; min-width: 0; }
-  .chat-item-title { font-size: 14px; font-weight: 600; color: #f0fff6; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chat-item-sub { font-size: 11px; color: rgba(200,220,210,0.65); margin-bottom: 3px; }
-  .chat-item-sub strong { color: #6ee7b7; }
-  .chat-item-last { font-size: 12px; color: rgba(200,220,210,0.6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chat-item-last .prefix { color: #6ee7b7; font-weight: 600; }
-  .chat-item-last .prefix-seller { color: #93c5fd; font-weight: 600; }
-  .chat-item-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; min-width: 56px; }
-  .chat-item-time { font-size: 11px; color: rgba(200,220,210,0.45); }
-  .chat-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.25s; padding: 20px; z-index: 450; }
-  .chat-modal.open { opacity: 1; visibility: visible; }
-  .chat-content { background: linear-gradient(160deg, rgba(15,30,22,0.85), rgba(5,12,8,0.9)); border: 1px solid rgba(110,231,183,0.25); border-radius: 20px; width: 100%; max-width: 520px; height: 80vh; max-height: 720px; display: flex; flex-direction: column; overflow: hidden; }
-  .chat-header { padding: 12px 14px; border-bottom: 1px solid rgba(110,231,183,0.2); display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); }
-  .chat-back-btn { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(110,231,183,0.3); color: #6ee7b7; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; }
-  .chat-product-img { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #0a1f14, #04100a); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; overflow: hidden; border: 1px solid rgba(110,231,183,0.3); }
-  .chat-product-img img { width: 100%; height: 100%; object-fit: cover; }
-  .chat-seller-info { flex: 1; min-width: 0; }
-  .chat-product-title { font-size: 14px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .chat-role-badge { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-top: 3px; font-weight: 700; text-transform: uppercase; }
-  .chat-role-badge.seller { background: rgba(59,130,246,0.25); color: #93c5fd; border: 1px solid rgba(59,130,246,0.5); }
-  .chat-role-badge.buyer { background: rgba(52,211,153,0.25); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.5); }
-  .chat-header-actions { display: flex; align-items: center; gap: 6px; }
-  .chat-clear-btn { padding: 6px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(239,68,68,0.35); color: #f87171; font-size: 11px; font-weight: 600; border-radius: 8px; cursor: pointer; font-family: inherit; }
-  .chat-header .close-btn { color: #9ca3af; }
-  .chat-body { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
-  .chat-placeholder { margin: auto; text-align: center; color: rgba(200,255,210,0.5); font-size: 14px; max-width: 320px; }
-  .chat-placeholder-icon { font-size: 52px; margin-bottom: 12px; opacity: 0.5; }
-  .chat-placeholder .hint { font-size: 12px; color: rgba(200,255,210,0.35); margin-top: 8px; }
-  .msg { max-width: 75%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.45; word-wrap: break-word; }
-  .msg-text { display: block; }
-  .msg-time { display: block; font-size: 10px; opacity: 0.55; margin-top: 5px; text-align: right; }
-  .msg.me { align-self: flex-end; background: linear-gradient(135deg, rgba(52,211,153,0.9), rgba(5,150,105,0.9)); color: #fff; border: 1px solid rgba(110,231,183,0.6); border-bottom-right-radius: 4px; margin-left: auto; margin-right: 0; }
-  .msg.unit { align-self: flex-start; background: linear-gradient(135deg, rgba(37,99,235,0.85), rgba(29,78,216,0.85)); border: 1px solid rgba(96,165,250,0.6); color: #f0f8ff; border-bottom-left-radius: 4px; margin-right: auto; margin-left: 0; }
-  .msg.unit::before { display: block; font-size: 10px; color: #93c5fd; font-weight: 700; margin-bottom: 3px; letter-spacing: 0.6px; text-transform: uppercase; }
+
+  .user-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px 8px 8px; border-radius: 999px;
+    background: var(--card-2);
+    border: 1px solid var(--border-2);
+  }
+  .user-chip .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #3b82f6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff;
+    text-transform: uppercase;
+  }
+  .user-chip .name { font-size: 13px; font-weight: 600; color: #fff; }
+  .user-chip .crown { color: #fbbf24; font-size: 14px; margin-left: 2px; }
+
+  /* ============ MAIN ============ */
+  main { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 24px 32px 80px; }
+
+  /* ============ HERO ============ */
+  .hero {
+    position: relative;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #0d1a15 0%, #08120e 60%, #0a0f1a 100%);
+    border: 1px solid var(--border-2);
+    padding: 56px 60px;
+    overflow: hidden;
+    margin-bottom: 48px;
+    min-height: 280px;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse 600px 400px at 90% 50%, rgba(74, 222, 128, 0.06), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-decor {
+    position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+    width: 320px; height: 220px;
+    pointer-events: none; opacity: 0.5;
+  }
+  .hero-decor .shape {
+    position: absolute;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .hero-decor .s1 { width: 110px; height: 110px; right: 60px; top: 20px; transform: rotate(-18deg); }
+  .hero-decor .s2 { width: 90px; height: 90px; right: 130px; top: 80px; transform: rotate(12deg); }
+  .hero-decor .ring {
+    position: absolute;
+    width: 260px; height: 260px; right: -20px; top: -20px;
+    border-radius: 50%;
+    border: 1px solid rgba(74, 222, 128, 0.12);
+  }
+  .hero-decor .ring::after {
+    content: '';
+    position: absolute;
+    inset: 30px;
+    border-radius: 50%;
+    border: 1px solid rgba(74, 222, 128, 0.08);
+  }
+
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.25);
+    font-size: 11px; font-weight: 700;
+    color: var(--green); letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green-glow);
+  }
+  .hero h1 {
+    font-size: 52px; font-weight: 800;
+    line-height: 1.1; letter-spacing: -1.5px;
+    color: #fff; margin-bottom: 20px;
+    max-width: 700px;
+  }
+  .hero h1 .accent { color: var(--green); }
+  .hero p {
+    font-size: 16px; color: var(--text-2);
+    max-width: 560px; line-height: 1.6;
+  }
+
+  /* ============ SECTION HEADER ============ */
+  .section-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap; margin-bottom: 24px;
+  }
+  .section-left { display: flex; flex-direction: column; gap: 4px; }
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+    color: var(--green); text-transform: uppercase;
+  }
+  .section-title {
+    font-size: 30px; font-weight: 800;
+    color: #fff; letter-spacing: -0.8px;
+  }
+
+  /* ============ TABS ============ */
+  .tabs-wrap {
+    display: inline-flex; gap: 4px;
+    padding: 5px; border-radius: 999px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 9px 18px; border-radius: 999px;
+    font-size: 14px; font-weight: 600;
+    color: var(--text-2); cursor: pointer;
+    transition: 0.2s; white-space: nowrap;
+    border: none; background: transparent; font-family: inherit;
+  }
+  .tab:hover { color: #fff; }
+  .tab.active {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+  }
+  .tab .count { opacity: 0.75; font-weight: 500; margin-left: 3px; }
+  .tab.active .count { opacity: 0.85; }
+
+  /* ============ PRODUCTS GRID ============ */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: 0.25s;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .card:hover {
+    border-color: rgba(74, 222, 128, 0.35);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(74, 222, 128, 0.08);
+  }
+  .card.just-added { border-color: var(--green); }
+  .card-img {
+    height: 200px; position: relative;
+    background: linear-gradient(135deg, #0f1a25, #0a0f1a);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; cursor: pointer;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-img .placeholder { font-size: 64px; opacity: 0.4; }
+  .card-badge {
+    position: absolute; top: 12px; left: 12px;
+    padding: 5px 10px; border-radius: 8px;
+    font-size: 11px; font-weight: 700;
+    background: rgba(74, 222, 128, 0.9);
+    color: #052e16;
+    backdrop-filter: blur(8px);
+  }
+  .card-cat {
+    position: absolute; top: 12px; right: 12px;
+    padding: 5px 10px; border-radius: 8px;
+    font-size: 11px; font-weight: 700;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .card-del {
+    position: absolute; bottom: 12px; right: 12px;
+    width: 34px; height: 34px; border-radius: 10px;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: #f87171; cursor: pointer; z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-family: inherit;
+    transition: 0.2s;
+  }
+  .card-del:hover { background: #ef4444; color: #fff; }
+  .card-del.admin { background: rgba(245,158,11,0.3); border-color: rgba(245,158,11,0.6); color: #fbbf24; }
+  .card-del.admin:hover { background: #f59e0b; color: #fff; }
+
+  .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
+  .card-title {
+    font-size: 16px; font-weight: 700; color: #fff;
+    margin-bottom: 6px; cursor: pointer; line-height: 1.35;
+  }
+  .card-title:hover { color: var(--green); }
+  .card-desc {
+    font-size: 13px; color: var(--text-2);
+    margin-bottom: 14px; flex: 1; line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-owner {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; margin-bottom: 12px;
+    background: rgba(74, 222, 128, 0.06);
+    border: 1px solid rgba(74, 222, 128, 0.15);
+    border-radius: 10px;
+    font-size: 12px;
+  }
+  .card-owner .av {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #3b82f6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: #fff;
+    flex-shrink: 0; text-transform: uppercase;
+  }
+  .card-owner .lbl { color: var(--text-3); }
+  .card-owner strong { color: var(--green); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-actions { display: flex; gap: 8px; }
+  .card-actions .chat {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    color: var(--green); font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit; transition: 0.2s;
+  }
+  .card-actions .chat:hover { background: rgba(74, 222, 128, 0.25); }
+  .card-actions .like {
+    flex: 1; padding: 10px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; border: none; border-radius: 10px;
+    font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+    transition: 0.2s;
+  }
+  .card-actions .like:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4); }
+
+  .empty {
+    grid-column: 1 / -1;
+    padding: 70px 20px; text-align: center;
+    background: var(--card);
+    border: 1px dashed var(--border-2);
+    border-radius: 20px;
+  }
+  .empty-icon { font-size: 56px; margin-bottom: 14px; opacity: 0.5; }
+  .empty h3 { color: #fff; font-size: 20px; margin-bottom: 6px; }
+  .empty p { color: var(--text-3); font-size: 14px; }
+
+  /* ============ MODALS ============ */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; z-index: 900;
+    opacity: 0; visibility: hidden; transition: 0.25s;
+  }
+  .modal-overlay.open { opacity: 1; visibility: visible; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-radius: 24px;
+    width: 100%; max-width: 480px;
+    max-height: 90vh; overflow-y: auto;
+    padding: 32px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    transform: scale(0.95);
+    transition: transform 0.25s;
+  }
+  .modal-overlay.open .modal { transform: scale(1); }
+  .modal.wide { max-width: 620px; }
+
+  .modal-title {
+    font-size: 22px; font-weight: 800;
+    color: #fff; margin-bottom: 6px; letter-spacing: -0.3px;
+  }
+  .modal-sub { font-size: 13px; color: var(--text-3); margin-bottom: 22px; }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--text-2); margin-bottom: 6px;
+  }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 12px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    color: #fff; font-size: 14px; outline: none;
+    font-family: inherit;
+    transition: 0.2s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+  }
+  .field textarea { resize: vertical; min-height: 90px; }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text-3); }
+  .field select option { background: var(--bg-2); color: #fff; }
+  .field .hint { font-size: 11px; color: var(--text-3); margin-top: 5px; }
+  .field .err { font-size: 12px; color: #f87171; margin-top: 5px; display: none; }
+  .field .err.show { display: block; }
+  .field input.invalid, .field textarea.invalid, .field select.invalid { border-color: #f87171; }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+  .modal-actions .btn-primary { flex: 1; padding: 13px; justify-content: center; font-size: 15px; }
+  .modal-actions .btn-ghost { padding: 13px 20px; font-size: 15px; }
+
+  .auth-tabs { display: flex; background: var(--bg-2); border-radius: 12px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--border); }
+  .auth-tab {
+    flex: 1; padding: 10px; text-align: center;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    border-radius: 9px; color: var(--text-3);
+    border: none; background: transparent; font-family: inherit;
+    transition: 0.2s;
+  }
+  .auth-tab.active {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+  }
+  .auth-err {
+    display: none; padding: 10px 14px; margin-bottom: 14px;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: #fca5a5; border-radius: 10px; font-size: 13px;
+  }
+  .auth-err.show { display: block; }
+
+  /* upload */
+  .upload {
+    position: relative;
+    height: 200px;
+    border: 2px dashed var(--border-2);
+    border-radius: 12px;
+    background: var(--bg-2);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; overflow: hidden;
+    text-align: center; padding: 12px;
+    transition: 0.2s;
+  }
+  .upload:hover { border-color: rgba(74,222,128,0.4); }
+  .upload.invalid { border-color: #f87171; }
+  .upload input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 1; }
+  .upload .icon { font-size: 36px; margin-bottom: 8px; }
+  .upload .text { font-size: 13px; color: var(--text-2); }
+  .upload .text strong { color: var(--green); }
+  .upload img.preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 0; }
+  .upload img.preview.visible { display: block; }
+  .upload.has-image .icon, .upload.has-image .text { display: none; }
+  .upload .rm {
+    position: absolute; top: 8px; right: 8px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(239,68,68,0.9); color: #fff;
+    border: none; cursor: pointer; display: none;
+    align-items: center; justify-content: center;
+    z-index: 3; font-family: inherit;
+  }
+  .upload.has-image .rm { display: flex; }
+
+  /* chats */
+  .chat-list { display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; }
+  .chat-row {
+    display: flex; gap: 12px; padding: 12px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 14px; cursor: pointer;
+    transition: 0.2s; align-items: center;
+  }
+  .chat-row:hover { border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.04); }
+  .chat-row .img {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: linear-gradient(135deg, #0f1a25, #0a0f1a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .chat-row .img img { width: 100%; height: 100%; object-fit: cover; }
+  .chat-row .info { flex: 1; min-width: 0; }
+  .chat-row .t { font-size: 14px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chat-row .s { font-size: 11px; color: var(--text-3); margin: 2px 0; }
+  .chat-row .s strong { color: var(--green); }
+  .chat-row .last { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .chat-content-modal {
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-radius: 24px;
+    width: 100%; max-width: 560px;
+    height: 80vh; max-height: 720px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .chat-head {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .chat-head .back {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: var(--bg-2); border: 1px solid var(--border-2);
+    color: #fff; font-size: 15px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+  }
+  .chat-head .pic {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, #0f1a25, #0a0f1a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; overflow: hidden; flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .chat-head .pic img { width: 100%; height: 100%; object-fit: cover; }
+  .chat-head .title { font-size: 14px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chat-head .role { font-size: 10px; padding: 2px 8px; border-radius: 8px; font-weight: 700; text-transform: uppercase; display: inline-block; margin-top: 3px; }
+  .chat-head .role.seller { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.4); }
+  .chat-head .role.buyer { background: rgba(74,222,128,0.2); color: var(--green); border: 1px solid rgba(74,222,128,0.4); }
+  .chat-head .clear, .chat-head .close {
+    padding: 7px 12px; border-radius: 8px;
+    background: var(--bg-2); border: 1px solid var(--border-2);
+    color: var(--text-2); font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .chat-head .clear:hover { color: #fca5a5; border-color: rgba(239,68,68,0.4); }
+  .chat-head .close { font-size: 18px; padding: 6px 10px; }
+  .chat-body {
+    flex: 1; overflow-y: auto; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .chat-placeholder { margin: auto; text-align: center; color: var(--text-3); font-size: 14px; }
+  .chat-placeholder .i { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+  .msg {
+    max-width: 75%; padding: 10px 14px;
+    border-radius: 16px; font-size: 14px; line-height: 1.45;
+    word-wrap: break-word;
+  }
+  .msg .t { display: block; }
+  .msg .time { display: block; font-size: 10px; opacity: 0.6; margin-top: 5px; text-align: right; }
+  .msg.me {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.unit {
+    align-self: flex-start;
+    background: var(--card-2);
+    border: 1px solid var(--border-2);
+    color: #f0f8ff;
+    border-bottom-left-radius: 4px;
+  }
+  .msg.unit::before {
+    display: block; font-size: 10px; color: var(--green);
+    font-weight: 700; margin-bottom: 4px;
+    letter-spacing: 0.6px; text-transform: uppercase;
+  }
   .msg.unit.from-seller::before { content: 'Продавец'; }
   .msg.unit.from-buyer::before { content: 'Покупатель'; }
-  .chat-input-area { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid rgba(110,231,183,0.2); background: rgba(0,0,0,0.28); }
-  .chat-input-area input { flex: 1; padding: 11px 16px; background: rgba(0,0,0,0.35); border: 1px solid rgba(110,231,183,0.3); border-radius: 22px; color: #f0fff6; font-size: 14px; outline: none; min-width: 0; font-family: inherit; }
-  .chat-input-area input:focus { border-color: rgba(52,211,153,0.7); box-shadow: 0 0 0 3px rgba(52,211,153,0.18); }
-  .chat-send { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(135deg, #34d399, #059669); color: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; }
-  .chat-send:disabled { opacity: 0.5; cursor: wait; }
-  .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: linear-gradient(135deg, rgba(236,72,153,0.95), rgba(190,24,93,0.95)); color: #fff; padding: 12px 22px; border-radius: 12px; font-size: 14px; font-weight: 500; opacity: 0; transition: 0.3s; max-width: 90vw; text-align: center; z-index: 999; border: 1px solid rgba(255,255,255,0.25); }
+  .chat-input {
+    display: flex; gap: 10px; padding: 14px 16px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+  }
+  .chat-input input {
+    flex: 1; padding: 12px 16px;
+    background: var(--bg-2); border: 1px solid var(--border-2);
+    border-radius: 22px; color: #fff; font-size: 14px;
+    outline: none; font-family: inherit; min-width: 0;
+  }
+  .chat-input input:focus { border-color: var(--green); }
+  .chat-input button {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border: none; color: #fff; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: inherit;
+    box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+  }
+  .chat-input button:disabled { opacity: 0.5; cursor: wait; }
+
+  /* admin */
+  .users-list { display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; }
+  .user-row {
+    display: flex; gap: 12px; padding: 12px 14px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 12px; align-items: center;
+  }
+  .user-row.blocked { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.3); }
+  .user-row .av {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: #fff;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+  .user-row.blocked .av { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+  .user-row .info { flex: 1; min-width: 0; }
+  .user-row .name { font-size: 14px; font-weight: 700; color: #fff; }
+  .user-row .meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .user-row .meta .b-admin { color: #fbbf24; font-weight: 700; }
+  .user-row .meta .b-blocked { color: #fca5a5; font-weight: 700; }
+  .user-row .acts { display: flex; gap: 6px; flex-shrink: 0; }
+  .user-row .acts button {
+    padding: 6px 10px; border-radius: 8px;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: inherit; border: 1px solid;
+  }
+  .user-row .acts .block { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+  .user-row .acts .unblock { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.4); color: var(--green); }
+  .user-row .acts .promote, .user-row .acts .demote { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.4); color: #fbbf24; }
+
+  /* toast */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; padding: 12px 22px; border-radius: 12px;
+    font-size: 14px; font-weight: 600;
+    opacity: 0; transition: 0.3s;
+    max-width: 90vw; text-align: center;
+    z-index: 999; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.error { background: linear-gradient(135deg, rgba(239,68,68,0.95), rgba(185,28,28,0.95)); }
-  footer { background: rgba(10,26,16,0.55); color: rgba(200,255,210,0.65); text-align: center; padding: 24px; font-size: 13px; border-top: 1px solid rgba(255,255,255,0.1); }
-  .loading-badge { position: fixed; top: 80px; right: 20px; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; z-index: 998; display: none; color: #fff; background: rgba(16,185,129,0.9); }
-  .loading-badge.visible { display: block; }
-  @media (max-width: 900px) { .header-top { gap: 10px; } .search { order: 5; flex-basis: 100%; max-width: 100%; } }
-  @media (max-width: 800px) { .builder-form { grid-template-columns: 1fr; } .photo-upload { height: 200px; max-width: 300px; margin: 0 auto; } }
-  @media (max-width: 700px) {
-    header { padding: 12px 14px; }
-    .logo { font-size: 15px; padding: 8px 12px; }
-    .chats-btn, .cart-btn { padding: 9px 12px; font-size: 13px; }
-    .hero h1 { font-size: 22px; padding: 12px 28px; letter-spacing: 1px; }
-    .builder-form { padding: 20px; gap: 18px; }
-    .filter-bar { flex-direction: column; align-items: stretch; }
-    .categories { justify-content: center; }
-    .modal-content { flex-direction: column; }
-    .modal-img { width: 100%; height: 180px; font-size: 70px; }
-    .cart-panel { width: 100%; }
-    .builder-actions { flex-direction: column; }
-    .chat-content, .chats-content { height: 90vh; max-height: none; border-radius: 14px; }
-    .chat-modal, .chats-modal { padding: 10px; }
+  .toast.error { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+  .loading {
+    position: fixed; top: 88px; right: 24px;
+    padding: 10px 16px; border-radius: 10px;
+    background: rgba(34, 197, 94, 0.9);
+    color: #fff; font-size: 12px; font-weight: 600;
+    z-index: 999; display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .loading.visible { display: block; }
+
+  /* cart */
+  .cart-modal .cart-items { max-height: 55vh; overflow-y: auto; margin: 0 -8px; padding: 0 8px; }
+  .cart-item {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .cart-item:last-child { border-bottom: none; }
+  .cart-item .img { width: 54px; height: 54px; border-radius: 10px; background: var(--bg-2); display: flex; align-items: center; justify-content: center; font-size: 26px; overflow: hidden; flex-shrink: 0; }
+  .cart-item .img img { width: 100%; height: 100%; object-fit: cover; }
+  .cart-item .info { flex: 1; min-width: 0; }
+  .cart-item .t { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cart-item .qty { display: flex; align-items: center; gap: 6px; }
+  .cart-item .qty button { width: 26px; height: 26px; border-radius: 6px; background: var(--bg-2); border: 1px solid var(--border-2); color: #fff; cursor: pointer; font-family: inherit; }
+  .cart-item .qty span { font-size: 14px; font-weight: 700; min-width: 20px; text-align: center; }
+  .cart-item .acts { display: flex; flex-direction: column; gap: 6px; }
+  .cart-item .acts button { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-family: inherit; border: 1px solid; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .cart-item .acts .chat { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.4); color: var(--green); }
+  .cart-item .acts .rm { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); color: #f87171; }
+
+  /* recommendations */
+  .recos { margin-top: 48px; }
+  .recos-title {
+    font-size: 22px; font-weight: 800; color: #fff;
+    margin-bottom: 4px; letter-spacing: -0.4px;
+  }
+  .recos-sub { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
+
+  /* mobile */
+  @media (max-width: 900px) {
+    .topbar { padding: 12px 16px; }
+    main { padding: 20px 16px 60px; }
+    .hero { padding: 36px 28px; }
+    .hero h1 { font-size: 34px; letter-spacing: -1px; }
+    .hero-decor { display: none; }
+    .section-title { font-size: 24px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .online { display: none; }
+    .brand-sub { display: none; }
+    .chat-content-modal { height: 92vh; max-height: none; border-radius: 16px; }
+    .modal { padding: 24px 20px; }
+  }
+  @media (max-width: 500px) {
+    .hero h1 { font-size: 28px; }
+    .topbar-right .btn-ghost span.txt { display: none; }
+    .topbar-right .btn-ghost { padding: 10px 12px; }
+    .grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<div class="blob-bg">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-  <div class="blob blob-3"></div>
-  <div class="blob blob-4"></div>
-  <div class="blob blob-5"></div>
-</div>
-<div class="glass-tint"></div>
+<div class="loading" id="loadingBadge">⏳ Подключение...</div>
 
-<div class="loading-badge" id="loadingBadge">⏳ Подключение...</div>
-
-<div class="auth-modal open" id="authModal">
-  <div class="auth-content">
-    <div class="auth-logo">🛒</div>
-    <div class="auth-title">Сеть обмена 101</div>
-    <div class="auth-sub">Войдите, чтобы создавать карточки и общаться</div>
-    <div class="auth-tabs">
-      <div class="auth-tab active" data-tab="login" id="tabLogin">Вход</div>
-      <div class="auth-tab" data-tab="register" id="tabRegister">Регистрация</div>
-    </div>
-    <div class="auth-error" id="authError"></div>
-    <form id="authForm" autocomplete="off">
-      <div class="auth-field">
-        <label for="authUsername">Ник</label>
-        <input type="text" id="authUsername" placeholder="например: ivan_2007" maxlength="20" autocomplete="username">
-        <div class="auth-hint">3–20 символов: латиница, цифры, _</div>
+<!-- ============ HEADER ============ -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#">
+      <div class="brand-logo">🔄</div>
+      <div class="brand-text">
+        <div class="brand-title">Обмен 101</div>
+        <div class="brand-sub">МБОУ СОШ №101 · Воронеж</div>
       </div>
-      <div class="auth-field">
-        <label for="authPassword">Пароль</label>
-        <input type="password" id="authPassword" placeholder="минимум 6 символов" maxlength="100" autocomplete="current-password">
-      </div>
-      <button type="submit" class="auth-submit" id="authSubmit">Войти</button>
-    </form>
-    <div class="auth-footer" id="authFooter">Нет аккаунта? Нажмите «Регистрация» выше.</div>
-  </div>
-</div>
+    </a>
 
-<div class="admin-modal" id="adminModal">
-  <div class="admin-content">
-    <div class="admin-head">
-      <h2>⚙️ Админ-панель</h2>
-      <button class="close-btn" id="adminClose" type="button">✕</button>
+    <div class="online">
+      <span class="online-dot"></span>
+      Сейчас на сайте: <strong id="onlineCount">1</strong>
     </div>
-    <div class="users-list" id="usersList"></div>
-  </div>
-</div>
 
-<header>
-  <div class="header-top">
-    <div class="logo">🛒 МаркетПлейс</div>
-    <div class="user-box" id="userBox" style="display:none;">
-      <div class="whoami" id="whoami">—</div>
-      <button class="admin-btn" id="adminBtn" type="button" style="display:none;">⚙️ Админ</button>
-      <button class="logout-btn" id="logoutBtn" type="button">Выйти</button>
-    </div>
-    <form class="search" id="searchForm">
-      <input type="text" id="searchInput" placeholder="Поиск по названию или описанию...">
-      <button type="button" class="clear-search" id="clearSearch">✕</button>
-      <button type="submit">Найти</button>
-    </form>
-    <div class="header-actions">
-      <button class="chats-btn" id="chatsBtn" type="button">💬 Все чаты</button>
-      <button class="cart-btn" id="cartBtn" type="button">
-        ❤️ Понравившиеся
-        <span class="cart-count" id="cartCount">0</span>
-      </button>
+    <div class="topbar-right" id="topbarRight">
+      <button class="btn-ghost" id="loginBtn" type="button">💬 <span class="txt">Войти</span></button>
+      <button class="btn-primary" id="registerBtn" type="button">＋ <span class="txt">Задать ник</span></button>
     </div>
   </div>
 </header>
 
-<section class="hero">
-  <h1 id="heroTitle" role="button" tabindex="0" title="Нажмите, чтобы узнать">Сеть обмена 101</h1>
-  <p>Все товары в одной сети — добавляйте свои через конструктор</p>
-</section>
+<main>
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-decor">
+      <div class="ring"></div>
+      <div class="shape s1"></div>
+      <div class="shape s2"></div>
+    </div>
+    <div class="hero-tag">Обмен внутри школы</div>
+    <h1>Найди вещь.<br>Предложи <span class="accent">обмен.</span></h1>
+    <p>Размещай свои вещи и находи то, что хочется получить взамен — просто, быстро и без лишнего.</p>
+  </section>
 
-<div class="network-stats" id="networkStats"></div>
-
-<div class="filter-bar">
-  <div class="categories" id="categories"></div>
-  <select class="sort-select" id="sortSelect">
-    <option value="default">Сортировка: по умолчанию</option>
-    <option value="name">По названию (А-Я)</option>
-  </select>
-</div>
-
-<section class="builder-section">
-  <div class="builder-header">
-    <h2>✨ Конструктор карточек</h2>
-    <p>Заполните все поля — карточка сразу появится в сети и сохранится</p>
+  <!-- ============ SECTION ============ -->
+  <div class="section-head">
+    <div class="section-left">
+      <div class="section-label">Объявления</div>
+      <div class="section-title">Что сейчас меняют</div>
+    </div>
+    <button class="btn-primary" id="addBtn" type="button">＋ Разместить</button>
   </div>
-  <button class="builder-toggle" id="builderToggle" type="button">➕ Открыть конструктор</button>
-  <div class="builder-form-wrap" id="builderFormWrap">
-    <form class="builder-form" id="builderForm" novalidate autocomplete="off">
-      <div>
-        <div class="photo-upload" id="photoUpload">
-          <input type="file" id="photoInput" accept="image/*">
-          <img class="photo-preview" id="photoPreview" alt="Превью">
-          <div class="photo-upload-icon">📷</div>
-          <div class="photo-upload-text">
-            <strong>Нажмите</strong> или перетащите<br>фото сюда <span class="required">*</span>
-          </div>
-          <button type="button" class="photo-remove" id="photoRemove" title="Удалить фото">✕</button>
-        </div>
-        <div class="photo-error" id="errorPhoto">Добавьте фото товара</div>
+
+  <div class="tabs-wrap" id="tabsWrap"></div>
+
+  <div class="grid" id="productsGrid"></div>
+
+  <!-- ============ RECOS ============ -->
+  <section class="recos" id="recos" style="display:none;">
+    <div class="recos-title">✨ Вам может понравиться</div>
+    <div class="recos-sub" id="recosReason">На основе ваших интересов</div>
+    <div class="grid" id="recosGrid"></div>
+  </section>
+</main>
+
+<!-- ============ AUTH MODAL ============ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <div class="modal-title" id="authTitle">Вход</div>
+    <div class="modal-sub" id="authSub">Войдите по нику, чтобы создавать карточки и общаться</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" type="button">Вход</button>
+      <button class="auth-tab" id="tabRegister" type="button">Регистрация</button>
+    </div>
+
+    <div class="auth-err" id="authErr"></div>
+
+    <form id="authForm">
+      <div class="field">
+        <label>Ник</label>
+        <input type="text" id="authNick" placeholder="например: ivan_2007" maxlength="20" autocomplete="username">
+        <div class="hint">3–20 символов: латиница, цифры, _</div>
       </div>
-      <div class="builder-fields">
-        <div class="field-group">
-          <label for="fieldTitle">Название <span class="required">*</span></label>
-          <input type="text" id="fieldTitle" placeholder="Например: Блокнот" maxlength="60">
-          <div class="field-error" id="errorTitle">Введите название</div>
-        </div>
-        <div class="field-group">
-          <label for="fieldDesc">Описание <span class="required">*</span></label>
-          <textarea id="fieldDesc" placeholder="Расскажите о товаре..." maxlength="300"></textarea>
-          <div class="field-error" id="errorDesc">Введите описание</div>
-        </div>
-        <div class="field-group">
-          <label for="fieldCategory">Категория <span class="required">*</span></label>
-          <select id="fieldCategory">
-            <option value="">— выберите категорию —</option>
-            <option value="book">📚 Книги</option>
-            <option value="pen">🖊️ Ручки</option>
-            <option value="set">🎁 Наборы</option>
-            <option value="dz">📝 ДЗ</option>
-          </select>
-          <div class="field-error" id="errorCategory">Выберите категорию</div>
-        </div>
-        <div class="builder-actions">
-          <button type="button" class="btn-primary" id="publishBtn">📡 Опубликовать в сеть</button>
-          <button type="button" class="btn-secondary" id="builderReset">Очистить</button>
-        </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input type="password" id="authPass" placeholder="минимум 6 символов" maxlength="100" autocomplete="current-password">
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary" id="authSubmit">Войти</button>
       </div>
     </form>
   </div>
-</section>
-
-<div class="network-title">
-  <h2>🌐 Сеть обмена 101</h2>
-  <span class="sub">Все опубликованные товары</span>
-</div>
-<div class="results-info" id="resultsInfo"></div>
-<main class="products" id="products"></main>
-
-<section class="recommendations" id="recommendations">
-  <div class="recommendations-header">
-    <div class="recommendations-title">
-      <h2>💡 Вам может понравиться</h2>
-      <span class="sub">Подобрано для вас</span>
-      <span class="reason" id="recReason">✨ На основе ваших интересов</span>
-    </div>
-  </div>
-  <div class="recommendations-grid" id="recommendationsGrid"></div>
-</section>
-
-<div class="overlay" id="overlay"></div>
-<aside class="cart-panel" id="cartPanel">
-  <div class="cart-header">
-    <h2>❤️ Понравившиеся</h2>
-    <button class="close-btn" id="closeCart" type="button">✕</button>
-  </div>
-  <div class="cart-items" id="cartItems"></div>
-  <div class="cart-footer">
-    <div class="cart-total">
-      <span>Товаров:</span>
-      <span id="cartTotal">0</span>
-    </div>
-  </div>
-</aside>
-
-<div class="modal" id="modal">
-  <div class="modal-content" id="modalContent"></div>
 </div>
 
-<div class="chats-modal" id="chatsModal">
-  <div class="chats-content">
-    <div class="chats-header">
-      <h2 id="chatsModalTitle">💬 Все чаты</h2>
-      <button class="close-btn" id="closeChats" type="button">✕</button>
+<!-- ============ ADD PRODUCT MODAL ============ -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal wide">
+    <div class="modal-title">Разместить объявление</div>
+    <div class="modal-sub">Заполните поля — карточка сразу появится в сети</div>
+
+    <div class="upload" id="upload">
+      <input type="file" id="fileInput" accept="image/*">
+      <img class="preview" id="uploadPreview" alt="">
+      <div class="icon">📷</div>
+      <div class="text"><strong>Нажмите</strong> или перетащите фото</div>
+      <button type="button" class="rm" id="uploadRm">✕</button>
     </div>
-    <div class="chats-list" id="chatsList"></div>
+    <div class="err" id="errPhoto" style="display:none;margin-top:6px;font-size:12px;color:#f87171;">Добавьте фото</div>
+
+    <div style="height:16px"></div>
+
+    <div class="field">
+      <label>Название</label>
+      <input type="text" id="addTitle" placeholder="Например: скетчбук А5" maxlength="60">
+      <div class="err" id="errTitle">Введите название</div>
+    </div>
+    <div class="field">
+      <label>Описание</label>
+      <textarea id="addDesc" placeholder="Расскажите о вещи..." maxlength="300"></textarea>
+      <div class="err" id="errDesc">Введите описание</div>
+    </div>
+    <div class="field">
+      <label>Категория</label>
+      <select id="addCat">
+        <option value="">— выберите —</option>
+        <option value="real">📦 Реальные</option>
+        <option value="virtual">💻 Виртуальные</option>
+        <option value="meme">😂 Мемы</option>
+      </select>
+      <div class="err" id="errCat">Выберите категорию</div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-primary" id="addSubmit">📡 Опубликовать</button>
+      <button type="button" class="btn-ghost" id="addCancel">Отмена</button>
+    </div>
   </div>
 </div>
 
-<div class="chat-modal" id="chatModal">
-  <div class="chat-content">
-    <div class="chat-header">
-      <button class="chat-back-btn" id="chatBack" type="button">←</button>
-      <div class="chat-product-img" id="chatProductImg">🏪</div>
-      <div class="chat-seller-info">
-        <div class="chat-product-title" id="chatProductTitle">Чат</div>
-        <div id="chatRoleBadge" class="chat-role-badge"></div>
+<!-- ============ PRODUCT MODAL ============ -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal" id="productModalBody"></div>
+</div>
+
+<!-- ============ CHATS LIST MODAL ============ -->
+<div class="modal-overlay" id="chatsListModal">
+  <div class="modal">
+    <div class="modal-title" id="chatsListTitle">💬 Все чаты</div>
+    <div class="modal-sub">Ваши диалоги</div>
+    <div class="chat-list" id="chatsListBody"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" style="flex:1;justify-content:center;" id="chatsListClose">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CHAT MODAL ============ -->
+<div class="modal-overlay" id="chatModal">
+  <div class="chat-content-modal">
+    <div class="chat-head">
+      <button class="back" id="chatBack" type="button">←</button>
+      <div class="pic" id="chatPic">🏪</div>
+      <div style="flex:1;min-width:0;">
+        <div class="title" id="chatTitle">Чат</div>
+        <div id="chatRole" class="role"></div>
       </div>
-      <div class="chat-header-actions">
-        <button class="chat-clear-btn" id="chatClearBtn" type="button">Очистить</button>
-        <button class="close-btn" id="closeChat" type="button">✕</button>
-      </div>
+      <button class="clear" id="chatClear" type="button">Очистить</button>
+      <button class="close" id="chatClose" type="button">✕</button>
     </div>
     <div class="chat-body" id="chatBody"></div>
-    <form class="chat-input-area" id="chatForm" autocomplete="off">
+    <form class="chat-input" id="chatForm">
       <input type="text" id="chatInput" placeholder="Напишите сообщение..." maxlength="1000">
-      <button type="submit" class="chat-send" id="chatSendBtn" aria-label="Отправить">➤</button>
+      <button type="submit" id="chatSend">➤</button>
     </form>
   </div>
 </div>
 
-<div class="hint-modal" id="hintModal">
-  <div class="hint-content">
-    <div class="hint-icon">🤝</div>
-    <div class="hint-title">Сеть обмена 101</div>
-    <div class="hint-text">
-      <span class="accent">Выберите товар</span>, а в чате вы можете обговорить место встречи
+<!-- ============ ADMIN MODAL ============ -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-title">⚙️ Админ-панель</div>
+    <div class="modal-sub">Управление пользователями</div>
+    <div class="users-list" id="adminUsers"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" style="flex:1;justify-content:center;" id="adminClose">Закрыть</button>
     </div>
-    <button class="hint-btn" id="hintClose" type="button">Понятно</button>
+  </div>
+</div>
+
+<!-- ============ CART MODAL ============ -->
+<div class="modal-overlay cart-modal" id="cartModal">
+  <div class="modal">
+    <div class="modal-title">❤️ Понравившиеся</div>
+    <div class="modal-sub">Здесь ваши сохранённые вещи</div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" style="flex:1;justify-content:center;" id="cartClose">Закрыть</button>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
-<footer>© 2025 МаркетПлейс. Все права защищены.</footer>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -533,35 +920,30 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true }
 });
 
-let MY_OWNER_ID = null;
-let MY_USERNAME = null;
-let MY_IS_ADMIN = false;
-let products = [];
-let uploadedImage = null;
-let publishing = false;
-const state = { category: 'all', search: '', sort: 'default', cart: [] };
-let activity = { viewed: [], carted: [] };
-let currentChatProductId = null;
-let currentChatBuyerId = null;
-let currentChatRole = null;
-let chatsFilterProductId = null;
-let realtimeChannel = null;
-let chatsRealtimeChannel = null;
-let productsChannel = null;
-let lastMessagesHash = '';
-let profilesCache = {};
-
-const STANDARD_CATEGORIES = [
-  { key: 'book', name: 'Книги', emoji: '📚' },
-  { key: 'pen',  name: 'Ручки', emoji: '🖊️' },
-  { key: 'set',  name: 'Наборы', emoji: '🎁' },
-  { key: 'dz',   name: 'ДЗ', emoji: '📝' }
+const CATS = [
+  { key: 'real',    name: 'Реальные',    emoji: '📦' },
+  { key: 'virtual', name: 'Виртуальные', emoji: '💻' },
+  { key: 'meme',    name: 'Мемы',        emoji: '😂' }
 ];
 
-const CART_KEY = 'marketplace_cart_v1';
-const ACTIVITY_KEY = 'marketplace_activity_v1';
+let MY_ID = null, MY_NAME = null, MY_ADMIN = false;
+let products = [];
+let uploaded = null;
+let currentCat = 'all';
+let currentSearch = '';
+let currentChatPid = null, currentChatBid = null, currentChatRole = null;
+let chatsFilterPid = null;
+let chatRealtime = null, chatsListRealtime = null, productsRealtime = null;
+let lastMsgHash = '';
+let profilesCache = {};
+let cart = [];
+let onlineInterval = null;
+let onlineSessions = null;
 
-/* ============ СЖАТИЕ ФОТО ============ */
+const $ = id => document.getElementById(id);
+const CART_KEY = 'obmen101_cart_v1';
+
+/* ============ IMAGE RESIZE ============ */
 function resizeImage(file, maxSize = 900, quality = 0.75) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -569,21 +951,12 @@ function resizeImage(file, maxSize = 900, quality = 0.75) {
       const img = new Image();
       img.onload = () => {
         let { width, height } = img;
-        if (width > height && width > maxSize) {
-          height = Math.round(height * maxSize / width);
-          width = maxSize;
-        } else if (height > maxSize) {
-          width = Math.round(width * maxSize / height);
-          height = maxSize;
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        try {
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        } catch (err) { reject(err); }
+        if (width > height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
+        else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
+        const c = document.createElement('canvas');
+        c.width = width; c.height = height;
+        c.getContext('2d').drawImage(img, 0, 0, width, height);
+        try { resolve(c.toDataURL('image/jpeg', quality)); } catch (e) { reject(e); }
       };
       img.onerror = reject;
       img.src = e.target.result;
@@ -595,935 +968,771 @@ function resizeImage(file, maxSize = 900, quality = 0.75) {
 
 /* ============ AUTH ============ */
 let authMode = 'login';
-const authModal = document.getElementById('authModal');
-const authForm = document.getElementById('authForm');
-const authUsername = document.getElementById('authUsername');
-const authPassword = document.getElementById('authPassword');
-const authSubmit = document.getElementById('authSubmit');
-const authError = document.getElementById('authError');
-const authFooter = document.getElementById('authFooter');
-const tabLogin = document.getElementById('tabLogin');
-const tabRegister = document.getElementById('tabRegister');
-const userBox = document.getElementById('userBox');
-const whoamiEl = document.getElementById('whoami');
-const adminBtn = document.getElementById('adminBtn');
 
 function setAuthMode(mode) {
   authMode = mode;
-  tabLogin.classList.toggle('active', mode === 'login');
-  tabRegister.classList.toggle('active', mode === 'register');
-  authSubmit.textContent = mode === 'login' ? 'Войти' : 'Зарегистрироваться';
-  authFooter.textContent = mode === 'login' ? 'Нет аккаунта? Нажмите «Регистрация» выше.' : 'Уже есть аккаунт? Нажмите «Вход» выше.';
-  hideAuthError();
+  $('tabLogin').classList.toggle('active', mode === 'login');
+  $('tabRegister').classList.toggle('active', mode === 'register');
+  $('authTitle').textContent = mode === 'login' ? 'Вход' : 'Регистрация';
+  $('authSub').textContent = mode === 'login'
+    ? 'Войдите по нику, чтобы создавать карточки и общаться'
+    : 'Придумайте ник и пароль — по ним будете входить с любого устройства';
+  $('authSubmit').textContent = mode === 'login' ? 'Войти' : 'Зарегистрироваться';
+  hideAuthErr();
 }
-function showAuthError(msg) { authError.textContent = msg; authError.classList.add('show'); }
-function hideAuthError() { authError.classList.remove('show'); authError.textContent = ''; }
-tabLogin.addEventListener('click', () => setAuthMode('login'));
-tabRegister.addEventListener('click', () => setAuthMode('register'));
+function showAuthErr(m) { $('authErr').textContent = m; $('authErr').classList.add('show'); }
+function hideAuthErr() { $('authErr').classList.remove('show'); $('authErr').textContent = ''; }
 
-function validateUsername(u) { return /^[a-zA-Z0-9_]{3,20}$/.test(u) ? null : 'Ник: 3–20 символов, только латиница, цифры и _'; }
-function validatePassword(p) { return (!p || p.length < 6) ? 'Пароль: минимум 6 символов' : null; }
+$('tabLogin').addEventListener('click', () => setAuthMode('login'));
+$('tabRegister').addEventListener('click', () => setAuthMode('register'));
 
-async function registerUser(username, password) {
-  const unameLower = username.toLowerCase();
-  const { data: existing } = await supabase.from('profiles').select('username').ilike('username', unameLower).maybeSingle();
-  if (existing) throw new Error('Этот ник уже занят');
-  const email = unameLower + EMAIL_DOMAIN;
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) {
-    if (String(error.message).toLowerCase().includes('already')) throw new Error('Этот ник уже занят');
-    throw error;
-  }
+async function registerUser(nick, pass) {
+  const lower = nick.toLowerCase();
+  const { data: ex } = await supabase.from('profiles').select('username').ilike('username', lower).maybeSingle();
+  if (ex) throw new Error('Этот ник уже занят');
+  const email = lower + EMAIL_DOMAIN;
+  const { data, error } = await supabase.auth.signUp({ email, password: pass });
+  if (error) throw new Error(String(error.message).includes('already') ? 'Ник уже занят' : error.message);
   if (!data.user) throw new Error('Не удалось создать аккаунт');
-  await supabase.from('profiles').insert([{ id: data.user.id, username: username }]);
+  await supabase.from('profiles').insert([{ id: data.user.id, username: nick }]);
+  return data.user;
+}
+async function loginUser(nick, pass) {
+  const email = nick.toLowerCase() + EMAIL_DOMAIN;
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+  if (error) throw new Error(String(error.message).toLowerCase().includes('invalid') ? 'Неверный ник или пароль' : error.message);
   return data.user;
 }
 
-async function loginUser(username, password) {
-  const email = username.toLowerCase() + EMAIL_DOMAIN;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    const msg = String(error.message).toLowerCase();
-    if (msg.includes('invalid')) throw new Error('Неверный ник или пароль');
-    throw error;
-  }
-  return data.user;
-}
-
-authForm.addEventListener('submit', async (e) => {
+$('authForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  hideAuthError();
-  const username = authUsername.value.trim();
-  const password = authPassword.value;
-  const uErr = validateUsername(username); if (uErr) { showAuthError(uErr); return; }
-  const pErr = validatePassword(password); if (pErr) { showAuthError(pErr); return; }
-  authSubmit.disabled = true;
-  authSubmit.textContent = authMode === 'login' ? 'Вход...' : 'Создание...';
+  hideAuthErr();
+  const nick = $('authNick').value.trim();
+  const pass = $('authPass').value;
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(nick)) { showAuthErr('Ник: 3–20 символов, латиница, цифры и _'); return; }
+  if (pass.length < 6) { showAuthErr('Пароль: минимум 6 символов'); return; }
+  $('authSubmit').disabled = true;
   try {
-    if (authMode === 'register') { await registerUser(username, password); showToast('✅ Аккаунт создан'); }
-    else { await loginUser(username, password); showToast('✅ Добро пожаловать, ' + username); }
-    await onAuthenticated();
-  } catch (err) {
-    console.error('auth error:', err);
-    showAuthError(err.message || 'Ошибка авторизации');
-  } finally {
-    authSubmit.disabled = false;
-    authSubmit.textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
-  }
+    if (authMode === 'register') { await registerUser(nick, pass); toast('✅ Аккаунт создан'); }
+    else { await loginUser(nick, pass); toast('✅ Привет, ' + nick); }
+    await onAuthed();
+  } catch (err) { showAuthErr(err.message || 'Ошибка'); }
+  finally { $('authSubmit').disabled = false; $('authSubmit').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться'; }
 });
 
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  if (!confirm('Выйти из аккаунта?')) return;
-  await supabase.auth.signOut();
-  location.reload();
-});
+$('loginBtn').addEventListener('click', () => { setAuthMode('login'); $('authModal').classList.add('open'); });
+$('registerBtn').addEventListener('click', () => { setAuthMode('register'); $('authModal').classList.add('open'); });
+$('authModal').addEventListener('click', e => { if (e.target === $('authModal')) $('authModal').classList.remove('open'); });
 
-async function loadProfilesByIds(ids) {
+async function loadProfiles(ids) {
   const need = [...new Set(ids)].filter(id => id && !profilesCache[id]);
   if (!need.length) return;
-  const { data, error } = await supabase.from('profiles').select('id, username').in('id', need);
-  if (error) { console.warn('profiles load error:', error); return; }
+  const { data } = await supabase.from('profiles').select('id, username').in('id', need);
   (data || []).forEach(p => { profilesCache[p.id] = p.username; });
 }
 
-async function onAuthenticated() {
+async function onAuthed() {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session || !session.user) {
-    authModal.classList.add('open');
-    userBox.style.display = 'none';
-    return;
+  if (!session?.user) { $('authModal').classList.add('open'); return; }
+  MY_ID = session.user.id;
+
+  let { data: prof } = await supabase.from('profiles').select('username, is_admin, is_blocked').eq('id', MY_ID).maybeSingle();
+  if (!prof) {
+    const nick = (session.user.email || '').split('@')[0];
+    await supabase.from('profiles').insert([{ id: MY_ID, username: nick }]);
+    prof = { username: nick, is_admin: false, is_blocked: false };
   }
-  MY_OWNER_ID = session.user.id;
-  let { data: profile } = await supabase.from('profiles').select('username, is_admin, is_blocked').eq('id', MY_OWNER_ID).maybeSingle();
-  if (!profile) {
-    const uname = (session.user.email || '').split('@')[0];
-    await supabase.from('profiles').insert([{ id: MY_OWNER_ID, username: uname }]);
-    profile = { username: uname, is_admin: false, is_blocked: false };
-  }
-  if (profile.is_blocked) {
+  if (prof.is_blocked) {
     await supabase.auth.signOut();
-    showAuthError('🚫 Ваш аккаунт заблокирован администратором');
-    authModal.classList.add('open');
-    userBox.style.display = 'none';
+    $('authModal').classList.add('open');
+    showAuthErr('🚫 Ваш аккаунт заблокирован');
     return;
   }
-  MY_USERNAME = profile.username;
-  MY_IS_ADMIN = !!profile.is_admin;
-  profilesCache[MY_OWNER_ID] = MY_USERNAME;
-  authModal.classList.remove('open');
-  userBox.style.display = 'flex';
-  whoamiEl.textContent = (MY_IS_ADMIN ? '👑 ' : '👤 ') + MY_USERNAME;
-  whoamiEl.classList.toggle('admin', MY_IS_ADMIN);
-  adminBtn.style.display = MY_IS_ADMIN ? 'inline-block' : 'none';
-  document.getElementById('loadingBadge').classList.remove('visible');
+  MY_NAME = prof.username;
+  MY_ADMIN = !!prof.is_admin;
+  profilesCache[MY_ID] = MY_NAME;
+
+  $('authModal').classList.remove('open');
+  renderTopbarUser();
+  $('loadingBadge').classList.remove('visible');
   await bootApp();
 }
 
-/* ============ ADMIN ============ */
-const adminModal = document.getElementById('adminModal');
-const adminClose = document.getElementById('adminClose');
-const usersList = document.getElementById('usersList');
-adminBtn.addEventListener('click', async () => { await renderAdminPanel(); adminModal.classList.add('open'); });
-adminClose.addEventListener('click', () => adminModal.classList.remove('open'));
-adminModal.addEventListener('click', e => { if (e.target === adminModal) adminModal.classList.remove('open'); });
-
-async function renderAdminPanel() {
-  usersList.innerHTML = '<p style="color:#aaa;">Загрузка...</p>';
-  const { data, error } = await supabase.from('profiles').select('id, username, is_admin, is_blocked, "createdAt"').order('createdAt', { ascending: true });
-  if (error) { usersList.innerHTML = '<p style="color:#f87171;">Ошибка: ' + error.message + '</p>'; return; }
-  if (!data || !data.length) { usersList.innerHTML = '<p style="color:#aaa;">Нет пользователей.</p>'; return; }
-  usersList.innerHTML = data.map(u => {
-    const isMe = u.id === MY_OWNER_ID;
-    const initial = (u.username || '?')[0].toUpperCase();
-    const metaParts = [];
-    if (u.is_admin) metaParts.push('<span class="badge-admin">👑 админ</span>');
-    if (u.is_blocked) metaParts.push('<span class="badge-blocked">🚫 заблокирован</span>');
-    if (isMe) metaParts.push('(это вы)');
-    const meta = metaParts.length ? metaParts.join(' · ') : 'обычный пользователь';
-    const blockBtn = u.is_blocked
-      ? `<button class="btn-unblock" data-action="unblock" data-id="${u.id}">Разблокировать</button>`
-      : `<button class="btn-block" data-action="block" data-id="${u.id}" ${isMe ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>Заблокировать</button>`;
-    const adminBtnU = u.is_admin
-      ? `<button class="btn-admin-toggle" data-action="demote" data-id="${u.id}" ${isMe ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>Снять админа</button>`
-      : `<button class="btn-admin-toggle" data-action="promote" data-id="${u.id}">Сделать админом</button>`;
-    return `<div class="user-row ${u.is_blocked ? 'blocked' : ''}">
+function renderTopbarUser() {
+  const right = $('topbarRight');
+  const initial = (MY_NAME || '?')[0].toUpperCase();
+  right.innerHTML = `
+    <button class="btn-ghost" id="chatsBtn" type="button">💬 <span class="txt">Чаты</span></button>
+    <button class="btn-ghost" id="cartBtn" type="button">❤️ <span class="txt">Избранное</span></button>
+    ${MY_ADMIN ? '<button class="btn-ghost" id="adminBtn" type="button">⚙️ <span class="txt">Админ</span></button>' : ''}
+    <div class="user-chip">
       <div class="avatar">${escapeHtml(initial)}</div>
-      <div class="uinfo"><div class="uname">${escapeHtml(u.username)}</div><div class="umeta">${meta}</div></div>
-      <div class="uactions">${blockBtn}${adminBtnU}</div>
-    </div>`;
-  }).join('');
+      <div class="name">${escapeHtml(MY_NAME)}${MY_ADMIN ? '<span class="crown">👑</span>' : ''}</div>
+    </div>
+    <button class="btn-ghost" id="logoutBtn" type="button" title="Выйти">⏻</button>
+  `;
+  $('chatsBtn').addEventListener('click', () => openChatsList(null));
+  $('cartBtn').addEventListener('click', () => { renderCart(); $('cartModal').classList.add('open'); });
+  if (MY_ADMIN) $('adminBtn').addEventListener('click', () => { renderAdmin(); $('adminModal').classList.add('open'); });
+  $('logoutBtn').addEventListener('click', async () => {
+    if (!confirm('Выйти?')) return;
+    await supabase.auth.signOut();
+    location.reload();
+  });
 }
 
-usersList.addEventListener('click', async e => {
-  const btn = e.target.closest('[data-action]');
-  if (!btn || btn.disabled) return;
-  const action = btn.getAttribute('data-action');
-  const userId = btn.getAttribute('data-id');
-  if (!userId) return;
-  try {
-    if (action === 'block') { await supabase.from('profiles').update({ is_blocked: true }).eq('id', userId); showToast('🚫 Пользователь заблокирован'); }
-    else if (action === 'unblock') { await supabase.from('profiles').update({ is_blocked: false }).eq('id', userId); showToast('✅ Пользователь разблокирован'); }
-    else if (action === 'promote') { await supabase.from('profiles').update({ is_admin: true }).eq('id', userId); showToast('👑 Пользователь назначен админом'); }
-    else if (action === 'demote') { await supabase.from('profiles').update({ is_admin: false }).eq('id', userId); showToast('Права админа сняты'); }
-    await renderAdminPanel();
-  } catch (err) { console.error(err); showToast('❌ ' + err.message, true); }
-});
-
-/* ============ INIT ============ */
-async function init() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session && session.user) { await onAuthenticated(); }
-  else { authModal.classList.add('open'); }
-  supabase.auth.onAuthStateChange((event) => { if (event === 'SIGNED_OUT') location.reload(); });
-}
-
-let appBooted = false;
+/* ============ BOOT ============ */
+let booted = false;
 async function bootApp() {
-  if (appBooted) {
-    loadCartLocal(); loadActivityLocal();
-    products = await loadProductsFromServer();
+  if (booted) {
+    products = await loadProducts();
     renderAll();
     return;
   }
-  appBooted = true;
+  booted = true;
   loadCartLocal();
-  loadActivityLocal();
-  products = await loadProductsFromServer();
+  products = await loadProducts();
   renderAll();
-  subscribeToProducts();
-  subscribeToChatsList();
+  subscribeProducts();
+  subscribeChatsList();
 }
 
 function renderAll() {
-  renderCategoryFilters();
+  renderTabs();
   renderProducts();
-  renderNetworkStats();
-  renderCart();
-  renderRecommendations();
-  updateCartCount();
+  renderRecos();
 }
 
-async function loadProductsFromServer() {
+/* ============ DATA ============ */
+async function loadProducts() {
   const { data, error } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
-  if (error) { console.error('loadProducts:', error); return []; }
-  const list = (data || []).map(row => ({
-    id: row.id, title: row.title, desc: row.description,
-    category: row.category, categoryName: row.categoryName,
-    rating: row.rating, badge: row.badge, custom: row.custom,
-    image: row.image, icon: null, ownerId: row.ownerId,
+  if (error) { console.error(error); return []; }
+  const list = (data || []).map(r => ({
+    id: r.id, title: r.title, desc: r.description,
+    category: r.category, categoryName: r.categoryName,
+    rating: r.rating, badge: r.badge, custom: r.custom,
+    image: r.image, ownerId: r.ownerId, createdAt: r.createdAt
   }));
-  const ownerIds = list.map(p => p.ownerId).filter(Boolean);
-  if (ownerIds.length) await loadProfilesByIds(ownerIds);
+  await loadProfiles(list.map(p => p.ownerId).filter(Boolean));
   return list;
 }
 
-async function createProductInServer(product) {
+async function createProduct(p) {
   const row = {
-    id: Date.now(), title: product.title, description: product.desc,
-    category: product.category, categoryName: product.categoryName,
-    rating: product.rating, badge: product.badge, custom: true,
-    image: product.image, ownerId: product.ownerId, createdAt: Date.now(),
+    id: Date.now(),
+    title: p.title, description: p.desc,
+    category: p.category, categoryName: p.categoryName,
+    rating: 5, badge: 'НОВОЕ', custom: true,
+    image: p.image, ownerId: p.ownerId, createdAt: Date.now()
   };
   const { data, error } = await supabase.from('products').insert([row]).select().single();
   if (error) throw new Error(error.message);
   return data;
 }
-async function deleteProductFromServer(id) {
+async function deleteProduct(id) {
   const { error } = await supabase.from('products').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }
-async function loadChatHistory(productId, buyerId) {
-  const { data, error } = await supabase.from('messages').select('*').eq('productId', productId).eq('buyerId', buyerId).order('time', { ascending: true });
-  if (error) { console.error(error); return []; }
-  return data || [];
-}
-async function sendMessageToServer(productId, buyerId, role, text) {
-  const { data, error } = await supabase.from('messages').insert([{ productId, buyerId, role, text, time: Date.now() }]).select().single();
+async function sendMsg(pid, bid, role, text) {
+  const { data, error } = await supabase.from('messages').insert([{ productId: pid, buyerId: bid, role, text, time: Date.now() }]).select().single();
   if (error) throw new Error(error.message);
   return data;
 }
-async function clearChatOnServer(productId, buyerId) {
-  const { error } = await supabase.from('messages').delete().eq('productId', productId).eq('buyerId', buyerId);
+async function loadHistory(pid, bid) {
+  const { data, error } = await supabase.from('messages').select('*').eq('productId', pid).eq('buyerId', bid).order('time', { ascending: true });
+  if (error) return [];
+  return data || [];
+}
+async function clearChat(pid, bid) {
+  const { error } = await supabase.from('messages').delete().eq('productId', pid).eq('buyerId', bid);
   if (error) throw new Error(error.message);
 }
 async function loadChatsList() {
-  const { data: allProducts } = await supabase.from('products').select('id, title, image, ownerId');
-  const productsMap = {};
-  (allProducts || []).forEach(p => { productsMap[p.id] = p; });
-  const myProductIds = (allProducts || []).filter(p => p.ownerId === MY_OWNER_ID).map(p => p.id);
-  let query = supabase.from('messages').select('*').order('time', { ascending: false }).limit(500);
-  if (myProductIds.length) query = query.or(`buyerId.eq.${MY_OWNER_ID},productId.in.(${myProductIds.join(',')})`);
-  else query = query.eq('buyerId', MY_OWNER_ID);
-  const { data: messages, error } = await query;
-  if (error) { console.error(error); return []; }
+  const { data: prods } = await supabase.from('products').select('id, title, image, ownerId');
+  const pm = {}; (prods || []).forEach(p => { pm[p.id] = p; });
+  const mine = (prods || []).filter(p => p.ownerId === MY_ID).map(p => p.id);
+  let q = supabase.from('messages').select('*').order('time', { ascending: false }).limit(500);
+  if (mine.length) q = q.or(`buyerId.eq.${MY_ID},productId.in.(${mine.join(',')})`);
+  else q = q.eq('buyerId', MY_ID);
+  const { data: msgs, error } = await q;
+  if (error) return [];
   const map = {};
-  (messages || []).forEach(m => { const k = m.productId + ':' + m.buyerId; if (!map[k]) map[k] = m; });
-  const buyerIds = [...new Set(Object.values(map).map(m => m.buyerId))];
-  if (buyerIds.length) await loadProfilesByIds(buyerIds);
+  (msgs || []).forEach(m => { const k = m.productId + ':' + m.buyerId; if (!map[k]) map[k] = m; });
+  const bids = [...new Set(Object.values(map).map(m => m.buyerId))];
+  await loadProfiles(bids);
   return Object.values(map).map(m => {
-    const prod = productsMap[m.productId];
+    const prod = pm[m.productId];
     return {
       productId: m.productId, buyerId: m.buyerId,
       buyerName: profilesCache[m.buyerId] || '—',
-      title: prod ? prod.title : '—', image: prod ? prod.image : null,
-      lastText: m.text, lastFrom: m.role, lastTime: m.time,
+      title: prod?.title || '—', image: prod?.image || null,
+      lastText: m.text, lastFrom: m.role, lastTime: m.time
     };
   }).sort((a, b) => b.lastTime - a.lastTime);
 }
 
-function subscribeToChat(productId, buyerId) {
-  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
-  realtimeChannel = supabase.channel('chat-' + productId + '-' + buyerId + '-' + Date.now())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `productId=eq.${productId}` },
-      (payload) => { const row = payload.new; if (!row) return; if (String(row.buyerId) !== String(buyerId)) return; refreshChat(); }).subscribe();
-}
-function subscribeToChatsList() {
-  if (chatsRealtimeChannel) return;
-  chatsRealtimeChannel = supabase.channel('chats-list-live')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' },
-      () => { if (document.getElementById('chatsModal').classList.contains('open')) renderChatsList(); }).subscribe();
-}
-function subscribeToProducts() {
-  if (productsChannel) return;
-  productsChannel = supabase.channel('products-live')
+/* ============ REALTIME ============ */
+function subscribeProducts() {
+  if (productsRealtime) return;
+  productsRealtime = supabase.channel('products-live')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'products' },
-      async () => {
-        products = await loadProductsFromServer();
-        renderProducts(); renderNetworkStats(); renderRecommendations();
-      }).subscribe();
+      async () => { products = await loadProducts(); renderProducts(); renderTabs(); renderRecos(); })
+    .subscribe();
+}
+function subscribeChatsList() {
+  if (chatsListRealtime) return;
+  chatsListRealtime = supabase.channel('chats-list-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' },
+      () => { if ($('chatsListModal').classList.contains('open')) renderChatsList(); })
+    .subscribe();
+}
+function subscribeChat(pid, bid) {
+  if (chatRealtime) { supabase.removeChannel(chatRealtime); chatRealtime = null; }
+  chatRealtime = supabase.channel('chat-' + pid + '-' + bid + '-' + Date.now())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `productId=eq.${pid}` },
+      (pl) => { const r = pl.new; if (!r || String(r.buyerId) !== String(bid)) return; refreshChat(); })
+    .subscribe();
 }
 
-function loadCartLocal() { const raw = localStorage.getItem(CART_KEY); if (!raw) return; try { state.cart = JSON.parse(raw) || []; } catch (e) {} }
-function saveCartLocal() { try { localStorage.setItem(CART_KEY, JSON.stringify(state.cart)); } catch (e) {} }
-function loadActivityLocal() { const raw = localStorage.getItem(ACTIVITY_KEY); if (!raw) return; try { const obj = JSON.parse(raw); if (obj) { activity.viewed = obj.viewed || []; activity.carted = obj.carted || []; } } catch (e) {} }
-function saveActivityLocal() { try { localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activity)); } catch (e) {} }
+/* ============ RENDER ============ */
+function escapeHtml(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function isMine(p) { return p.custom && p.ownerId === MY_ID; }
+function canDelete(p) { return isMine(p) || MY_ADMIN; }
 
-function categoryLabel(p) {
-  if (p.categoryName) return p.categoryName;
-  for (const c of STANDARD_CATEGORIES) if (c.key === p.category) return c.name;
-  return 'Разное';
+function renderTabs() {
+  const total = products.length;
+  const counts = { real: 0, virtual: 0, meme: 0 };
+  products.forEach(p => { if (counts[p.category] !== undefined) counts[p.category]++; });
+
+  const items = [{ key: 'all', name: 'Все', count: total }];
+  CATS.forEach(c => items.push({ key: c.key, name: c.name, count: counts[c.key] }));
+
+  $('tabsWrap').innerHTML = items.map(i =>
+    `<button class="tab${i.key === currentCat ? ' active' : ''}" data-cat="${i.key}" type="button">
+      ${escapeHtml(i.name)} <span class="count">(${i.count})</span>
+    </button>`
+  ).join('');
 }
 
-function trackView(id) { if (!id) return; activity.viewed = activity.viewed.filter(x => x !== id); activity.viewed.push(id); if (activity.viewed.length > 30) activity.viewed = activity.viewed.slice(-30); saveActivityLocal(); scheduleRecommendations(); }
-function trackCart(id) { if (!id) return; activity.carted = activity.carted.filter(x => x !== id); activity.carted.push(id); if (activity.carted.length > 30) activity.carted = activity.carted.slice(-30); saveActivityLocal(); scheduleRecommendations(); }
-
-const $ = id => document.getElementById(id);
-const productsEl = $('products');
-const resultsInfo = $('resultsInfo');
-const searchInput = $('searchInput');
-const clearSearch = $('clearSearch');
-const categoriesEl = $('categories');
-const sortSelect = $('sortSelect');
-const cartPanel = $('cartPanel');
-const overlay = $('overlay');
-const cartItemsEl = $('cartItems');
-const cartTotalEl = $('cartTotal');
-const cartCountEl = $('cartCount');
-const modal = $('modal');
-const modalContent = $('modalContent');
-const toast = $('toast');
-const networkStatsEl = $('networkStats');
-const recommendationsEl = $('recommendations');
-const recommendationsGrid = $('recommendationsGrid');
-const recReason = $('recReason');
-const chatsBtn = $('chatsBtn');
-const chatsModal = $('chatsModal');
-const chatsModalTitle = $('chatsModalTitle');
-const closeChats = $('closeChats');
-const chatsList = $('chatsList');
-const chatModal = $('chatModal');
-const chatBody = $('chatBody');
-const chatForm = $('chatForm');
-const chatInput = $('chatInput');
-const chatSendBtn = $('chatSendBtn');
-const chatClearBtn = $('chatClearBtn');
-const chatBack = $('chatBack');
-const chatProductImg = $('chatProductImg');
-const chatProductTitle = $('chatProductTitle');
-const chatRoleBadge = $('chatRoleBadge');
-const heroTitle = $('heroTitle');
-const hintModal = $('hintModal');
-const hintClose = $('hintClose');
-
-heroTitle.addEventListener('click', e => { e.preventDefault(); hintModal.classList.add('open'); });
-hintClose.addEventListener('click', () => hintModal.classList.remove('open'));
-hintModal.addEventListener('click', e => { if (e.target === hintModal) hintModal.classList.remove('open'); });
-
-const builderToggle = $('builderToggle');
-const builderFormWrap = $('builderFormWrap');
-const builderForm = $('builderForm');
-const photoUpload = $('photoUpload');
-const photoInput = $('photoInput');
-const photoPreview = $('photoPreview');
-const photoRemove = $('photoRemove');
-const fieldTitle = $('fieldTitle');
-const fieldDesc = $('fieldDesc');
-const fieldCategory = $('fieldCategory');
-const errorTitle = $('errorTitle');
-const errorDesc = $('errorDesc');
-const errorCategory = $('errorCategory');
-const errorPhoto = $('errorPhoto');
-
-builderToggle.addEventListener('click', e => {
-  e.preventDefault();
-  const isOpen = builderFormWrap.classList.toggle('open');
-  builderToggle.classList.toggle('open', isOpen);
-  builderToggle.textContent = isOpen ? '✖ Закрыть конструктор' : '➕ Открыть конструктор';
-  if (isOpen) setTimeout(() => { try { builderFormWrap.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) {} }, 250);
+$('tabsWrap').addEventListener('click', e => {
+  const t = e.target.closest('.tab');
+  if (!t) return;
+  currentCat = t.getAttribute('data-cat');
+  renderTabs();
+  renderProducts();
 });
 
-function setPhoto(dataUrl) {
-  uploadedImage = dataUrl;
-  photoPreview.src = dataUrl;
-  photoPreview.classList.add('visible');
-  photoUpload.classList.add('has-image');
-  photoUpload.classList.remove('invalid');
-  errorPhoto.classList.remove('show');
-}
-function clearPhoto() {
-  uploadedImage = null; photoInput.value = '';
-  photoPreview.src = ''; photoPreview.classList.remove('visible');
-  photoUpload.classList.remove('has-image');
-}
-photoInput.addEventListener('change', async e => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  if (!file.type || !file.type.startsWith('image/')) { showToast('❌ Только изображение', true); photoInput.value = ''; return; }
-  if (file.size > 15 * 1024 * 1024) { showToast('❌ Максимум 15 МБ', true); photoInput.value = ''; return; }
-  try {
-    photoUpload.classList.add('invalid');
-    errorPhoto.textContent = 'Сжатие фото...';
-    errorPhoto.classList.add('show');
-    const resized = await resizeImage(file, 900, 0.75);
-    setPhoto(resized);
-    errorPhoto.classList.remove('show');
-    errorPhoto.textContent = 'Добавьте фото товара';
-  } catch (err) {
-    console.error('resize error:', err);
-    showToast('❌ Не удалось обработать фото', true);
-    photoInput.value = '';
-    errorPhoto.textContent = 'Добавьте фото товара';
-    errorPhoto.classList.remove('show');
-  }
-});
-photoRemove.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); clearPhoto(); });
-
-function validateField(input, errorEl, isInvalid) {
-  if (isInvalid) { if (input) input.classList.add('invalid'); if (errorEl) errorEl.classList.add('show'); return false; }
-  if (input) input.classList.remove('invalid'); if (errorEl) errorEl.classList.remove('show'); return true;
-}
-fieldTitle.addEventListener('input', () => { if (fieldTitle.value.trim()) { fieldTitle.classList.remove('invalid'); errorTitle.classList.remove('show'); } });
-fieldDesc.addEventListener('input', () => { if (fieldDesc.value.trim()) { fieldDesc.classList.remove('invalid'); errorDesc.classList.remove('show'); } });
-fieldCategory.addEventListener('change', () => { if (fieldCategory.value) { fieldCategory.classList.remove('invalid'); errorCategory.classList.remove('show'); } });
-
-async function handlePublish(e) {
-  if (e && e.preventDefault) e.preventDefault();
-  if (publishing) return;
-  if (!MY_OWNER_ID) { showToast('❌ Сначала войдите', true); return; }
-  publishing = true;
-  const btn = $('publishBtn');
-  btn.disabled = true;
-  try {
-    let photoOk = true;
-    if (!uploadedImage) { photoUpload.classList.add('invalid'); errorPhoto.classList.add('show'); photoOk = false; }
-    const titleOk = validateField(fieldTitle, errorTitle, !fieldTitle.value.trim());
-    const descOk = validateField(fieldDesc, errorDesc, !fieldDesc.value.trim());
-    const catKey = fieldCategory.value;
-    const catStd = STANDARD_CATEGORIES.find(c => c.key === catKey);
-    const catOk = validateField(fieldCategory, errorCategory, !catStd);
-    if (!photoOk || !titleOk || !descOk || !catOk) {
-      const missing = [];
-      if (!photoOk) missing.push('фото');
-      if (!titleOk) missing.push('название');
-      if (!descOk) missing.push('описание');
-      if (!catOk) missing.push('категория');
-      showToast('⚠️ Заполните: ' + missing.join(', '), true);
-      return;
-    }
-    const newProduct = {
-      title: fieldTitle.value.trim(),
-      desc: fieldDesc.value.trim(),
-      category: catStd.key,
-      categoryName: catStd.name,
-      rating: 5.0, badge: 'ВАШ ТОВАР',
-      image: uploadedImage, ownerId: MY_OWNER_ID
-    };
-    const saved = await createProductInServer(newProduct);
-    newProduct.id = saved.id;
-    products.unshift(newProduct);
-    profilesCache[MY_OWNER_ID] = MY_USERNAME;
-    builderForm.reset(); clearPhoto();
-    [fieldTitle, fieldDesc, fieldCategory].forEach(el => el.classList.remove('invalid'));
-    [errorTitle, errorDesc, errorCategory].forEach(el => el.classList.remove('show'));
-    builderFormWrap.classList.remove('open');
-    builderToggle.classList.remove('open');
-    builderToggle.textContent = '➕ Открыть конструктор';
-    state.category = 'all'; state.search = ''; state.sort = 'default';
-    searchInput.value = ''; sortSelect.value = 'default';
-    clearSearch.classList.remove('visible');
-    renderCategoryFilters(); renderProducts(); renderNetworkStats();
-    setTimeout(() => {
-      const cardEl = productsEl.querySelector('.card[data-id="' + newProduct.id + '"]');
-      if (cardEl) {
-        cardEl.classList.add('just-added');
-        try { cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) {}
-        setTimeout(() => cardEl.classList.remove('just-added'), 1600);
-      }
-    }, 60);
-    showToast('📡 «' + newProduct.title + '» опубликован');
-  } catch (err) {
-    console.error('Publish error:', err);
-    showToast('❌ ' + (err.message || 'Ошибка'), true);
-  } finally {
-    publishing = false;
-    btn.disabled = false;
-  }
-}
-$('publishBtn').addEventListener('click', handlePublish);
-builderForm.addEventListener('submit', handlePublish);
-$('builderReset').addEventListener('click', () => {
-  builderForm.reset(); clearPhoto();
-  [fieldTitle, fieldDesc, fieldCategory].forEach(el => el.classList.remove('invalid'));
-  [errorTitle, errorDesc, errorCategory].forEach(el => el.classList.remove('show'));
-  photoUpload.classList.remove('invalid'); errorPhoto.classList.remove('show');
-});
-
-function renderCategoryFilters() {
-  const items = [{ key: 'all', name: 'Все' }];
-  for (const c of STANDARD_CATEGORIES) items.push({ key: c.key, name: c.emoji + ' ' + c.name });
-  if (!items.some(i => i.key === state.category)) state.category = 'all';
-  categoriesEl.innerHTML = items.map(i => {
-    const active = i.key === state.category ? ' active' : '';
-    return '<div class="category' + active + '" data-category="' + escapeHtml(i.key) + '">' + escapeHtml(i.name) + '</div>';
-  }).join('');
-}
-function renderNetworkStats() {
-  const counts = {}; let custom = 0;
-  for (const p of products) {
-    if (p.custom) custom++;
-    if (!counts[p.category]) counts[p.category] = { name: categoryLabel(p), count: 0 };
-    counts[p.category].count++;
-  }
-  let html = '';
-  html += '<div class="stat-chip">📦 Всего в сети: <strong>' + products.length + '</strong></div>';
-  html += '<div class="stat-chip">✨ Ваших: <strong>' + custom + '</strong></div>';
-  for (const s of STANDARD_CATEGORIES) {
-    const c = counts[s.key] ? counts[s.key].count : 0;
-    html += '<div class="stat-chip">' + s.emoji + ' ' + s.name + ': <strong>' + c + '</strong></div>';
-  }
-  networkStatsEl.innerHTML = html;
-}
-function getFiltered() {
+function filtered() {
   let list = products.slice();
-  if (state.category !== 'all') list = list.filter(p => p.category === state.category);
-  if (state.search.trim()) {
-    const q = state.search.trim().toLowerCase();
-    list = list.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q) || categoryLabel(p).toLowerCase().includes(q));
+  if (currentCat !== 'all') list = list.filter(p => p.category === currentCat);
+  if (currentSearch.trim()) {
+    const q = currentSearch.trim().toLowerCase();
+    list = list.filter(p => p.title.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q));
   }
-  if (state.sort === 'name') list.sort((a, b) => a.title.localeCompare(b.title, 'ru'));
   return list;
 }
 
-function escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
-function isMyCard(p) { return p.custom && p.ownerId && p.ownerId === MY_OWNER_ID; }
-function canDeleteCard(p) { return isMyCard(p) || MY_IS_ADMIN; }
+function catLabel(p) {
+  if (p.categoryName) return p.categoryName;
+  const c = CATS.find(c => c.key === p.category);
+  return c ? c.name : 'Разное';
+}
 
-function buildCardHtml(p, opts) {
-  opts = opts || {};
-  const imgContent = p.image ? '<img src="' + p.image + '" alt="' + escapeHtml(p.title) + '" loading="lazy">' : (p.icon || '🆕');
-  let badgeHtml = '';
-  if (opts.rec && opts.recText) badgeHtml = '<div class="rec-label">✨ ' + escapeHtml(opts.recText) + '</div>';
-  else if (p.badge) badgeHtml = '<div class="badge' + (p.custom ? ' custom' : '') + '">' + escapeHtml(p.badge) + '</div>';
-  const canDel = canDeleteCard(p) && !opts.rec;
-  const adminClass = (MY_IS_ADMIN && !isMyCard(p)) ? ' admin-delete' : '';
-  const title = (MY_IS_ADMIN && !isMyCard(p)) ? 'Удалить (админ)' : 'Удалить';
-  const deleteBtn = canDel ? '<button class="delete-card-btn' + adminClass + '" data-delete="' + p.id + '" title="' + title + '" type="button">🗑️</button>' : '';
-  const ownerName = profilesCache[p.ownerId] || p.ownerId || '—';
+function cardHtml(p) {
+  const img = p.image
+    ? `<img src="${p.image}" alt="${escapeHtml(p.title)}" loading="lazy">`
+    : `<div class="placeholder">🆕</div>`;
+  const ownerName = profilesCache[p.ownerId] || '—';
   const ownerInitial = String(ownerName)[0].toUpperCase();
-  const ownerHtml = '<div class="card-owner">' +
-    '<div class="seller-avatar">' + escapeHtml(ownerInitial) + '</div>' +
-    '<span class="seller-label">Продавец:</span>' +
-    '<strong>' + escapeHtml(ownerName) + '</strong>' +
-  '</div>';
-  return (
-    '<article class="card" data-id="' + p.id + '">' + badgeHtml + deleteBtn +
-      '<div class="card-image" data-action="open">' + imgContent + '</div>' +
-      '<div class="card-body">' +
-        '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
-        '<h3 class="card-title" data-action="open">' + escapeHtml(p.title) + '</h3>' +
-        '<p class="card-desc">' + escapeHtml(p.desc) + '</p>' +
-        ownerHtml +
-        '<div class="card-footer">' +
-          '<div class="card-actions">' +
-            '<button class="chat-btn" data-action="chat" data-id="' + p.id + '" title="Чат" type="button">💬</button>' +
-            '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ Нравится</button>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
-    '</article>'
-  );
+  const cat = catLabel(p);
+  const del = canDelete(p)
+    ? `<button class="card-del${(!isMine(p) && MY_ADMIN) ? ' admin' : ''}" data-del="${p.id}" title="Удалить" type="button">🗑️</button>`
+    : '';
+
+  return `<article class="card" data-id="${p.id}">
+    <div class="card-img" data-open="${p.id}">
+      ${img}
+      <div class="card-cat">${escapeHtml(cat)}</div>
+      ${del}
+    </div>
+    <div class="card-body">
+      <div class="card-title" data-open="${p.id}">${escapeHtml(p.title)}</div>
+      <div class="card-desc">${escapeHtml(p.desc)}</div>
+      <div class="card-owner">
+        <div class="av">${escapeHtml(ownerInitial)}</div>
+        <span class="lbl">Меняет:</span>
+        <strong>${escapeHtml(ownerName)}</strong>
+      </div>
+      <div class="card-actions">
+        <button class="chat" data-chat="${p.id}" title="Написать" type="button">💬</button>
+        <button class="like" data-like="${p.id}" type="button">❤️ Хочу</button>
+      </div>
+    </div>
+  </article>`;
 }
+
 function renderProducts() {
-  const list = getFiltered();
-  resultsInfo.textContent = list.length ? 'Показано в сети: ' + list.length + ' из ' + products.length : '';
+  const list = filtered();
+  const grid = $('productsGrid');
   if (!list.length) {
-    const isEmptyNetwork = products.length === 0;
-    productsEl.innerHTML = '<div class="empty"><div class="empty-icon">' + (isEmptyNetwork ? '✨' : '🔍') + '</div><h3>' + (isEmptyNetwork ? 'В сети пока нет карточек' : 'Ничего не найдено') + '</h3><p>' + (isEmptyNetwork ? 'Создайте первую карточку через конструктор выше 👆' : 'Попробуйте изменить запрос или выбрать другую категорию.') + '</p></div>';
+    grid.innerHTML = `<div class="empty">
+      <div class="empty-icon">✨</div>
+      <h3>${products.length === 0 ? 'Пока ничего нет' : 'Ничего не найдено'}</h3>
+      <p>${products.length === 0 ? 'Нажмите «Разместить», чтобы добавить первое объявление' : 'Попробуйте другую категорию'}</p>
+    </div>`;
     return;
   }
-  productsEl.innerHTML = list.map(p => buildCardHtml(p)).join('');
+  grid.innerHTML = list.map(cardHtml).join('');
 }
 
-function findProduct(id) { return products.find(p => p.id === id) || null; }
-function getRecommendations(limit = 4) {
-  if (!products.length) return [];
-  const weights = {}; let hasActivity = false;
-  const bump = (cat, amount) => { if (!cat) return; weights[cat] = (weights[cat] || 0) + amount; };
-  for (const id of activity.carted) { const cp = findProduct(id); if (cp) { bump(cp.category, 2); hasActivity = true; } }
-  for (const id of activity.viewed) { const vp = findProduct(id); if (vp) { bump(vp.category, 1); hasActivity = true; } }
-  const excluded = new Set([...activity.viewed, ...activity.carted]);
-  const candidates = products.filter(p => !excluded.has(p.id));
-  if (!hasActivity) return [];
-  const scored = candidates.map(p => { const w = weights[p.category] || 0; return { p, score: w * 10 + (p.custom ? 0.5 : 0) }; });
-  scored.sort((a, b) => b.score - a.score);
-  const result = [];
-  for (const s of scored) { if (result.length >= limit) break; if (s.score >= 10) result.push(s.p); }
-  return result;
-}
-function getRecommendationReason() {
-  const cartedCats = {}; const viewedCats = {};
-  for (const id of activity.carted) { const cp = findProduct(id); if (cp) cartedCats[cp.category] = categoryLabel(cp); }
-  for (const id of activity.viewed) { const vp = findProduct(id); if (vp) viewedCats[vp.category] = categoryLabel(vp); }
-  const cartedList = Object.values(cartedCats); const viewedList = Object.values(viewedCats);
-  if (cartedList.length) return '❤️ По вашим понравившимся: ' + cartedList.slice(0, 2).join(', ');
-  if (viewedList.length) return '👁️ На основе просмотров: ' + viewedList.slice(0, 2).join(', ');
-  return '✨ На основе ваших интересов';
-}
-let recTimeout = null;
-function scheduleRecommendations() { if (recTimeout) clearTimeout(recTimeout); recTimeout = setTimeout(renderRecommendations, 250); }
-function renderRecommendations() {
-  const recs = getRecommendations(4);
-  if (!recs.length) { recommendationsEl.classList.remove('visible'); recommendationsGrid.innerHTML = ''; return; }
-  recReason.textContent = getRecommendationReason();
-  recommendationsGrid.innerHTML = recs.map(p => {
-    let reason = 'Похожее';
-    for (const id of activity.carted) { const cp = findProduct(id); if (cp && cp.category === p.category) { reason = 'Вам нравится'; break; } }
-    if (reason === 'Похожее') for (const id of activity.viewed) { const vp = findProduct(id); if (vp && vp.category === p.category) { reason = 'Вы смотрели'; break; } }
-    return buildCardHtml(p, { rec: true, recText: reason });
-  }).join('');
-  recommendationsEl.classList.add('visible');
+function renderRecos() {
+  if (!products.length) { $('recos').style.display = 'none'; return; }
+  const recos = products.slice(0, 4).filter(p => !isMine(p));
+  if (recos.length < 2) { $('recos').style.display = 'none'; return; }
+  $('recos').style.display = 'block';
+  $('recosReason').textContent = 'Свежие объявления от других';
+  $('recosGrid').innerHTML = recos.map(cardHtml).join('');
 }
 
-async function handleProductClick(e) {
-  const delBtn = e.target.closest('[data-delete]');
-  if (delBtn) {
-    const id = Number(delBtn.getAttribute('data-delete'));
-    const idx = products.findIndex(p => p.id === id);
-    if (idx !== -1) {
-      const target = products[idx];
-      if (!canDeleteCard(target)) { showToast('🚫 Нет прав', true); return; }
-      const isOwn = isMyCard(target);
-      const confirmMsg = isOwn ? ('Удалить «' + target.title + '»?') : ('⚠️ Удалить ЧУЖУЮ карточку «' + target.title + '» (админ)?');
-      if (!confirm(confirmMsg)) return;
-      const name = target.title;
-      products.splice(idx, 1);
-      try { await deleteProductFromServer(id); } catch (err) {}
-      state.cart = state.cart.filter(x => x.id !== id); saveCartLocal();
-      renderCategoryFilters(); renderCart(); updateCartCount();
-      renderProducts(); renderNetworkStats(); scheduleRecommendations();
-      showToast('🗑️ «' + name + '» удалён из сети');
-    }
+document.addEventListener('click', async e => {
+  const open = e.target.closest('[data-open]');
+  if (open) { openProduct(Number(open.getAttribute('data-open'))); return; }
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    e.stopPropagation();
+    const id = Number(del.getAttribute('data-del'));
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    if (!canDelete(p)) { toast('🚫 Нет прав', true); return; }
+    const msg = isMine(p) ? `Удалить «${p.title}»?` : `Удалить ЧУЖУЮ «${p.title}» (админ)?`;
+    if (!confirm(msg)) return;
+    products = products.filter(x => x.id !== id);
+    renderProducts(); renderTabs(); renderRecos();
+    try { await deleteProduct(id); } catch (err) { console.error(err); }
+    toast('🗑️ Удалено');
     return;
   }
-  const actionEl = e.target.closest('[data-action]');
-  if (!actionEl) return;
-  const action = actionEl.getAttribute('data-action');
-  const card = e.target.closest('.card');
-  if (!card) return;
-  const pid = Number(card.getAttribute('data-id'));
-  if (action === 'add') addToCart(pid);
-  else if (action === 'open') openModal(pid);
-  else if (action === 'chat') handleChatButton(pid);
-}
-productsEl.addEventListener('click', handleProductClick);
-recommendationsGrid.addEventListener('click', handleProductClick);
-
-function addToCart(id) {
-  const item = state.cart.find(i => i.id === id);
-  if (item) item.qty++; else state.cart.push({ id, qty: 1 });
-  saveCartLocal(); renderCart(); updateCartCount(); trackCart(id);
-  const product = products.find(p => p.id === id);
-  if (product) showToast('❤️ «' + product.title + '» добавлено');
-}
-function changeQty(id, delta) {
-  const item = state.cart.find(i => i.id === id);
-  if (!item) return;
-  item.qty += delta;
-  if (item.qty <= 0) state.cart = state.cart.filter(i => i.id !== id);
-  saveCartLocal(); renderCart(); updateCartCount();
-}
-function removeFromCart(id) { state.cart = state.cart.filter(i => i.id !== id); saveCartLocal(); renderCart(); updateCartCount(); }
-function updateCartCount() { let total = 0; for (const i of state.cart) total += i.qty; cartCountEl.textContent = total; cartCountEl.style.display = total > 0 ? 'flex' : 'none'; }
-function renderCart() {
-  if (!state.cart.length) { cartItemsEl.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🤍</div><p>Пока ничего не понравилось</p></div>'; cartTotalEl.textContent = '0'; return; }
-  let totalItems = 0; let html = '';
-  for (const item of state.cart) {
-    const p = products.find(x => x.id === item.id);
-    if (!p) continue;
-    totalItems += item.qty;
-    const img = p.image ? '<img src="' + p.image + '" alt="" loading="lazy">' : (p.icon || '🆕');
-    html += '<div class="cart-item">' +
-      '<div class="cart-item-img">' + img + '</div>' +
-      '<div class="cart-item-info"><div class="cart-item-title">' + escapeHtml(p.title) + '</div>' +
-      '<div class="qty"><button data-qty="-1" data-id="' + p.id + '" type="button">−</button><span>' + item.qty + '</span><button data-qty="1" data-id="' + p.id + '" type="button">+</button></div></div>' +
-      '<div class="cart-item-actions"><button class="cart-chat-btn" data-cart-chat="' + p.id + '" title="Написать продавцу" type="button">💬</button><button class="remove-btn" data-remove="' + p.id + '" title="Убрать" type="button">🗑️</button></div>' +
-    '</div>';
-  }
-  cartItemsEl.innerHTML = html;
-  cartTotalEl.textContent = totalItems;
-}
-cartItemsEl.addEventListener('click', e => {
-  const qtyBtn = e.target.closest('[data-qty]');
-  if (qtyBtn) { changeQty(Number(qtyBtn.getAttribute('data-id')), Number(qtyBtn.getAttribute('data-qty'))); return; }
-  const removeBtn = e.target.closest('[data-remove]');
-  if (removeBtn) { removeFromCart(Number(removeBtn.getAttribute('data-remove'))); return; }
-  const chatBtn = e.target.closest('[data-cart-chat]');
-  if (chatBtn) { const pid = Number(chatBtn.getAttribute('data-cart-chat')); closeCart(); setTimeout(() => handleChatButton(pid), 250); }
+  const chat = e.target.closest('[data-chat]');
+  if (chat) { handleChatClick(Number(chat.getAttribute('data-chat'))); return; }
+  const like = e.target.closest('[data-like]');
+  if (like) { addToCart(Number(like.getAttribute('data-like'))); return; }
 });
-function openCart() { cartPanel.classList.add('open'); overlay.classList.add('open'); }
-function closeCart() { cartPanel.classList.remove('open'); overlay.classList.remove('open'); }
-$('cartBtn').addEventListener('click', openCart);
-$('closeCart').addEventListener('click', closeCart);
-overlay.addEventListener('click', closeCart);
 
-function openModal(id) {
+/* ============ PRODUCT MODAL ============ */
+function openProduct(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
-  trackView(id);
-  const imgContent = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
-  const ownerName = profilesCache[p.ownerId] || p.ownerId || '—';
-  const ownerInitial = String(ownerName)[0].toUpperCase();
-  const ownerHtml = '<div class="card-owner" style="margin-bottom:14px;">' +
-    '<div class="seller-avatar">' + escapeHtml(ownerInitial) + '</div>' +
-    '<span class="seller-label">Продавец:</span>' +
-    '<strong>' + escapeHtml(ownerName) + '</strong>' +
-  '</div>';
-  modalContent.innerHTML =
-    '<div class="modal-img">' + imgContent + '</div>' +
-    '<div class="modal-body">' +
-      '<div class="card-category">' + escapeHtml(categoryLabel(p)) + '</div>' +
-      '<h2>' + escapeHtml(p.title) + '</h2>' +
-      ownerHtml +
-      '<p>' + escapeHtml(p.desc) + '</p>' +
-      '<div class="modal-actions">' +
-        '<button class="buy-btn" data-action="add" data-id="' + p.id + '" type="button">❤️ В понравившиеся</button>' +
-        '<button class="modal-chat-btn" data-action="chat" data-id="' + p.id + '" type="button">💬 Чат с продавцом</button>' +
-      '</div>' +
-    '</div>';
-  modal.classList.add('open');
+  const ownerName = profilesCache[p.ownerId] || '—';
+  const img = p.image ? `<img src="${p.image}" alt="">` : `<div class="placeholder" style="font-size:80px;">🆕</div>`;
+  $('productModalBody').innerHTML = `
+    <div style="margin:-32px -32px 20px;height:240px;background:linear-gradient(135deg,#0f1a25,#0a0f1a);display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:24px 24px 0 0;">
+      ${img}
+    </div>
+    <div class="modal-sub" style="margin-bottom:6px;">${escapeHtml(catLabel(p))}</div>
+    <div class="modal-title" style="margin-bottom:14px;">${escapeHtml(p.title)}</div>
+    <div class="card-owner" style="margin-bottom:16px;">
+      <div class="av">${escapeHtml(String(ownerName)[0].toUpperCase())}</div>
+      <span class="lbl">Меняет:</span>
+      <strong>${escapeHtml(ownerName)}</strong>
+    </div>
+    <p style="color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:22px;">${escapeHtml(p.desc)}</p>
+    <div class="modal-actions">
+      <button type="button" class="btn-primary" data-like="${p.id}" style="justify-content:center;">❤️ Хочу</button>
+      <button type="button" class="btn-ghost" data-chat="${p.id}">💬 Написать</button>
+    </div>
+  `;
+  $('productModal').classList.add('open');
 }
-modal.addEventListener('click', e => {
-  if (e.target === modal) modal.classList.remove('open');
-  const addEl = e.target.closest('[data-action="add"]');
-  if (addEl) { addToCart(Number(addEl.getAttribute('data-id'))); modal.classList.remove('open'); openCart(); return; }
-  const chatEl = e.target.closest('[data-action="chat"]');
-  if (chatEl) { const pid = Number(chatEl.getAttribute('data-id')); modal.classList.remove('open'); handleChatButton(pid); }
+$('productModal').addEventListener('click', e => {
+  if (e.target === $('productModal')) $('productModal').classList.remove('open');
+  const like = e.target.closest('[data-like]');
+  if (like) { addToCart(Number(like.getAttribute('data-like'))); $('productModal').classList.remove('open'); }
+  const chat = e.target.closest('[data-chat]');
+  if (chat) { $('productModal').classList.remove('open'); handleChatClick(Number(chat.getAttribute('data-chat'))); }
 });
 
-function emptyChatHtml() { return '<div class="chat-placeholder"><div class="chat-placeholder-icon">💬</div><p>Здесь пока пусто</p><p class="hint">Напишите первое сообщение — оно появится здесь и сохранится</p></div>'; }
-function updateChatRoleBadge() {
-  if (!chatRoleBadge) return;
-  if (currentChatRole === 'seller') { chatRoleBadge.textContent = '🏪 Вы — Продавец'; chatRoleBadge.className = 'chat-role-badge seller'; }
-  else if (currentChatRole === 'buyer') { chatRoleBadge.textContent = '👤 Вы — Покупатель'; chatRoleBadge.className = 'chat-role-badge buyer'; }
-  else { chatRoleBadge.textContent = ''; chatRoleBadge.className = 'chat-role-badge'; }
+/* ============ CART ============ */
+function loadCartLocal() { try { cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch (e) { cart = []; } }
+function saveCart() { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (e) {} }
+function addToCart(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  if (!cart.find(i => i.id === id)) cart.push({ id });
+  saveCart();
+  toast('❤️ Добавлено в избранное');
 }
-async function handleChatButton(productId) {
-  const p = findProduct(productId);
-  if (!p) { showToast('❌ Товар не найден', true); return; }
-  if (p.ownerId === MY_OWNER_ID) openChatsList(productId);
-  else openChat(productId, MY_OWNER_ID);
-}
-async function openChat(productId, buyerId) {
-  const p = findProduct(productId);
-  if (!p) { showToast('❌ Товар не найден', true); return; }
-  if (p.ownerId === MY_OWNER_ID) {
-    currentChatRole = 'seller';
-    currentChatBuyerId = buyerId;
-    if (!currentChatBuyerId) { openChatsList(productId); return; }
-  } else { currentChatRole = 'buyer'; currentChatBuyerId = MY_OWNER_ID; }
-  currentChatProductId = productId;
-  lastMessagesHash = '';
-  chatProductImg.innerHTML = p.image ? '<img src="' + p.image + '" alt="">' : (p.icon || '🆕');
-  chatProductTitle.textContent = p.title;
-  updateChatRoleBadge();
-  chatModal.classList.add('open');
-  chatBody.innerHTML = '<div class="chat-placeholder"><p>Загрузка...</p></div>';
-  subscribeToChat(productId, currentChatBuyerId);
-  await refreshChat();
-  setTimeout(() => { chatInput.focus(); scrollChatToBottom(); }, 150);
-}
-async function refreshChat() {
-  if (currentChatProductId === null || !currentChatBuyerId) return;
-  const messages = await loadChatHistory(currentChatProductId, currentChatBuyerId);
-  renderMessagesFromArray(messages);
-}
-function renderMessagesFromArray(messages) {
-  if (!messages || !messages.length) { chatBody.innerHTML = emptyChatHtml(); lastMessagesHash = ''; return; }
-  const hash = JSON.stringify(messages.map(m => [m.id, m.role, m.text]));
-  if (hash === lastMessagesHash) return;
-  lastMessagesHash = hash;
-  const wasNearBottom = chatBody.scrollHeight - chatBody.scrollTop - chatBody.clientHeight < 80;
-  const html = messages.map(m => {
-    const isMine = (m.role === currentChatRole);
-    const cls = isMine ? 'me' : 'unit';
-    const extraCls = isMine ? '' : (m.role === 'seller' ? ' from-seller' : ' from-buyer');
-    return '<div class="msg ' + cls + extraCls + '" data-id="' + m.id + '"><span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span><span class="msg-time">' + formatChatTime(m.time) + '</span></div>';
+function renderCart() {
+  if (!cart.length) {
+    $('cartItems').innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
+      <div style="font-size:48px;margin-bottom:10px;opacity:0.5;">🤍</div>
+      <p>Пока пусто</p>
+    </div>`;
+    return;
+  }
+  $('cartItems').innerHTML = cart.map(it => {
+    const p = products.find(x => x.id === it.id);
+    if (!p) return '';
+    const img = p.image ? `<img src="${p.image}" alt="">` : '🆕';
+    return `<div class="cart-item">
+      <div class="img">${img}</div>
+      <div class="info">
+        <div class="t">${escapeHtml(p.title)}</div>
+      </div>
+      <div class="acts">
+        <button class="chat" data-cart-chat="${p.id}" type="button" title="Написать">💬</button>
+        <button class="rm" data-cart-rm="${p.id}" type="button" title="Убрать">🗑️</button>
+      </div>
+    </div>`;
   }).join('');
-  chatBody.innerHTML = html;
-  if (wasNearBottom || chatBody.scrollHeight <= chatBody.clientHeight + 10) scrollChatToBottom();
 }
-function scrollChatToBottom() { chatBody.scrollTop = chatBody.scrollHeight; }
+$('cartModal').addEventListener('click', e => {
+  if (e.target === $('cartModal')) $('cartModal').classList.remove('open');
+  const chat = e.target.closest('[data-cart-chat]');
+  if (chat) { $('cartModal').classList.remove('open'); handleChatClick(Number(chat.getAttribute('data-cart-chat'))); }
+  const rm = e.target.closest('[data-cart-rm]');
+  if (rm) { cart = cart.filter(i => i.id !== Number(rm.getAttribute('data-cart-rm'))); saveCart(); renderCart(); }
+});
+$('cartClose').addEventListener('click', () => $('cartModal').classList.remove('open'));
 
-chatForm.addEventListener('submit', async e => {
-  e.preventDefault();
-  if (currentChatProductId === null || !currentChatRole || !currentChatBuyerId) { showToast('❌ Не выбран чат', true); return; }
-  const text = chatInput.value.trim();
-  if (!text) return;
-  chatInput.value = '';
-  chatSendBtn.disabled = true;
+/* ============ ADD PRODUCT ============ */
+$('addBtn').addEventListener('click', () => {
+  if (!MY_ID) { setAuthMode('login'); $('authModal').classList.add('open'); return; }
+  $('addModal').classList.add('open');
+});
+$('addCancel').addEventListener('click', () => {
+  $('addModal').classList.remove('open');
+  resetAddForm();
+});
+$('addModal').addEventListener('click', e => { if (e.target === $('addModal')) { $('addModal').classList.remove('open'); resetAddForm(); } });
+
+function resetAddForm() {
+  $('addTitle').value = '';
+  $('addDesc').value = '';
+  $('addCat').value = '';
+  clearUpload();
+  ['errTitle','errDesc','errCat'].forEach(id => $(id).classList.remove('show'));
+  $('errPhoto').style.display = 'none';
+  ['addTitle','addDesc','addCat'].forEach(id => $(id).classList.remove('invalid'));
+}
+
+function setUpload(dataUrl) {
+  uploaded = dataUrl;
+  $('uploadPreview').src = dataUrl;
+  $('uploadPreview').classList.add('visible');
+  $('upload').classList.add('has-image');
+  $('upload').classList.remove('invalid');
+  $('errPhoto').style.display = 'none';
+}
+function clearUpload() {
+  uploaded = null;
+  $('fileInput').value = '';
+  $('uploadPreview').src = '';
+  $('uploadPreview').classList.remove('visible');
+  $('upload').classList.remove('has-image');
+}
+$('fileInput').addEventListener('change', async e => {
+  const f = e.target.files?.[0];
+  if (!f) return;
+  if (!f.type.startsWith('image/')) { toast('❌ Только изображение', true); $('fileInput').value = ''; return; }
+  if (f.size > 15 * 1024 * 1024) { toast('❌ Максимум 15 МБ', true); $('fileInput').value = ''; return; }
   try {
-    const saved = await sendMessageToServer(currentChatProductId, currentChatBuyerId, currentChatRole, text);
-    appendMessageToUI(saved);
+    $('errPhoto').textContent = 'Сжатие...'; $('errPhoto').style.display = 'block';
+    const r = await resizeImage(f, 900, 0.75);
+    setUpload(r);
   } catch (err) {
-    console.error(err);
-    showToast('❌ ' + err.message, true);
-    chatInput.value = text;
-  } finally {
-    chatSendBtn.disabled = false;
-    chatInput.focus();
+    toast('❌ Не удалось обработать фото', true);
+    $('fileInput').value = '';
   }
 });
-function appendMessageToUI(m) {
-  if (!m || !m.text) return;
-  if (m.id && chatBody.querySelector('.msg[data-id="' + m.id + '"]')) return;
-  const placeholder = chatBody.querySelector('.chat-placeholder');
-  if (placeholder) placeholder.remove();
-  const isMine = (m.role === currentChatRole);
-  const cls = isMine ? 'me' : 'unit';
-  const extraCls = isMine ? '' : (m.role === 'seller' ? ' from-seller' : ' from-buyer');
-  const el = document.createElement('div');
-  el.className = 'msg ' + cls + extraCls;
-  el.setAttribute('data-id', String(m.id));
-  el.innerHTML = '<span class="msg-text">' + escapeHtml(m.text).replace(/\n/g, '<br>') + '</span><span class="msg-time">' + formatChatTime(m.time) + '</span>';
-  chatBody.appendChild(el);
-  scrollChatToBottom();
-  lastMessagesHash = '';
-}
-chatClearBtn.addEventListener('click', async () => {
-  if (currentChatProductId === null || !currentChatBuyerId) return;
-  if (!confirm('Очистить всю историю этого чата?')) return;
-  try {
-    await clearChatOnServer(currentChatProductId, currentChatBuyerId);
-    chatBody.innerHTML = emptyChatHtml();
-    lastMessagesHash = '';
-    showToast('🗑️ История очищена');
-  } catch (err) { showToast('❌ ' + err.message, true); }
-});
-function closeChatModal(goBack) {
-  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
-  chatModal.classList.remove('open');
-  currentChatProductId = null; currentChatBuyerId = null; currentChatRole = null;
-  lastMessagesHash = '';
-  if (goBack) setTimeout(() => openChatsList(null), 200);
-}
-$('closeChat').addEventListener('click', () => closeChatModal(false));
-chatBack.addEventListener('click', () => closeChatModal(true));
-chatModal.addEventListener('click', e => { if (e.target === chatModal) closeChatModal(false); });
+$('uploadRm').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); clearUpload(); });
 
-function openChatsList(filterProductId) {
-  chatsFilterProductId = filterProductId || null;
-  chatsModalTitle.textContent = chatsFilterProductId ? '💬 Покупатели товара' : '💬 Все чаты';
-  renderChatsList();
-  chatsModal.classList.add('open');
+$('addSubmit').addEventListener('click', async () => {
+  if (!MY_ID) return;
+  let ok = true;
+  if (!uploaded) { $('upload').classList.add('invalid'); $('errPhoto').style.display = 'block'; ok = false; }
+  if (!$('addTitle').value.trim()) { $('addTitle').classList.add('invalid'); $('errTitle').classList.add('show'); ok = false; }
+  if (!$('addDesc').value.trim()) { $('addDesc').classList.add('invalid'); $('errDesc').classList.add('show'); ok = false; }
+  const cat = CATS.find(c => c.key === $('addCat').value);
+  if (!cat) { $('addCat').classList.add('invalid'); $('errCat').classList.add('show'); ok = false; }
+  if (!ok) return;
+
+  const btn = $('addSubmit');
+  btn.disabled = true;
+  try {
+    const np = {
+      title: $('addTitle').value.trim(),
+      desc: $('addDesc').value.trim(),
+      category: cat.key,
+      categoryName: cat.name,
+      image: uploaded,
+      ownerId: MY_ID
+    };
+    const saved = await createProduct(np);
+    np.id = saved.id;
+    products.unshift(np);
+    profilesCache[MY_ID] = MY_NAME;
+
+    $('addModal').classList.remove('open');
+    resetAddForm();
+    currentCat = 'all';
+    renderTabs(); renderProducts(); renderRecos();
+    toast('📡 Объявление опубликовано');
+  } catch (err) { toast('❌ ' + err.message, true); }
+  finally { btn.disabled = false; }
+});
+
+/* ============ CHATS ============ */
+async function handleChatClick(pid) {
+  const p = products.find(x => x.id === pid);
+  if (!p) return;
+  if (p.ownerId === MY_ID) openChatsList(pid);
+  else openChat(pid, MY_ID);
 }
-function closeChatsList() { chatsModal.classList.remove('open'); chatsFilterProductId = null; }
-chatsBtn.addEventListener('click', () => openChatsList(null));
-closeChats.addEventListener('click', closeChatsList);
-chatsModal.addEventListener('click', e => { if (e.target === chatsModal) closeChatsList(); });
+
+function openChatsList(filterPid) {
+  chatsFilterPid = filterPid || null;
+  $('chatsListTitle').textContent = chatsFilterPid ? '💬 Покупатели' : '💬 Все чаты';
+  renderChatsList();
+  $('chatsListModal').classList.add('open');
+}
+$('chatsListClose').addEventListener('click', () => $('chatsListModal').classList.remove('open'));
+$('chatsListModal').addEventListener('click', e => { if (e.target === $('chatsListModal')) $('chatsListModal').classList.remove('open'); });
 
 async function renderChatsList() {
   let rows = await loadChatsList();
-  if (chatsFilterProductId) rows = rows.filter(r => r.productId === chatsFilterProductId);
+  if (chatsFilterPid) rows = rows.filter(r => r.productId === chatsFilterPid);
   if (!rows.length) {
-    chatsList.innerHTML = '<div class="chats-empty"><div class="chats-empty-icon">💬</div><p>' + (chatsFilterProductId ? 'Пока никто не написал по этому товару' : 'Пока нет ни одного чата') + '</p><p class="hint">' + (chatsFilterProductId ? 'Когда покупатель напишет — чат появится здесь' : 'Нажмите 💬 на любой карточке') + '</p></div>';
+    $('chatsListBody').innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
+      <div style="font-size:48px;margin-bottom:10px;opacity:0.5;">💬</div>
+      <p>${chatsFilterPid ? 'Пока никто не написал' : 'Пока нет чатов'}</p>
+    </div>`;
     return;
   }
-  chatsList.innerHTML = rows.map(row => {
-    const imgContent = row.image ? '<img src="' + row.image + '" alt="" loading="lazy">' : '🆕';
-    let prefix = '';
-    if (row.lastFrom === 'seller') prefix = '<span class="prefix-seller">Продавец: </span>';
-    else if (row.lastFrom === 'buyer') prefix = '<span class="prefix">Покупатель: </span>';
-    const prod = products.find(p => p.id === row.productId);
-    const iAmSeller = prod && prod.ownerId === MY_OWNER_ID;
-    const sub = iAmSeller ? '<div class="chat-item-sub">👤 Покупатель: <strong>' + escapeHtml(row.buyerName) + '</strong></div>' : '';
-    return '<div class="chat-item" data-chat-id="' + row.productId + '" data-buyer-id="' + escapeHtml(row.buyerId) + '">' +
-      '<div class="chat-item-img">' + imgContent + '</div>' +
-      '<div class="chat-item-info"><div class="chat-item-title">' + escapeHtml(row.title) + '</div>' + sub + '<div class="chat-item-last">' + prefix + escapeHtml(row.lastText) + '</div></div>' +
-      '<div class="chat-item-meta"><div class="chat-item-time">' + formatChatTime(row.lastTime) + '</div></div>' +
-    '</div>';
+  $('chatsListBody').innerHTML = rows.map(r => {
+    const img = r.image ? `<img src="${r.image}" alt="">` : '🆕';
+    const prod = products.find(p => p.id === r.productId);
+    const iAmSeller = prod && prod.ownerId === MY_ID;
+    const sub = iAmSeller ? `<div class="s">👤 Покупатель: <strong>${escapeHtml(r.buyerName)}</strong></div>` : '';
+    const prefix = r.lastFrom === 'seller' ? 'Продавец: ' : (r.lastFrom === 'buyer' ? 'Покупатель: ' : '');
+    return `<div class="chat-row" data-chat-id="${r.productId}" data-buyer-id="${escapeHtml(r.buyerId)}">
+      <div class="img">${img}</div>
+      <div class="info">
+        <div class="t">${escapeHtml(r.title)}</div>
+        ${sub}
+        <div class="last">${escapeHtml(prefix + r.lastText)}</div>
+      </div>
+    </div>`;
   }).join('');
 }
-chatsList.addEventListener('click', e => {
-  const item = e.target.closest('[data-chat-id]');
-  if (!item) return;
-  const pid = Number(item.getAttribute('data-chat-id'));
-  const bid = item.getAttribute('data-buyer-id');
+$('chatsListBody').addEventListener('click', e => {
+  const row = e.target.closest('[data-chat-id]');
+  if (!row) return;
+  const pid = Number(row.getAttribute('data-chat-id'));
+  const bid = row.getAttribute('data-buyer-id');
   if (!bid) return;
-  closeChatsList();
+  $('chatsListModal').classList.remove('open');
   setTimeout(() => openChat(pid, bid), 150);
 });
 
-function formatChatTime(ms) {
-  const d = new Date(ms); const now = new Date();
-  const diff = now.getTime() - d.getTime();
-  const dayMs = 24 * 60 * 60 * 1000;
-  if (diff < 60 * 1000) return 'только что';
-  if (diff < 60 * 60 * 1000) return Math.floor(diff / 60000) + ' мин назад';
-  if (d.toDateString() === now.toDateString()) return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-  if (diff < 2 * dayMs) return 'вчера';
+async function openChat(pid, bid) {
+  const p = products.find(x => x.id === pid);
+  if (!p) return;
+  if (p.ownerId === MY_ID) {
+    currentChatRole = 'seller';
+    currentChatBid = bid;
+    if (!currentChatBid) { openChatsList(pid); return; }
+  } else {
+    currentChatRole = 'buyer';
+    currentChatBid = MY_ID;
+  }
+  currentChatPid = pid;
+  lastMsgHash = '';
+  $('chatPic').innerHTML = p.image ? `<img src="${p.image}" alt="">` : '🏪';
+  $('chatTitle').textContent = p.title;
+  $('chatRole').textContent = currentChatRole === 'seller' ? '🏪 Вы — Продавец' : '👤 Вы — Покупатель';
+  $('chatRole').className = 'role ' + currentChatRole;
+  $('chatModal').classList.add('open');
+  $('chatBody').innerHTML = `<div class="chat-placeholder"><div class="i">💬</div><p>Загрузка...</p></div>`;
+  subscribeChat(pid, currentChatBid);
+  await refreshChat();
+  setTimeout(() => { $('chatInput').focus(); }, 200);
+}
+async function refreshChat() {
+  if (currentChatPid === null || !currentChatBid) return;
+  const msgs = await loadHistory(currentChatPid, currentChatBid);
+  renderMsgs(msgs);
+}
+function renderMsgs(msgs) {
+  if (!msgs || !msgs.length) {
+    $('chatBody').innerHTML = `<div class="chat-placeholder"><div class="i">💬</div><p>Здесь пока пусто</p></div>`;
+    lastMsgHash = '';
+    return;
+  }
+  const h = JSON.stringify(msgs.map(m => [m.id, m.role, m.text]));
+  if (h === lastMsgHash) return;
+  lastMsgHash = h;
+  $('chatBody').innerHTML = msgs.map(m => {
+    const mine = m.role === currentChatRole;
+    const cls = mine ? 'me' : 'unit' + (m.role === 'seller' ? ' from-seller' : ' from-buyer');
+    return `<div class="msg ${cls}" data-id="${m.id}">
+      <span class="t">${escapeHtml(m.text).replace(/\n/g, '<br>')}</span>
+      <span class="time">${fmtTime(m.time)}</span>
+    </div>`;
+  }).join('');
+  $('chatBody').scrollTop = $('chatBody').scrollHeight;
+}
+function fmtTime(ms) {
+  const d = new Date(ms), n = new Date(), diff = n - d, day = 86400000;
+  if (diff < 60000) return 'только что';
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' мин';
+  if (d.toDateString() === n.toDateString()) return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  if (diff < 2 * day) return 'вчера';
   return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0');
 }
-
-categoriesEl.addEventListener('click', e => {
-  const btn = e.target.closest('.category'); if (!btn) return;
-  document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  state.category = btn.getAttribute('data-category');
-  renderProducts();
+$('chatForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (currentChatPid === null || !currentChatRole || !currentChatBid) return;
+  const text = $('chatInput').value.trim();
+  if (!text) return;
+  $('chatInput').value = '';
+  $('chatSend').disabled = true;
+  try {
+    const saved = await sendMsg(currentChatPid, currentChatBid, currentChatRole, text);
+    const ph = $('chatBody').querySelector('.chat-placeholder');
+    if (ph) ph.remove();
+    const mine = saved.role === currentChatRole;
+    const cls = mine ? 'me' : 'unit' + (saved.role === 'seller' ? ' from-seller' : ' from-buyer');
+    const el = document.createElement('div');
+    el.className = 'msg ' + cls;
+    el.setAttribute('data-id', saved.id);
+    el.innerHTML = `<span class="t">${escapeHtml(saved.text)}</span><span class="time">${fmtTime(saved.time)}</span>`;
+    $('chatBody').appendChild(el);
+    $('chatBody').scrollTop = $('chatBody').scrollHeight;
+    lastMsgHash = '';
+  } catch (err) { toast('❌ ' + err.message, true); }
+  finally { $('chatSend').disabled = false; $('chatInput').focus(); }
 });
-$('searchForm').addEventListener('submit', e => { e.preventDefault(); state.search = searchInput.value; renderProducts(); });
-searchInput.addEventListener('input', () => { state.search = searchInput.value; clearSearch.classList.toggle('visible', searchInput.value.length > 0); renderProducts(); });
-clearSearch.addEventListener('click', () => { searchInput.value = ''; state.search = ''; clearSearch.classList.remove('visible'); renderProducts(); searchInput.focus(); });
-sortSelect.addEventListener('change', () => { state.sort = sortSelect.value; renderProducts(); });
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    if (adminModal.classList.contains('open')) { adminModal.classList.remove('open'); return; }
-    if (hintModal.classList.contains('open')) { hintModal.classList.remove('open'); return; }
-    if (chatModal.classList.contains('open')) { closeChatModal(false); return; }
-    if (chatsModal.classList.contains('open')) { closeChatsList(); return; }
-    modal.classList.remove('open'); closeCart();
-  }
+$('chatClear').addEventListener('click', async () => {
+  if (currentChatPid === null || !currentChatBid) return;
+  if (!confirm('Очистить чат?')) return;
+  try {
+    await clearChat(currentChatPid, currentChatBid);
+    $('chatBody').innerHTML = `<div class="chat-placeholder"><div class="i">💬</div><p>Здесь пока пусто</p></div>`;
+    lastMsgHash = '';
+    toast('Очищено');
+  } catch (err) { toast('❌ ' + err.message, true); }
 });
+function closeChatModal() {
+  if (chatRealtime) { supabase.removeChannel(chatRealtime); chatRealtime = null; }
+  $('chatModal').classList.remove('open');
+  currentChatPid = null; currentChatBid = null; currentChatRole = null;
+  lastMsgHash = '';
+}
+$('chatClose').addEventListener('click', closeChatModal);
+$('chatBack').addEventListener('click', () => { closeChatModal(); });
+$('chatModal').addEventListener('click', e => { if (e.target === $('chatModal')) closeChatModal(); });
 
+/* ============ ADMIN ============ */
+async function renderAdmin() {
+  $('adminUsers').innerHTML = '<p style="color:#aaa;">Загрузка...</p>';
+  const { data, error } = await supabase.from('profiles').select('id, username, is_admin, is_blocked, "createdAt"').order('createdAt', { ascending: true });
+  if (error) { $('adminUsers').innerHTML = `<p style="color:#f87171;">${error.message}</p>`; return; }
+  if (!data?.length) { $('adminUsers').innerHTML = '<p style="color:#aaa;">Нет пользователей</p>'; return; }
+  $('adminUsers').innerHTML = data.map(u => {
+    const isMe = u.id === MY_ID;
+    const meta = [];
+    if (u.is_admin) meta.push('<span class="b-admin">👑 админ</span>');
+    if (u.is_blocked) meta.push('<span class="b-blocked">🚫 блок</span>');
+    if (isMe) meta.push('(это вы)');
+    const metaStr = meta.length ? meta.join(' · ') : 'обычный';
+    const blockBtn = u.is_blocked
+      ? `<button class="unblock" data-a="unblock" data-id="${u.id}">Разблокировать</button>`
+      : `<button class="block" data-a="block" data-id="${u.id}" ${isMe ? 'disabled style="opacity:0.4"' : ''}>Заблокировать</button>`;
+    const admBtn = u.is_admin
+      ? `<button class="demote" data-a="demote" data-id="${u.id}" ${isMe ? 'disabled style="opacity:0.4"' : ''}>Снять админа</button>`
+      : `<button class="promote" data-a="promote" data-id="${u.id}">Сделать админом</button>`;
+    return `<div class="user-row ${u.is_blocked ? 'blocked' : ''}">
+      <div class="av">${escapeHtml(String(u.username || '?')[0].toUpperCase())}</div>
+      <div class="info">
+        <div class="name">${escapeHtml(u.username)}</div>
+        <div class="meta">${metaStr}</div>
+      </div>
+      <div class="acts">${blockBtn}${admBtn}</div>
+    </div>`;
+  }).join('');
+}
+$('adminUsers').addEventListener('click', async e => {
+  const b = e.target.closest('[data-a]');
+  if (!b || b.disabled) return;
+  const a = b.getAttribute('data-a'), id = b.getAttribute('data-id');
+  try {
+    if (a === 'block')   await supabase.from('profiles').update({ is_blocked: true }).eq('id', id);
+    if (a === 'unblock') await supabase.from('profiles').update({ is_blocked: false }).eq('id', id);
+    if (a === 'promote') await supabase.from('profiles').update({ is_admin: true }).eq('id', id);
+    if (a === 'demote')  await supabase.from('profiles').update({ is_admin: false }).eq('id', id);
+    await renderAdmin();
+    toast('✅ Готово');
+  } catch (err) { toast('❌ ' + err.message, true); }
+});
+$('adminClose').addEventListener('click', () => $('adminModal').classList.remove('open'));
+$('adminModal').addEventListener('click', e => { if (e.target === $('adminModal')) $('adminModal').classList.remove('open'); });
+
+/* ============ TOAST ============ */
 let toastTimer = null;
-function showToast(message, isError = false) {
-  toast.textContent = message;
-  toast.className = 'toast';
-  if (isError) toast.classList.add('error');
-  toast.classList.add('show');
+function toast(msg, err = false) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (err ? ' error' : '');
+  t.classList.add('show');
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ============ ONLINE COUNTER (простой, локальный) ============ */
+function tickOnline() {
+  const key = 'obmen101_online';
+  let sessionId = sessionStorage.getItem(key);
+  if (!sessionId) {
+    sessionId = Math.random().toString(36).slice(2);
+    sessionStorage.setItem(key, sessionId);
+    localStorage.setItem('obmen101_last_ping_' + sessionId, Date.now());
+  }
+  localStorage.setItem('obmen101_last_ping_' + sessionId, Date.now());
+  let count = 0;
+  const now = Date.now();
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith('obmen101_last_ping_')) {
+      const t = parseInt(localStorage.getItem(k) || '0', 10);
+      if (now - t < 60000) count++;
+      else localStorage.removeItem(k);
+    }
+  }
+  $('onlineCount').textContent = Math.max(1, count);
+}
+
+/* ============ INIT ============ */
+async function init() {
+  loadCartLocal();
+  tickOnline();
+  onlineInterval = setInterval(tickOnline, 20000);
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.user) await onAuthed();
+  else {
+    $('authModal').classList.add('open');
+    $('loadingBadge').classList.remove('visible');
+  }
+
+  supabase.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') location.reload(); });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    }
+  });
 }
 
 init();
