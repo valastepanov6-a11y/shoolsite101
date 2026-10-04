@@ -15,13 +15,10 @@
     --border-2: rgba(255, 255, 255, 0.12);
     --green: #4ade80;
     --green-2: #22c55e;
-    --green-dark: #14532d;
     --green-glow: rgba(74, 222, 128, 0.35);
     --text: #f1f5f9;
     --text-2: #94a3b8;
     --text-3: #64748b;
-    --radius: 20px;
-    --radius-sm: 12px;
   }
   html, body { min-height: 100%; }
   body {
@@ -277,14 +274,6 @@
   }
   .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .card-img .placeholder { font-size: 64px; opacity: 0.4; }
-  .card-badge {
-    position: absolute; top: 12px; left: 12px;
-    padding: 5px 10px; border-radius: 8px;
-    font-size: 11px; font-weight: 700;
-    background: rgba(74, 222, 128, 0.9);
-    color: #052e16;
-    backdrop-filter: blur(8px);
-  }
   .card-cat {
     position: absolute; top: 12px; right: 12px;
     padding: 5px 10px; border-radius: 8px;
@@ -309,6 +298,25 @@
   .card-del.admin:hover { background: #f59e0b; color: #fff; }
 
   .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
+
+  /* ============ AUTHOR (имя над названием) ============ */
+  .card-author {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; margin-bottom: 8px;
+  }
+  .card-author .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green-glow);
+    flex-shrink: 0;
+  }
+  .card-author .lbl { color: var(--text-3); }
+  .card-author strong {
+    color: var(--green); font-weight: 700;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    max-width: 160px;
+  }
+
   .card-title {
     font-size: 16px; font-weight: 700; color: #fff;
     margin-bottom: 6px; cursor: pointer; line-height: 1.35;
@@ -320,24 +328,7 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .card-owner {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 10px; margin-bottom: 12px;
-    background: rgba(74, 222, 128, 0.06);
-    border: 1px solid rgba(74, 222, 128, 0.15);
-    border-radius: 10px;
-    font-size: 12px;
-  }
-  .card-owner .av {
-    width: 22px; height: 22px; border-radius: 50%;
-    background: linear-gradient(135deg, #22c55e, #3b82f6);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800; color: #fff;
-    flex-shrink: 0; text-transform: uppercase;
-  }
-  .card-owner .lbl { color: var(--text-3); }
-  .card-owner strong { color: var(--green); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .card-actions { display: flex; gap: 8px; }
+  .card-actions { display: flex; gap: 8px; margin-top: auto; }
   .card-actions .chat {
     width: 38px; height: 38px; border-radius: 10px;
     background: rgba(74, 222, 128, 0.1);
@@ -451,7 +442,6 @@
   }
   .auth-err.show { display: block; }
 
-  /* upload */
   .upload {
     position: relative;
     height: 200px;
@@ -483,7 +473,6 @@
   }
   .upload.has-image .rm { display: flex; }
 
-  /* chats */
   .chat-list { display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; }
   .chat-row {
     display: flex; gap: 12px; padding: 12px 14px;
@@ -603,7 +592,6 @@
   }
   .chat-input button:disabled { opacity: 0.5; cursor: wait; }
 
-  /* admin */
   .users-list { display: flex; flex-direction: column; gap: 8px; max-height: 60vh; overflow-y: auto; }
   .user-row {
     display: flex; gap: 12px; padding: 12px 14px;
@@ -635,7 +623,6 @@
   .user-row .acts .unblock { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.4); color: var(--green); }
   .user-row .acts .promote, .user-row .acts .demote { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.4); color: #fbbf24; }
 
-  /* toast */
   .toast {
     position: fixed; bottom: 30px; left: 50%;
     transform: translateX(-50%) translateY(100px);
@@ -659,7 +646,6 @@
   }
   .loading.visible { display: block; }
 
-  /* cart */
   .cart-modal .cart-items { max-height: 55vh; overflow-y: auto; margin: 0 -8px; padding: 0 8px; }
   .cart-item {
     display: flex; gap: 12px; padding: 12px 0;
@@ -671,15 +657,11 @@
   .cart-item .img img { width: 100%; height: 100%; object-fit: cover; }
   .cart-item .info { flex: 1; min-width: 0; }
   .cart-item .t { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cart-item .qty { display: flex; align-items: center; gap: 6px; }
-  .cart-item .qty button { width: 26px; height: 26px; border-radius: 6px; background: var(--bg-2); border: 1px solid var(--border-2); color: #fff; cursor: pointer; font-family: inherit; }
-  .cart-item .qty span { font-size: 14px; font-weight: 700; min-width: 20px; text-align: center; }
   .cart-item .acts { display: flex; flex-direction: column; gap: 6px; }
   .cart-item .acts button { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-family: inherit; border: 1px solid; font-size: 14px; display: flex; align-items: center; justify-content: center; }
   .cart-item .acts .chat { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.4); color: var(--green); }
   .cart-item .acts .rm { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); color: #f87171; }
 
-  /* recommendations */
   .recos { margin-top: 48px; }
   .recos-title {
     font-size: 22px; font-weight: 800; color: #fff;
@@ -687,7 +669,6 @@
   }
   .recos-sub { font-size: 13px; color: var(--text-3); margin-bottom: 20px; }
 
-  /* mobile */
   @media (max-width: 900px) {
     .topbar { padding: 12px 16px; }
     main { padding: 20px 16px 60px; }
@@ -713,7 +694,6 @@
 
 <div class="loading" id="loadingBadge">⏳ Подключение...</div>
 
-<!-- ============ HEADER ============ -->
 <header class="topbar">
   <div class="topbar-inner">
     <a class="brand" href="#">
@@ -737,7 +717,6 @@
 </header>
 
 <main>
-  <!-- ============ HERO ============ -->
   <section class="hero">
     <div class="hero-decor">
       <div class="ring"></div>
@@ -749,7 +728,6 @@
     <p>Размещай свои вещи и находи то, что хочется получить взамен — просто, быстро и без лишнего.</p>
   </section>
 
-  <!-- ============ SECTION ============ -->
   <div class="section-head">
     <div class="section-left">
       <div class="section-label">Объявления</div>
@@ -762,7 +740,6 @@
 
   <div class="grid" id="productsGrid"></div>
 
-  <!-- ============ RECOS ============ -->
   <section class="recos" id="recos" style="display:none;">
     <div class="recos-title">✨ Вам может понравиться</div>
     <div class="recos-sub" id="recosReason">На основе ваших интересов</div>
@@ -770,7 +747,6 @@
   </section>
 </main>
 
-<!-- ============ AUTH MODAL ============ -->
 <div class="modal-overlay" id="authModal">
   <div class="modal">
     <div class="modal-title" id="authTitle">Вход</div>
@@ -800,7 +776,6 @@
   </div>
 </div>
 
-<!-- ============ ADD PRODUCT MODAL ============ -->
 <div class="modal-overlay" id="addModal">
   <div class="modal wide">
     <div class="modal-title">Разместить объявление</div>
@@ -845,12 +820,10 @@
   </div>
 </div>
 
-<!-- ============ PRODUCT MODAL ============ -->
 <div class="modal-overlay" id="productModal">
   <div class="modal" id="productModalBody"></div>
 </div>
 
-<!-- ============ CHATS LIST MODAL ============ -->
 <div class="modal-overlay" id="chatsListModal">
   <div class="modal">
     <div class="modal-title" id="chatsListTitle">💬 Все чаты</div>
@@ -862,7 +835,6 @@
   </div>
 </div>
 
-<!-- ============ CHAT MODAL ============ -->
 <div class="modal-overlay" id="chatModal">
   <div class="chat-content-modal">
     <div class="chat-head">
@@ -883,7 +855,6 @@
   </div>
 </div>
 
-<!-- ============ ADMIN MODAL ============ -->
 <div class="modal-overlay" id="adminModal">
   <div class="modal">
     <div class="modal-title">⚙️ Админ-панель</div>
@@ -895,7 +866,6 @@
   </div>
 </div>
 
-<!-- ============ CART MODAL ============ -->
 <div class="modal-overlay cart-modal" id="cartModal">
   <div class="modal">
     <div class="modal-title">❤️ Понравившиеся</div>
@@ -938,12 +908,10 @@ let lastMsgHash = '';
 let profilesCache = {};
 let cart = [];
 let onlineInterval = null;
-let onlineSessions = null;
 
 const $ = id => document.getElementById(id);
 const CART_KEY = 'obmen101_cart_v1';
 
-/* ============ IMAGE RESIZE ============ */
 function resizeImage(file, maxSize = 900, quality = 0.75) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -966,9 +934,8 @@ function resizeImage(file, maxSize = 900, quality = 0.75) {
   });
 }
 
-/* ============ AUTH ============ */
+/* AUTH */
 let authMode = 'login';
-
 function setAuthMode(mode) {
   authMode = mode;
   $('tabLogin').classList.toggle('active', mode === 'login');
@@ -982,7 +949,6 @@ function setAuthMode(mode) {
 }
 function showAuthErr(m) { $('authErr').textContent = m; $('authErr').classList.add('show'); }
 function hideAuthErr() { $('authErr').classList.remove('show'); $('authErr').textContent = ''; }
-
 $('tabLogin').addEventListener('click', () => setAuthMode('login'));
 $('tabRegister').addEventListener('click', () => setAuthMode('register'));
 
@@ -1003,7 +969,6 @@ async function loginUser(nick, pass) {
   if (error) throw new Error(String(error.message).toLowerCase().includes('invalid') ? 'Неверный ник или пароль' : error.message);
   return data.user;
 }
-
 $('authForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   hideAuthErr();
@@ -1019,7 +984,6 @@ $('authForm').addEventListener('submit', async (e) => {
   } catch (err) { showAuthErr(err.message || 'Ошибка'); }
   finally { $('authSubmit').disabled = false; $('authSubmit').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться'; }
 });
-
 $('loginBtn').addEventListener('click', () => { setAuthMode('login'); $('authModal').classList.add('open'); });
 $('registerBtn').addEventListener('click', () => { setAuthMode('register'); $('authModal').classList.add('open'); });
 $('authModal').addEventListener('click', e => { if (e.target === $('authModal')) $('authModal').classList.remove('open'); });
@@ -1035,7 +999,6 @@ async function onAuthed() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) { $('authModal').classList.add('open'); return; }
   MY_ID = session.user.id;
-
   let { data: prof } = await supabase.from('profiles').select('username, is_admin, is_blocked').eq('id', MY_ID).maybeSingle();
   if (!prof) {
     const nick = (session.user.email || '').split('@')[0];
@@ -1051,7 +1014,6 @@ async function onAuthed() {
   MY_NAME = prof.username;
   MY_ADMIN = !!prof.is_admin;
   profilesCache[MY_ID] = MY_NAME;
-
   $('authModal').classList.remove('open');
   renderTopbarUser();
   $('loadingBadge').classList.remove('visible');
@@ -1081,14 +1043,9 @@ function renderTopbarUser() {
   });
 }
 
-/* ============ BOOT ============ */
 let booted = false;
 async function bootApp() {
-  if (booted) {
-    products = await loadProducts();
-    renderAll();
-    return;
-  }
+  if (booted) { products = await loadProducts(); renderAll(); return; }
   booted = true;
   loadCartLocal();
   products = await loadProducts();
@@ -1096,14 +1053,8 @@ async function bootApp() {
   subscribeProducts();
   subscribeChatsList();
 }
+function renderAll() { renderTabs(); renderProducts(); renderRecos(); }
 
-function renderAll() {
-  renderTabs();
-  renderProducts();
-  renderRecos();
-}
-
-/* ============ DATA ============ */
 async function loadProducts() {
   const { data, error } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
   if (error) { console.error(error); return []; }
@@ -1116,7 +1067,6 @@ async function loadProducts() {
   await loadProfiles(list.map(p => p.ownerId).filter(Boolean));
   return list;
 }
-
 async function createProduct(p) {
   const row = {
     id: Date.now(),
@@ -1171,7 +1121,6 @@ async function loadChatsList() {
   }).sort((a, b) => b.lastTime - a.lastTime);
 }
 
-/* ============ REALTIME ============ */
 function subscribeProducts() {
   if (productsRealtime) return;
   productsRealtime = supabase.channel('products-live')
@@ -1194,7 +1143,6 @@ function subscribeChat(pid, bid) {
     .subscribe();
 }
 
-/* ============ RENDER ============ */
 function escapeHtml(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
@@ -1205,17 +1153,14 @@ function renderTabs() {
   const total = products.length;
   const counts = { real: 0, virtual: 0, meme: 0 };
   products.forEach(p => { if (counts[p.category] !== undefined) counts[p.category]++; });
-
   const items = [{ key: 'all', name: 'Все', count: total }];
   CATS.forEach(c => items.push({ key: c.key, name: c.name, count: counts[c.key] }));
-
   $('tabsWrap').innerHTML = items.map(i =>
     `<button class="tab${i.key === currentCat ? ' active' : ''}" data-cat="${i.key}" type="button">
       ${escapeHtml(i.name)} <span class="count">(${i.count})</span>
     </button>`
   ).join('');
 }
-
 $('tabsWrap').addEventListener('click', e => {
   const t = e.target.closest('.tab');
   if (!t) return;
@@ -1233,19 +1178,18 @@ function filtered() {
   }
   return list;
 }
-
 function catLabel(p) {
   if (p.categoryName) return p.categoryName;
   const c = CATS.find(c => c.key === p.category);
   return c ? c.name : 'Разное';
 }
 
+/* ============ КАРТОЧКА — имя автора НАД названием ============ */
 function cardHtml(p) {
   const img = p.image
     ? `<img src="${p.image}" alt="${escapeHtml(p.title)}" loading="lazy">`
     : `<div class="placeholder">🆕</div>`;
   const ownerName = profilesCache[p.ownerId] || '—';
-  const ownerInitial = String(ownerName)[0].toUpperCase();
   const cat = catLabel(p);
   const del = canDelete(p)
     ? `<button class="card-del${(!isMine(p) && MY_ADMIN) ? ' admin' : ''}" data-del="${p.id}" title="Удалить" type="button">🗑️</button>`
@@ -1258,13 +1202,13 @@ function cardHtml(p) {
       ${del}
     </div>
     <div class="card-body">
+      <div class="card-author">
+        <span class="dot"></span>
+        <span class="lbl">Автор:</span>
+        <strong title="${escapeHtml(ownerName)}">${escapeHtml(ownerName)}</strong>
+      </div>
       <div class="card-title" data-open="${p.id}">${escapeHtml(p.title)}</div>
       <div class="card-desc">${escapeHtml(p.desc)}</div>
-      <div class="card-owner">
-        <div class="av">${escapeHtml(ownerInitial)}</div>
-        <span class="lbl">Меняет:</span>
-        <strong>${escapeHtml(ownerName)}</strong>
-      </div>
       <div class="card-actions">
         <button class="chat" data-chat="${p.id}" title="Написать" type="button">💬</button>
         <button class="like" data-like="${p.id}" type="button">❤️ Хочу</button>
@@ -1320,21 +1264,20 @@ document.addEventListener('click', async e => {
   if (like) { addToCart(Number(like.getAttribute('data-like'))); return; }
 });
 
-/* ============ PRODUCT MODAL ============ */
 function openProduct(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
   const ownerName = profilesCache[p.ownerId] || '—';
-  const img = p.image ? `<img src="${p.image}" alt="">` : `<div class="placeholder" style="font-size:80px;">🆕</div>`;
+  const img = p.image ? `<img src="${p.image}" alt="" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:80px;opacity:0.4;">🆕</div>`;
   $('productModalBody').innerHTML = `
     <div style="margin:-32px -32px 20px;height:240px;background:linear-gradient(135deg,#0f1a25,#0a0f1a);display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:24px 24px 0 0;">
       ${img}
     </div>
     <div class="modal-sub" style="margin-bottom:6px;">${escapeHtml(catLabel(p))}</div>
     <div class="modal-title" style="margin-bottom:14px;">${escapeHtml(p.title)}</div>
-    <div class="card-owner" style="margin-bottom:16px;">
-      <div class="av">${escapeHtml(String(ownerName)[0].toUpperCase())}</div>
-      <span class="lbl">Меняет:</span>
+    <div class="card-author" style="margin-bottom:16px;">
+      <span class="dot"></span>
+      <span class="lbl">Автор:</span>
       <strong>${escapeHtml(ownerName)}</strong>
     </div>
     <p style="color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:22px;">${escapeHtml(p.desc)}</p>
@@ -1353,7 +1296,6 @@ $('productModal').addEventListener('click', e => {
   if (chat) { $('productModal').classList.remove('open'); handleChatClick(Number(chat.getAttribute('data-chat'))); }
 });
 
-/* ============ CART ============ */
 function loadCartLocal() { try { cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch (e) { cart = []; } }
 function saveCart() { try { localStorage.setItem(CART_KEY, JSON.stringify(cart)); } catch (e) {} }
 function addToCart(id) {
@@ -1377,9 +1319,7 @@ function renderCart() {
     const img = p.image ? `<img src="${p.image}" alt="">` : '🆕';
     return `<div class="cart-item">
       <div class="img">${img}</div>
-      <div class="info">
-        <div class="t">${escapeHtml(p.title)}</div>
-      </div>
+      <div class="info"><div class="t">${escapeHtml(p.title)}</div></div>
       <div class="acts">
         <button class="chat" data-cart-chat="${p.id}" type="button" title="Написать">💬</button>
         <button class="rm" data-cart-rm="${p.id}" type="button" title="Убрать">🗑️</button>
@@ -1396,30 +1336,23 @@ $('cartModal').addEventListener('click', e => {
 });
 $('cartClose').addEventListener('click', () => $('cartModal').classList.remove('open'));
 
-/* ============ ADD PRODUCT ============ */
 $('addBtn').addEventListener('click', () => {
   if (!MY_ID) { setAuthMode('login'); $('authModal').classList.add('open'); return; }
   $('addModal').classList.add('open');
 });
-$('addCancel').addEventListener('click', () => {
-  $('addModal').classList.remove('open');
-  resetAddForm();
-});
+$('addCancel').addEventListener('click', () => { $('addModal').classList.remove('open'); resetAddForm(); });
 $('addModal').addEventListener('click', e => { if (e.target === $('addModal')) { $('addModal').classList.remove('open'); resetAddForm(); } });
 
 function resetAddForm() {
-  $('addTitle').value = '';
-  $('addDesc').value = '';
-  $('addCat').value = '';
+  $('addTitle').value = ''; $('addDesc').value = ''; $('addCat').value = '';
   clearUpload();
   ['errTitle','errDesc','errCat'].forEach(id => $(id).classList.remove('show'));
   $('errPhoto').style.display = 'none';
   ['addTitle','addDesc','addCat'].forEach(id => $(id).classList.remove('invalid'));
 }
-
-function setUpload(dataUrl) {
-  uploaded = dataUrl;
-  $('uploadPreview').src = dataUrl;
+function setUpload(d) {
+  uploaded = d;
+  $('uploadPreview').src = d;
   $('uploadPreview').classList.add('visible');
   $('upload').classList.add('has-image');
   $('upload').classList.remove('invalid');
@@ -1457,7 +1390,6 @@ $('addSubmit').addEventListener('click', async () => {
   const cat = CATS.find(c => c.key === $('addCat').value);
   if (!cat) { $('addCat').classList.add('invalid'); $('errCat').classList.add('show'); ok = false; }
   if (!ok) return;
-
   const btn = $('addSubmit');
   btn.disabled = true;
   try {
@@ -1473,7 +1405,6 @@ $('addSubmit').addEventListener('click', async () => {
     np.id = saved.id;
     products.unshift(np);
     profilesCache[MY_ID] = MY_NAME;
-
     $('addModal').classList.remove('open');
     resetAddForm();
     currentCat = 'all';
@@ -1483,14 +1414,12 @@ $('addSubmit').addEventListener('click', async () => {
   finally { btn.disabled = false; }
 });
 
-/* ============ CHATS ============ */
 async function handleChatClick(pid) {
   const p = products.find(x => x.id === pid);
   if (!p) return;
   if (p.ownerId === MY_ID) openChatsList(pid);
   else openChat(pid, MY_ID);
 }
-
 function openChatsList(filterPid) {
   chatsFilterPid = filterPid || null;
   $('chatsListTitle').textContent = chatsFilterPid ? '💬 Покупатели' : '💬 Все чаты';
@@ -1557,7 +1486,7 @@ async function openChat(pid, bid) {
   $('chatBody').innerHTML = `<div class="chat-placeholder"><div class="i">💬</div><p>Загрузка...</p></div>`;
   subscribeChat(pid, currentChatBid);
   await refreshChat();
-  setTimeout(() => { $('chatInput').focus(); }, 200);
+  setTimeout(() => $('chatInput').focus(), 200);
 }
 async function refreshChat() {
   if (currentChatPid === null || !currentChatBid) return;
@@ -1631,10 +1560,9 @@ function closeChatModal() {
   lastMsgHash = '';
 }
 $('chatClose').addEventListener('click', closeChatModal);
-$('chatBack').addEventListener('click', () => { closeChatModal(); });
+$('chatBack').addEventListener('click', () => closeChatModal());
 $('chatModal').addEventListener('click', e => { if (e.target === $('chatModal')) closeChatModal(); });
 
-/* ============ ADMIN ============ */
 async function renderAdmin() {
   $('adminUsers').innerHTML = '<p style="color:#aaa;">Загрузка...</p>';
   const { data, error } = await supabase.from('profiles').select('id, username, is_admin, is_blocked, "createdAt"').order('createdAt', { ascending: true });
@@ -1679,7 +1607,6 @@ $('adminUsers').addEventListener('click', async e => {
 $('adminClose').addEventListener('click', () => $('adminModal').classList.remove('open'));
 $('adminModal').addEventListener('click', e => { if (e.target === $('adminModal')) $('adminModal').classList.remove('open'); });
 
-/* ============ TOAST ============ */
 let toastTimer = null;
 function toast(msg, err = false) {
   const t = $('toast');
@@ -1690,7 +1617,6 @@ function toast(msg, err = false) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-/* ============ ONLINE COUNTER (простой, локальный) ============ */
 function tickOnline() {
   const key = 'obmen101_online';
   let sessionId = sessionStorage.getItem(key);
@@ -1713,25 +1639,19 @@ function tickOnline() {
   $('onlineCount').textContent = Math.max(1, count);
 }
 
-/* ============ INIT ============ */
 async function init() {
   loadCartLocal();
   tickOnline();
   onlineInterval = setInterval(tickOnline, 20000);
-
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.user) await onAuthed();
   else {
     $('authModal').classList.add('open');
     $('loadingBadge').classList.remove('visible');
   }
-
   supabase.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') location.reload(); });
-
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
-    }
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
   });
 }
 
