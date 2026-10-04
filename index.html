@@ -530,7 +530,6 @@
   .chat-placeholder { margin: auto; text-align: center; color: var(--text-3); font-size: 14px; }
   .chat-placeholder .i { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
 
-  /* ===== LIQUID GLASS СООБЩЕНИЯ ===== */
   .msg {
     max-width: 75%; padding: 11px 15px;
     border-radius: 18px; font-size: 14px; line-height: 1.45;
@@ -1040,7 +1039,6 @@ async function loadProfiles(ids) {
     return;
   }
   (data || []).forEach(p => { profilesCache[p.id] = p.username; });
-  console.log('✅ Профили загружены:', data);
 }
 
 async function onAuthed() {
@@ -1106,22 +1104,23 @@ function renderAll() { renderTabs(); renderProducts(); renderRecos(); }
 async function loadProducts() {
   const { data, error } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
   if (error) { console.error(error); return []; }
-  const list = (data || []).map(r => ({
+  return (data || []).map(r => ({
     id: r.id, title: r.title, desc: r.description,
     category: r.category, categoryName: r.categoryName,
     rating: r.rating, badge: r.badge, custom: r.custom,
-    image: r.image, ownerId: r.ownerId, createdAt: r.createdAt
+    image: r.image, ownerId: r.ownerId, ownerName: r.ownerName,
+    createdAt: r.createdAt
   }));
-  await loadProfiles(list.map(p => p.ownerId).filter(Boolean));
-  return list;
 }
+
 async function createProduct(p) {
   const row = {
     id: Date.now(),
     title: p.title, description: p.desc,
     category: p.category, categoryName: p.categoryName,
     rating: 5, badge: 'НОВОЕ', custom: true,
-    image: p.image, ownerId: p.ownerId, createdAt: Date.now()
+    image: p.image, ownerId: p.ownerId, ownerName: p.ownerName,
+    createdAt: Date.now()
   };
   const { data, error } = await supabase.from('products').insert([row]).select().single();
   if (error) throw new Error(error.message);
@@ -1232,18 +1231,21 @@ function catLabel(p) {
   return c ? c.name : 'Разное';
 }
 
+// ======== КЛЮЧЕВАЯ ФУНКЦИЯ: показ ник из p.ownerName ========
+function getOwnerDisplay(p) {
+  // 1) ник сохранён прямо в карточке
+  if (p.ownerName) return p.ownerName;
+  // 2) fallback — из кеша профилей
+  if (profilesCache[p.ownerId]) return profilesCache[p.ownerId];
+  // 3) последний fallback
+  return 'Неизвестный';
+}
+
 function cardHtml(p) {
   const img = p.image
     ? `<img src="${p.image}" alt="${escapeHtml(p.title)}" loading="lazy">`
     : `<div class="placeholder">🆕</div>`;
-
-  // Автор: username из кеша, иначе короткий ID
-  let ownerName = profilesCache[p.ownerId];
-  if (!ownerName) {
-    const raw = String(p.ownerId || '');
-    ownerName = raw ? ('ID:' + raw.slice(-6)) : 'Неизвестный';
-  }
-
+  const ownerName = getOwnerDisplay(p);
   const cat = catLabel(p);
   const del = canDelete(p)
     ? `<button class="card-del${(!isMine(p) && MY_ADMIN) ? ' admin' : ''}" data-del="${p.id}" title="Удалить" type="button">🗑️</button>`
@@ -1271,7 +1273,6 @@ function cardHtml(p) {
   </article>`;
 }
 
-let profilesRetryTimer = null;
 function renderProducts() {
   const list = filtered();
   const grid = $('productsGrid');
@@ -1284,20 +1285,6 @@ function renderProducts() {
     return;
   }
   grid.innerHTML = list.map(cardHtml).join('');
-
-  // Догружаем профили, если кого-то не хватает, и перерисовываем
-  const missing = list.map(p => p.ownerId).filter(id => id && !profilesCache[id]);
-  if (missing.length) {
-    if (profilesRetryTimer) clearTimeout(profilesRetryTimer);
-    profilesRetryTimer = setTimeout(async () => {
-      await loadProfiles(missing);
-      const stillMissing = list.map(p => p.ownerId).filter(id => id && !profilesCache[id]);
-      if (stillMissing.length < missing.length) {
-        grid.innerHTML = list.map(cardHtml).join('');
-        renderRecos();
-      }
-    }, 100);
-  }
 }
 
 function renderRecos() {
@@ -1337,13 +1324,7 @@ document.addEventListener('click', async e => {
 function openProduct(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
-
-  let ownerName = profilesCache[p.ownerId];
-  if (!ownerName) {
-    const raw = String(p.ownerId || '');
-    ownerName = raw ? ('ID:' + raw.slice(-6)) : 'Неизвестный';
-  }
-
+  const ownerName = getOwnerDisplay(p);
   const img = p.image ? `<img src="${p.image}" alt="" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:80px;opacity:0.4;">🆕</div>`;
   $('productModalBody').innerHTML = `
     <div style="margin:-32px -32px 20px;height:240px;background:linear-gradient(135deg,rgba(55,25,100,0.6),rgba(20,8,35,0.8));display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:26px 26px 0 0;">
@@ -1475,12 +1456,12 @@ $('addSubmit').addEventListener('click', async () => {
       category: cat.key,
       categoryName: cat.name,
       image: uploaded,
-      ownerId: MY_ID
+      ownerId: MY_ID,
+      ownerName: MY_NAME
     };
     const saved = await createProduct(np);
     np.id = saved.id;
     products.unshift(np);
-    profilesCache[MY_ID] = MY_NAME;
     $('addModal').classList.remove('open');
     resetAddForm();
     currentCat = 'all';
