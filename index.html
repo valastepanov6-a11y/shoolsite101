@@ -46,6 +46,50 @@
   @keyframes silkFloat3 { 0%,100% { transform: rotate(-15deg) translateX(0) translateY(0); } 50% { transform: rotate(-15deg) translateX(20px) translateY(-25px); } }
   @keyframes silkFloat4 { 0%,100% { transform: rotate(-20deg) translateX(0) translateY(0); } 50% { transform: rotate(-20deg) translateX(-25px) translateY(15px); } }
 
+  /* ============ VINES (жидкие светящиеся лианы) ============ */
+  .vines-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.85;
+  }
+  .vines-layer svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .vine {
+    fill: none;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 260 1600;
+    animation: vineFlow 12s linear infinite;
+  }
+  .vine.thin { stroke-width: 1.6; stroke-dasharray: 160 1200; }
+  .vine.wide { stroke-width: 4.5; stroke-dasharray: 320 1800; }
+
+  .vine:nth-child(1)  { animation-duration: 13s; animation-delay: 0s;   }
+  .vine:nth-child(2)  { animation-duration: 17s; animation-delay: -4s;  }
+  .vine:nth-child(3)  { animation-duration: 15s; animation-delay: -7s;  }
+  .vine:nth-child(4)  { animation-duration: 19s; animation-delay: -2s;  }
+  .vine:nth-child(5)  { animation-duration: 14s; animation-delay: -9s;  }
+  .vine:nth-child(6)  { animation-duration: 18s; animation-delay: -5s;  }
+  .vine:nth-child(7)  { animation-duration: 16s; animation-delay: -11s; }
+  .vine:nth-child(8)  { animation-duration: 20s; animation-delay: -6s;  }
+
+  @keyframes vineFlow {
+    from { stroke-dashoffset: 1860; }
+    to   { stroke-dashoffset: 0;    }
+  }
+
+  @media (max-width: 700px) {
+    .vines-layer { opacity: 0.55; }
+  }
+
   .topbar { position: sticky; top: 0; z-index: 100; padding: 16px 32px; background: rgba(14, 5, 24, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
   .topbar-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
   .brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
@@ -68,7 +112,7 @@
   .user-chip .name { font-size: 13px; font-weight: 600; color: #fff; }
   .user-chip .crown { color: #fbbf24; font-size: 14px; margin-left: 2px; }
 
-  main { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 24px 32px 80px; }
+  main { position: relative; z-index: 2; max-width: 1400px; margin: 0 auto; padding: 24px 32px 80px; }
   .hero { position: relative; border-radius: 24px; background: linear-gradient(135deg, rgba(45, 20, 75, 0.55) 0%, rgba(30, 15, 50, 0.4) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border-2); padding: 56px 60px; overflow: hidden; margin-bottom: 48px; min-height: 280px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 20px 60px rgba(0,0,0,0.4); }
   .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse 600px 400px at 90% 50%, rgba(168, 85, 247, 0.15), transparent 70%); pointer-events: none; }
   .hero-decor { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); width: 320px; height: 220px; pointer-events: none; opacity: 0.6; }
@@ -103,7 +147,6 @@
   .card-img .placeholder { font-size: 64px; opacity: 0.4; }
   .card-cat { position: absolute; top: 12px; right: 12px; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; background: rgba(14, 5, 24, 0.75); color: var(--purple-light); backdrop-filter: blur(12px); border: 1px solid var(--border-2); }
 
-  /* Кнопка удаления — теперь вне .card-img, поверх всей карточки */
   .card-del {
     position: absolute;
     top: 12px; left: 12px;
@@ -303,11 +346,66 @@
 </head>
 <body>
 
+<!-- ========== ФОН ========== -->
 <div class="silk-bg">
   <div class="silk silk-1"></div>
   <div class="silk silk-2"></div>
   <div class="silk silk-3"></div>
   <div class="silk silk-4"></div>
+</div>
+
+<!-- ========== ЛИАНЫ ========== -->
+<div class="vines-layer" aria-hidden="true">
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="v1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%"   stop-color="#7c3aed" stop-opacity="0"/>
+        <stop offset="30%"  stop-color="#c4b5fd" stop-opacity="0.9"/>
+        <stop offset="50%"  stop-color="#ffffff" stop-opacity="1"/>
+        <stop offset="70%"  stop-color="#a855f7" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#4c1d95" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="v2" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#4c1d95" stop-opacity="0"/>
+        <stop offset="35%"  stop-color="#a855f7" stop-opacity="0.85"/>
+        <stop offset="55%"  stop-color="#e9d5ff" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="v3" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#6d28d9" stop-opacity="0"/>
+        <stop offset="40%"  stop-color="#c4b5fd" stop-opacity="0.9"/>
+        <stop offset="60%"  stop-color="#ffffff" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#3b0764" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="vineGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="4" result="b"/>
+        <feMerge>
+          <feMergeNode in="b"/>
+          <feMergeNode in="b"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <g filter="url(#vineGlow)">
+      <path class="vine wide" stroke="url(#v1)"
+        d="M -80 120 C 200 60, 380 260, 260 480 S 100 780, 260 950" />
+      <path class="vine" stroke="url(#v2)"
+        d="M 1520 40 C 1200 160, 1050 360, 1180 540 S 1380 780, 1220 950" />
+      <path class="vine thin" stroke="url(#v3)"
+        d="M -50 500 C 200 400, 420 620, 700 500 S 1100 380, 1500 520" />
+      <path class="vine" stroke="url(#v1)"
+        d="M -60 820 C 220 760, 420 640, 660 760 S 1000 880, 1500 780" />
+      <path class="vine thin" stroke="url(#v2)"
+        d="M 100 -20 C 400 140, 700 40, 1000 180 S 1300 120, 1520 260" />
+      <path class="vine" stroke="url(#v3)"
+        d="M 1500 200 C 1150 320, 900 200, 720 420 S 400 700, 200 950" />
+      <path class="vine thin" stroke="url(#v1)"
+        d="M 400 -40 C 620 180, 900 300, 1120 500 S 1300 720, 1200 950" />
+      <path class="vine wide" stroke="url(#v2)"
+        d="M -50 700 C 300 850, 700 700, 1050 850 S 1350 780, 1500 900" />
+    </g>
+  </svg>
 </div>
 
 <div class="loading" id="loadingBadge">⏳ Подключение...</div>
@@ -785,11 +883,6 @@ function catLabel(p) {
   return c ? c.name : 'Разное';
 }
 
-/* ============================================================
-   КАРТОЧКА ТОВАРА
-   Кнопка удаления вынесена ИЗ .card-img и стоит первой в .card,
-   поэтому клик по ней не попадает в data-open
-   ============================================================ */
 function cardHtml(p) {
   const img = p.image
     ? `<img src="${p.image}" alt="${escapeHtml(p.title)}" loading="lazy">`
@@ -845,12 +938,7 @@ function renderRecos() {
   $('recosGrid').innerHTML = recos.map(cardHtml).join('');
 }
 
-/* ============================================================
-   ОБРАБОТЧИК КЛИКОВ
-   Проверка data-del идёт ПЕРВОЙ и делает return
-   ============================================================ */
 document.addEventListener('click', async e => {
-  // УДАЛЕНИЕ
   const del = e.target.closest('[data-del]');
   if (del) {
     e.preventDefault();
@@ -867,16 +955,10 @@ document.addEventListener('click', async e => {
     catch (err) { toast('❌ ' + err.message, true); }
     return;
   }
-
-  // ОТКРЫТИЕ
   const open = e.target.closest('[data-open]');
   if (open) { openProduct(Number(open.getAttribute('data-open'))); return; }
-
-  // ЧАТ
   const chat = e.target.closest('[data-chat]');
   if (chat) { handleChatClick(Number(chat.getAttribute('data-chat'))); return; }
-
-  // ЛАЙК
   const like = e.target.closest('[data-like]');
   if (like) { addToCart(Number(like.getAttribute('data-like'))); return; }
 });
