@@ -108,15 +108,24 @@
   .brand-text { display: flex; flex-direction: column; }
   .brand-title { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
   .brand-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+  
+  /* Обновленный стиль счетчика */
   .online {
     display: flex; align-items: center; gap: 8px;
     font-size: 13px; color: var(--text-2); margin-left: 8px;
     padding: 8px 14px; border-radius: 999px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .online:hover {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: rgba(196, 181, 253, 0.4);
   }
   .online-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--purple); box-shadow: 0 0 8px var(--purple-glow); }
   .online strong { color: #fff; }
+  
   .topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 
   .btn-ghost, .btn-primary {
@@ -774,10 +783,13 @@
         <div class="brand-sub">МБОУ СОШ №101 · Воронеж</div>
       </div>
     </a>
-    <div class="online">
+    
+    <!-- Кнопка реального онлайна -->
+    <div class="online" id="onlineBtn" title="Показать, кто на сайте">
       <span class="online-dot"></span>
-      Сейчас на сайте: <strong id="onlineCount">1</strong>
+      Сейчас на сайте: <strong id="onlineCount">0</strong>
     </div>
+
     <div class="topbar-right" id="topbarRight">
       <button class="btn-ghost" id="loginBtn" type="button">💬 <span class="txt">Войти</span></button>
       <button class="btn-primary" id="registerBtn" type="button">＋ <span class="txt">Регистрация</span></button>
@@ -1009,6 +1021,7 @@ let chatRealtime = null, chatsListRealtime = null, productsRealtime = null;
 let lastMsgHash = '';
 let profilesCache = {};
 let cart = [];
+let presenceChannel = null;
 
 const $ = id => document.getElementById(id);
 const CART_KEY = 'obmen101_cart_v1';
@@ -1034,6 +1047,61 @@ function resizeImage(file, maxSize = 900, quality = 0.75) {
     reader.readAsDataURL(file);
   });
 }
+
+/* ============================================================
+   РЕАЛЬНЫЙ ОНЛАЙН-СЧЁТЧИК (Supabase Realtime Presence)
+   ============================================================ */
+function setupRealtimePresence() {
+  if (presenceChannel) return;
+
+  presenceChannel = supabase.channel('site-online-users', {
+    config: {
+      presence: {
+        key: MY_ID || Math.random().toString(36).slice(2),
+      },
+    },
+  });
+
+  presenceChannel
+    .on('presence', { event: 'sync' }, () => {
+      const state = presenceChannel.presenceState();
+      const count = Object.keys(state).length;
+      $('onlineCount').textContent = count;
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await trackPresence();
+      }
+    });
+}
+
+async function trackPresence() {
+  if (!presenceChannel) return;
+  await presenceChannel.track({
+    online_at: new Date().toISOString(),
+    username: MY_NAME || 'Гость',
+  });
+}
+
+// Клик по счетчику - показать кто онлайн
+document.addEventListener('DOMContentLoaded', () => {
+  const onlineBtn = document.getElementById('onlineBtn');
+  if (onlineBtn) {
+    onlineBtn.addEventListener('click', () => {
+      if (!presenceChannel) return;
+      const state = presenceChannel.presenceState();
+      const users = Object.values(state).flat().map(u => u.username).filter(Boolean);
+      
+      if (!users.length) {
+        toast('Никого нет онлайн');
+        return;
+      }
+      
+      const uniqueUsers = [...new Set(users)];
+      toast('🟢 Сейчас онлайн: ' + uniqueUsers.join(', '));
+    });
+  }
+});
 
 /* ============================================================
    АВТОРИЗАЦИЯ — 3-шаговая регистрация через Gmail-код
@@ -1229,7 +1297,6 @@ $('authModal').addEventListener('click', e => {
   if (e.target === $('authModal')) $('authModal').classList.remove('open');
 });
 
-// Стартовый шаг
 setAuthStep('login');
 
 /* ============================================================
@@ -1253,7 +1320,6 @@ async function onAuthed() {
   MY_ID = session.user.id;
   let { data: prof } = await supabase.from('profiles').select('username, is_admin, is_blocked').eq('id', MY_ID).maybeSingle();
   if (!prof) {
-    // На случай если профиль не создался Edge-функцией — создаём сами
     const nick = (session.user.email || '').split('@')[0];
     await supabase.from('profiles').insert([{ id: MY_ID, username: nick }]);
     prof = { username: nick, is_admin: false, is_blocked: false };
@@ -1272,6 +1338,9 @@ async function onAuthed() {
   renderTopbarUser();
   $('loadingBadge').classList.remove('visible');
   await bootApp();
+  
+  // Обновляем статус в онлайне (уже не "Гость")
+  trackPresence();
 }
 
 function renderTopbarUser() {
@@ -1878,32 +1947,10 @@ function toast(msg, err = false) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-function tickOnline() {
-  const key = 'obmen101_online';
-  let sessionId = sessionStorage.getItem(key);
-  if (!sessionId) {
-    sessionId = Math.random().toString(36).slice(2);
-    sessionStorage.setItem(key, sessionId);
-    localStorage.setItem('obmen101_last_ping_' + sessionId, Date.now());
-  }
-  localStorage.setItem('obmen101_last_ping_' + sessionId, Date.now());
-  let count = 0;
-  const now = Date.now();
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k.startsWith('obmen101_last_ping_')) {
-      const t = parseInt(localStorage.getItem(k) || '0', 10);
-      if (now - t < 60000) count++;
-      else localStorage.removeItem(k);
-    }
-  }
-  $('onlineCount').textContent = Math.max(1, count);
-}
-
 async function init() {
   loadCartLocal();
-  tickOnline();
-  setInterval(tickOnline, 30000);
+  setupRealtimePresence(); // Инициализация реального онлайна
+  
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.user) await onAuthed();
   else {
