@@ -504,6 +504,14 @@
   .review-stars { color: #fbbf24; font-size: 14px; letter-spacing: 2px; }
   .review-text { font-size: 13px; color: var(--text); line-height: 1.4; }
   
+  /* Кнопка удаления отзыва */
+  .review-del-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 14px; padding: 2px 6px; border-radius: 6px;
+    opacity: 0.6; transition: 0.15s; color: #fca5a5;
+  }
+  .review-del-btn:hover { opacity: 1; background: rgba(239,68,68,0.2); color: #ef4444; }
+
   /* Звездный рейтинг (кликабельный) */
   .star-input { display: flex; gap: 6px; font-size: 32px; cursor: pointer; color: #4b5563; margin-bottom: 6px; }
   .star-input span { transition: color 0.1s; }
@@ -1082,7 +1090,7 @@ let lastMsgHash = '';
 let profilesCache = {};
 let cart = [];
 let presenceChannel = null;
-let currentReviewRating = 0; // Для звезд в модалке
+let currentReviewRating = 0;
 
 const $ = id => document.getElementById(id);
 const CART_KEY = 'obmen101_cart_v1';
@@ -1384,6 +1392,10 @@ async function addReview(pid, rating, text) {
   if (error) throw new Error(error.message);
   return data;
 }
+async function deleteReview(id) {
+  const { error } = await supabase.from('reviews').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
 
 async function sendMsg(pid, bid, role, text) {
   const { data, error } = await supabase.from('messages').insert([{ productId: pid, buyerId: bid, role, text, time: Date.now() }]).select().single();
@@ -1508,7 +1520,6 @@ function cardHtml(p) {
     ? `<button class="card-del${(!isMine(p) && MY_ADMIN) ? ' admin' : ''}" data-del="${p.id}" title="Удалить" type="button">🗑️</button>`
     : '';
 
-  // Логика для прозрачной строки отзывов
   const avg = calcAvgRating(p.reviews || []);
   const reviewCount = (p.reviews || []).length;
   
@@ -1617,15 +1628,23 @@ function openProduct(id) {
 
   let reviewsHtml = '';
   if (sortedReviews.length) {
-    reviewsHtml = sortedReviews.map(r => `
+    reviewsHtml = sortedReviews.map(r => {
+      // Проверяем, может ли текущий юзер удалить этот отзыв
+      const canDelRev = (r.userId === MY_ID) || MY_ADMIN;
+      const delBtn = canDelRev ? `<button class="review-del-btn" data-review-del="${r.id}" title="Удалить отзыв">🗑️</button>` : '';
+      
+      return `
       <div class="review-item">
         <div class="review-header">
           <div class="review-author">${escapeHtml(r.username)}</div>
-          <div class="review-stars">${renderStars(r.rating)}</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="review-stars">${renderStars(r.rating)}</div>
+            ${delBtn}
+          </div>
         </div>
         <div class="review-text">${escapeHtml(r.text)}</div>
       </div>
-    `).join('');
+    `}).join('');
   } else {
     reviewsHtml = `<p style="color:var(--text-3);font-size:13px;text-align:center;margin:10px 0;">Отзывов пока нет. Будьте первым!</p>`;
   }
@@ -1685,6 +1704,23 @@ function openProduct(id) {
   `;
   
   $('productModal').classList.add('open');
+
+  // Обработчик удаления отзывов
+  document.querySelectorAll('[data-review-del]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Удалить этот отзыв?')) return;
+      const revId = Number(btn.getAttribute('data-review-del'));
+      try {
+        await deleteReview(revId);
+        toast('🗑️ Отзыв удалён');
+        products = await loadProducts();
+        renderProducts();
+        openProduct(p.id); // Перерисовываем модалку
+      } catch (err) {
+        toast('❌ ' + err.message, true);
+      }
+    });
+  });
 
   const starInput = document.getElementById('starInput');
   if (starInput) {
