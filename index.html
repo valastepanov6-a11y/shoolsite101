@@ -77,11 +77,6 @@
   .vine:nth-child(5) { animation-duration: 16s; animation-delay: -9s; }
   @keyframes vineFlow { from { stroke-dashoffset: 1600; } to { stroke-dashoffset: 0; } }
 
-  @media (max-width: 700px) {
-    .vines-layer { opacity: 0.45; }
-    .silk { opacity: 0.4; }
-  }
-
   .topbar {
     position: sticky; top: 0; z-index: 100;
     padding: 16px 32px;
@@ -728,7 +723,19 @@
     .hero-decor { display: none; }
     .section-title { font-size: 24px; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-    .online { display: none; }
+    
+    /* Счётчик теперь виден на телефонах и красиво переносится */
+    .online { 
+      display: flex; 
+      padding: 6px 14px; 
+      font-size: 12px; 
+      margin-left: 0; 
+      margin-top: 10px; 
+      width: 100%; 
+      justify-content: center;
+      order: 3;
+    }
+    
     .brand-sub { display: none; }
     .chat-content-modal { height: 92vh; max-height: none; border-radius: 16px; }
     .modal { padding: 24px 20px; }
