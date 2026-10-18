@@ -306,8 +306,45 @@
   .card-title:hover { color: var(--purple-light); }
   .card-desc { font-size: 13px; color: var(--text-2); margin-bottom: 14px; flex: 1; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   
-  .card-rating { display: flex; align-items: center; gap: 4px; font-size: 14px; color: #fbbf24; margin-bottom: 8px; }
-  .card-rating span.count { color: var(--text-3); font-size: 12px; margin-left: 2px; }
+  /* Строка отзывов под карточкой */
+  .card-review-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: 0.15s;
+  }
+  .card-review-row:hover {
+    background: rgba(168,85,247,0.15);
+    border-color: rgba(168,85,247,0.3);
+  }
+  .cr-stars {
+    color: #fbbf24;
+    font-size: 14px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .cr-count {
+    color: var(--text-3);
+    font-size: 11px;
+    margin-left: 2px;
+  }
+  .cr-text {
+    font-size: 12px;
+    color: var(--text-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-style: italic;
+    flex: 1;
+  }
 
   .card-actions { display: flex; gap: 8px; margin-top: auto; }
   .chat {
@@ -459,7 +496,7 @@
   .modal-actions .btn-primary { flex: 1; padding: 13px; justify-content: center; font-size: 15px; }
   .modal-actions .btn-ghost { padding: 13px 20px; font-size: 15px; }
 
-  /* Стили для отзывов */
+  /* Стили для отзывов в модалке */
   .reviews-section { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 10px; }
   .review-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
   .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
@@ -1304,13 +1341,10 @@ async function bootApp() {
 function renderAll() { renderTabs(); renderProducts(); renderRecos(); }
 
 async function loadProducts() {
-  // 1. Загружаем товары
   const { data: prods, error: pErr } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
   if (pErr) { console.error(pErr); return []; }
   
-  // 2. Загружаем отзывы отдельно (надежнее, чем вложенный select)
   const { data: revs, error: rErr } = await supabase.from('reviews').select('*');
-  
   const reviewsMap = {};
   if (!rErr && revs) {
     revs.forEach(r => {
@@ -1474,11 +1508,21 @@ function cardHtml(p) {
     ? `<button class="card-del${(!isMine(p) && MY_ADMIN) ? ' admin' : ''}" data-del="${p.id}" title="Удалить" type="button">🗑️</button>`
     : '';
 
+  // Вычисляем рейтинг и последний отзыв
   const avg = calcAvgRating(p.reviews);
   const reviewCount = p.reviews.length;
-  const ratingHtml = avg > 0 
-    ? `<div class="card-rating">${renderStars(avg)} <span class="count">(${reviewCount})</span></div>`
-    : `<div class="card-rating" style="color:var(--text-3);font-size:12px;">Нет отзывов</div>`;
+  let latestReviewText = 'Пока нет отзывов';
+  if (reviewCount > 0) {
+    const sorted = [...p.reviews].sort((a, b) => b.createdAt - a.createdAt);
+    latestReviewText = sorted[0].text;
+  }
+
+  const reviewRowHtml = `
+    <div class="card-review-row" data-open="${p.id}">
+      <div class="cr-stars">${renderStars(avg)} <span class="cr-count">(${reviewCount})</span></div>
+      <div class="cr-text">${reviewCount > 0 ? `"${escapeHtml(latestReviewText)}"` : 'Оставить отзыв'}</div>
+    </div>
+  `;
 
   return `<article class="card" data-id="${p.id}">
     ${del}
@@ -1493,7 +1537,10 @@ function cardHtml(p) {
         <strong title="${escapeHtml(ownerName)}">${escapeHtml(ownerName)}</strong>
       </div>
       <div class="card-title" data-open="${p.id}">${escapeHtml(p.title)}</div>
-      ${ratingHtml}
+      
+      <!-- Прозрачная строка отзывов -->
+      ${reviewRowHtml}
+
       <div class="card-desc">${escapeHtml(p.desc)}</div>
       <div class="card-actions">
         <button class="chat" data-chat="${p.id}" title="Написать" type="button">💬</button>
@@ -1578,7 +1625,6 @@ function openProduct(id) {
     reviewsHtml = `<p style="color:var(--text-3);font-size:13px;text-align:center;margin:10px 0;">Отзывов пока нет. Будьте первым!</p>`;
   }
 
-  // Форма (или причина, почему её нет)
   let formHtml = '';
   const alreadyReviewed = sortedReviews.some(r => r.userId === MY_ID);
   
