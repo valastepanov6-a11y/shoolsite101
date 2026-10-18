@@ -306,6 +306,11 @@
   .card-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; cursor: pointer; line-height: 1.35; }
   .card-title:hover { color: var(--purple-light); }
   .card-desc { font-size: 13px; color: var(--text-2); margin-bottom: 14px; flex: 1; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  
+  /* Новые стили для рейтинга на карточке */
+  .card-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #fbbf24; margin-bottom: 8px; }
+  .card-rating span.count { color: var(--text-3); font-size: 12px; margin-left: 2px; }
+
   .card-actions { display: flex; gap: 8px; margin-top: auto; }
   .chat {
     width: 38px; height: 38px; border-radius: 12px;
@@ -456,6 +461,19 @@
   .modal-actions .btn-primary { flex: 1; padding: 13px; justify-content: center; font-size: 15px; }
   .modal-actions .btn-ghost { padding: 13px 20px; font-size: 15px; }
 
+  /* Стили для отзывов */
+  .reviews-section { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 10px; }
+  .review-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+  .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .review-author { font-size: 13px; font-weight: 700; color: var(--purple-light); }
+  .review-stars { color: #fbbf24; font-size: 14px; }
+  .review-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  
+  /* Звездный рейтинг (кликабельный) */
+  .star-input { display: flex; gap: 6px; font-size: 28px; cursor: pointer; color: #4b5563; margin-bottom: 10px; }
+  .star-input span { transition: color 0.1s; }
+  .star-input span.active { color: #fbbf24; }
+  
   .upload {
     position: relative; height: 200px;
     border: 2px dashed rgba(196, 181, 253, 0.4);
@@ -724,7 +742,6 @@
     .section-title { font-size: 24px; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
     
-    /* Счётчик теперь виден на телефонах и красиво переносится */
     .online { 
       display: flex; 
       padding: 6px 14px; 
@@ -839,43 +856,35 @@
     <div class="auth-modal-title" id="authTitle">Вход в <span class="name">Обмен 101</span></div>
     <div class="auth-err" id="authErr"></div>
 
-    <!-- ШАГ 1a: ВХОД -->
     <form id="loginForm" class="auth-step">
       <div class="auth-input-group">
         <label>Email</label>
-        <input type="email" class="auth-input" id="loginEmail"
-               placeholder="you@gmail.com" autocomplete="email">
+        <input type="email" class="auth-input" id="loginEmail" placeholder="you@gmail.com" autocomplete="email">
       </div>
       <div class="auth-input-group">
         <label>Пароль</label>
-        <input type="password" class="auth-input" id="loginPass"
-               placeholder="минимум 6 символов" autocomplete="current-password">
+        <input type="password" class="auth-input" id="loginPass" placeholder="минимум 6 символов" autocomplete="current-password">
       </div>
       <button type="submit" class="auth-submit-btn" id="loginSubmit">Войти</button>
     </form>
 
-    <!-- ШАГ 1b: РЕГИСТРАЦИЯ — EMAIL + ПАРОЛЬ -->
     <form id="regForm1" class="auth-step" style="display:none;">
       <div class="auth-input-group">
         <label>Email (Gmail)</label>
-        <input type="email" class="auth-input" id="regEmail"
-               placeholder="you@gmail.com" autocomplete="email">
+        <input type="email" class="auth-input" id="regEmail" placeholder="you@gmail.com" autocomplete="email">
         <div class="auth-hint">На него придёт 4-значный код</div>
       </div>
       <div class="auth-input-group">
         <label>Пароль</label>
-        <input type="password" class="auth-input" id="regPass"
-               placeholder="минимум 6 символов" autocomplete="new-password">
+        <input type="password" class="auth-input" id="regPass" placeholder="минимум 6 символов" autocomplete="new-password">
       </div>
       <button type="submit" class="auth-submit-btn" id="regSubmit1">Отправить код</button>
     </form>
 
-    <!-- ШАГ 2: КОД -->
     <form id="regForm2" class="auth-step" style="display:none;">
       <div class="auth-input-group">
         <label>Код из письма</label>
-        <input type="text" class="auth-input code-input" id="regCode"
-               placeholder="0000" maxlength="4" inputmode="numeric" autocomplete="one-time-code">
+        <input type="text" class="auth-input code-input" id="regCode" placeholder="0000" maxlength="4" inputmode="numeric" autocomplete="one-time-code">
         <div class="auth-hint">Письмо отправлено на <strong id="regEmailEcho"></strong></div>
       </div>
       <button type="submit" class="auth-submit-btn" id="regSubmit2">Подтвердить</button>
@@ -885,12 +894,10 @@
       </div>
     </form>
 
-    <!-- ШАГ 3: НИК -->
     <form id="regForm3" class="auth-step" style="display:none;">
       <div class="auth-input-group">
         <label>Ваш ник</label>
-        <input type="text" class="auth-input" id="regNick"
-               placeholder="например: ivan_2007" maxlength="20" autocomplete="username">
+        <input type="text" class="auth-input" id="regNick" placeholder="например: ivan_2007" maxlength="20" autocomplete="username">
         <div class="auth-hint">3–20 символов: латиница, цифры, _</div>
       </div>
       <button type="submit" class="auth-submit-btn" id="regSubmit3">Завершить регистрацию</button>
@@ -988,7 +995,6 @@
   </div>
 </div>
 
-<!-- НОВОЕ МОДАЛЬНОЕ ОКНО: Кто сейчас онлайн (только для админов) -->
 <div class="modal-overlay" id="onlineUsersModal">
   <div class="modal">
     <div class="modal-title">🟢 Кто сейчас на сайте</div>
@@ -1041,6 +1047,7 @@ let lastMsgHash = '';
 let profilesCache = {};
 let cart = [];
 let presenceChannel = null;
+let currentReviewRating = 0; // Для звезд в модалке
 
 const $ = id => document.getElementById(id);
 const CART_KEY = 'obmen101_cart_v1';
@@ -1102,14 +1109,12 @@ async function trackPresence() {
   });
 }
 
-// Клик по счетчику - показать кто онлайн (только для админов)
 document.addEventListener('DOMContentLoaded', () => {
   const onlineBtn = document.getElementById('onlineBtn');
   if (onlineBtn) {
     onlineBtn.addEventListener('click', () => {
       if (!presenceChannel) return;
       
-      // Проверка прав администратора
       if (!MY_ADMIN) {
         toast('Список онлайн-пользователей доступен только администраторам', true);
         return;
@@ -1124,7 +1129,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       
-      // Формируем список для модального окна
       $('onlineUsersList').innerHTML = uniqueUsers.map(name => `
         <div class="user-row" style="padding: 10px; border-radius: 10px;">
           <div class="av">${escapeHtml(String(name)[0].toUpperCase())}</div>
@@ -1139,14 +1143,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Обработчики закрытия модалки онлайна
 $('onlineUsersClose').addEventListener('click', () => $('onlineUsersModal').classList.remove('open'));
 $('onlineUsersModal').addEventListener('click', e => {
   if (e.target === $('onlineUsersModal')) $('onlineUsersModal').classList.remove('open');
 });
 
 /* ============================================================
-   АВТОРИЗАЦИЯ — 3-шаговая регистрация через Gmail-код
+   АВТОРИЗАЦИЯ
    ============================================================ */
 let authStep = 'login';
 let regEmailValue = '';
@@ -1162,14 +1165,12 @@ function stepMap(s) {
 
 function setAuthStep(step) {
   authStep = step;
-
   ['loginForm', 'regForm1', 'regForm2', 'regForm3'].forEach(id => {
     const el = $(id);
     if (el) el.style.display = (id === stepMap(step)) ? '' : 'none';
   });
 
   const footer = $('authFooterLine');
-
   if (step === 'login') {
     $('authTitle').innerHTML = 'Вход в <span class="name">Обмен 101</span>';
     footer.innerHTML = 'Ещё нет аккаунта? <button type="button" id="authSwitch">Регистрация</button>';
@@ -1190,8 +1191,7 @@ function setAuthStep(step) {
   }
 
   const sw = $('authSwitch');
-  if (sw) sw.addEventListener('click', () =>
-    setAuthStep(step === 'login' ? 'reg1' : 'login'));
+  if (sw) sw.addEventListener('click', () => setAuthStep(step === 'login' ? 'reg1' : 'login'));
   hideAuthErr();
 }
 
@@ -1210,39 +1210,29 @@ async function callFn(name, body) {
   return data;
 }
 
-/* ---------- ШАГ 1a: вход ---------- */
 $('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   hideAuthErr();
   const email = $('loginEmail').value.trim().toLowerCase();
   const pass  = $('loginPass').value;
   if (!email || !pass) { showAuthErr('Заполните все поля'); return; }
-
   const btn = $('loginSubmit');
   btn.disabled = true; btn.textContent = 'Вход...';
   try {
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
     if (error) throw new Error('Неверный email или пароль');
     await onAuthed();
-  } catch (err) {
-    showAuthErr(err.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Войти';
-  }
+  } catch (err) { showAuthErr(err.message); }
+  finally { btn.disabled = false; btn.textContent = 'Войти'; }
 });
 
-/* ---------- ШАГ 1b: отправка кода ---------- */
 $('regForm1').addEventListener('submit', async (e) => {
   e.preventDefault();
   hideAuthErr();
   const email = $('regEmail').value.trim().toLowerCase();
   const pass  = $('regPass').value;
-
-  if (!/^[\w.+-]+@gmail\.com$/i.test(email)) {
-    showAuthErr('Нужен Gmail-адрес (например, you@gmail.com)'); return;
-  }
+  if (!/^[\w.+-]+@gmail\.com$/i.test(email)) { showAuthErr('Нужен Gmail-адрес'); return; }
   if (pass.length < 6) { showAuthErr('Пароль минимум 6 символов'); return; }
-
   const btn = $('regSubmit1');
   btn.disabled = true; btn.textContent = 'Отправка...';
   try {
@@ -1252,14 +1242,10 @@ $('regForm1').addEventListener('submit', async (e) => {
     $('regCode').value = '';
     setAuthStep('reg2');
     toast('📧 Код отправлен на ' + email);
-  } catch (err) {
-    showAuthErr(err.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Отправить код';
-  }
+  } catch (err) { showAuthErr(err.message); }
+  finally { btn.disabled = false; btn.textContent = 'Отправить код'; }
 });
 
-/* ---------- ШАГ 2: ввод кода ---------- */
 $('regForm2').addEventListener('submit', (e) => {
   e.preventDefault();
   hideAuthErr();
@@ -1271,12 +1257,9 @@ $('regForm2').addEventListener('submit', (e) => {
 
 $('regCode').addEventListener('input', (e) => {
   e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
-  if (e.target.value.length === 4) {
-    setTimeout(() => $('regForm2').requestSubmit(), 150);
-  }
+  if (e.target.value.length === 4) setTimeout(() => $('regForm2').requestSubmit(), 150);
 });
 
-/* ---------- ШАГ 2: повторная отправка ---------- */
 $('regResend').addEventListener('click', async () => {
   hideAuthErr();
   const btn = $('regResend');
@@ -1285,74 +1268,42 @@ $('regResend').addEventListener('click', async () => {
     await callFn('register-start', { email: regEmailValue, password: regPassValue });
     $('regCode').value = '';
     toast('📧 Код отправлен повторно');
-  } catch (err) {
-    showAuthErr(err.message);
-  } finally {
-    btn.disabled = false; btn.textContent = 'Отправить снова';
-  }
+  } catch (err) { showAuthErr(err.message); }
+  finally { btn.disabled = false; btn.textContent = 'Отправить снова'; }
 });
 
-/* ---------- ШАГ 3: ник и завершение ---------- */
 $('regForm3').addEventListener('submit', async (e) => {
   e.preventDefault();
   hideAuthErr();
   const nick = $('regNick').value.trim();
-  if (!/^[a-zA-Z0-9_]{3,20}$/.test(nick)) {
-    showAuthErr('Ник: 3–20 символов, латиница, цифры, _'); return;
-  }
-
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(nick)) { showAuthErr('Ник: 3–20 символов, латиница, цифры, _'); return; }
   const btn = $('regSubmit3');
   btn.disabled = true; btn.textContent = 'Создание...';
   try {
-    await callFn('register-verify', {
-      email: regEmailValue,
-      code: regCodeValue,
-      username: nick,
-    });
-
-    const { error: sErr } = await supabase.auth.signInWithPassword({
-      email: regEmailValue,
-      password: regPassValue,
-    });
-    if (sErr) throw new Error('Аккаунт создан, но войти не удалось. Попробуйте вручную.');
-
+    await callFn('register-verify', { email: regEmailValue, code: regCodeValue, username: nick });
+    const { error: sErr } = await supabase.auth.signInWithPassword({ email: regEmailValue, password: regPassValue });
+    if (sErr) throw new Error('Аккаунт создан, но войти не удалось.');
     toast('✅ Добро пожаловать, ' + nick);
     await onAuthed();
   } catch (err) {
     showAuthErr(err.message);
     if (/код/i.test(err.message)) setAuthStep('reg2');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Завершить регистрацию';
-  }
+  } finally { btn.disabled = false; btn.textContent = 'Завершить регистрацию'; }
 });
 
-/* ---------- Кнопки в шапке ---------- */
-$('loginBtn').addEventListener('click', () => {
-  setAuthStep('login');
-  $('authModal').classList.add('open');
-});
-$('registerBtn').addEventListener('click', () => {
-  setAuthStep('reg1');
-  $('authModal').classList.add('open');
-});
-$('authModal').addEventListener('click', e => {
-  if (e.target === $('authModal')) $('authModal').classList.remove('open');
-});
-
+$('loginBtn').addEventListener('click', () => { setAuthStep('login'); $('authModal').classList.add('open'); });
+$('registerBtn').addEventListener('click', () => { setAuthStep('reg1'); $('authModal').classList.add('open'); });
+$('authModal').addEventListener('click', e => { if (e.target === $('authModal')) $('authModal').classList.remove('open'); });
 setAuthStep('login');
 
 /* ============================================================
-   Основная логика приложения
+   ОСНОВНАЯ ЛОГИКА
    ============================================================ */
 
 async function loadProfiles(ids) {
   const need = [...new Set(ids)].filter(id => id && !profilesCache[id]);
   if (!need.length) return;
-  const { data, error } = await supabase.from('profiles').select('id, username').in('id', need);
-  if (error) {
-    console.error('❌ loadProfiles error:', error);
-    return;
-  }
+  const { data } = await supabase.from('profiles').select('id, username').in('id', need);
   (data || []).forEach(p => { profilesCache[p.id] = p.username; });
 }
 
@@ -1380,8 +1331,6 @@ async function onAuthed() {
   renderTopbarUser();
   $('loadingBadge').classList.remove('visible');
   await bootApp();
-  
-  // Обновляем статус в онлайне (уже не "Гость")
   trackPresence();
 }
 
@@ -1421,21 +1370,22 @@ async function bootApp() {
 function renderAll() { renderTabs(); renderProducts(); renderRecos(); }
 
 async function loadProducts() {
-  const { data, error } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+  // Подтягиваем сразу и отзывы!
+  const { data, error } = await supabase.from('products').select('*, reviews(*)').order('createdAt', { ascending: false });
   if (error) { console.error(error); return []; }
   return (data || []).map(r => ({
     id: r.id, title: r.title, desc: r.description,
     category: r.category, categoryName: r.categoryName,
     rating: r.rating, badge: r.badge, custom: r.custom,
     image: r.image, ownerId: r.ownerId, ownerName: r.ownerName,
-    createdAt: r.createdAt
+    createdAt: r.createdAt,
+    reviews: r.reviews || []
   }));
 }
 
 async function createProduct(p) {
   const row = {
-    id: Date.now(),
-    title: p.title, description: p.desc,
+    id: Date.now(), title: p.title, description: p.desc,
     category: p.category, categoryName: p.categoryName,
     rating: 5, badge: 'НОВОЕ', custom: true,
     image: p.image, ownerId: p.ownerId, ownerName: p.ownerName,
@@ -1446,22 +1396,33 @@ async function createProduct(p) {
   return data;
 }
 async function deleteProduct(id) {
-  const { error } = await supabase.from('products').delete().eq('id', id);
-  if (error) throw new Error(error.message);
+  await supabase.from('products').delete().eq('id', id);
 }
+
+async function addReview(pid, rating, text) {
+  const { data, error } = await supabase.from('reviews').insert([{
+    productId: pid,
+    userId: MY_ID,
+    username: MY_NAME,
+    rating: rating,
+    text: text,
+    createdAt: Date.now()
+  }]).select().single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 async function sendMsg(pid, bid, role, text) {
   const { data, error } = await supabase.from('messages').insert([{ productId: pid, buyerId: bid, role, text, time: Date.now() }]).select().single();
   if (error) throw new Error(error.message);
   return data;
 }
 async function loadHistory(pid, bid) {
-  const { data, error } = await supabase.from('messages').select('*').eq('productId', pid).eq('buyerId', bid).order('time', { ascending: true });
-  if (error) return [];
+  const { data } = await supabase.from('messages').select('*').eq('productId', pid).eq('buyerId', bid).order('time', { ascending: true });
   return data || [];
 }
 async function clearChat(pid, bid) {
-  const { error } = await supabase.from('messages').delete().eq('productId', pid).eq('buyerId', bid);
-  if (error) throw new Error(error.message);
+  await supabase.from('messages').delete().eq('productId', pid).eq('buyerId', bid);
 }
 async function loadChatsList() {
   const { data: prods } = await supabase.from('products').select('id, title, image, ownerId');
@@ -1470,8 +1431,7 @@ async function loadChatsList() {
   let q = supabase.from('messages').select('*').order('time', { ascending: false }).limit(500);
   if (mine.length) q = q.or(`buyerId.eq.${MY_ID},productId.in.(${mine.join(',')})`);
   else q = q.eq('buyerId', MY_ID);
-  const { data: msgs, error } = await q;
-  if (error) return [];
+  const { data: msgs } = await q;
   const map = {};
   (msgs || []).forEach(m => { const k = m.productId + ':' + m.buyerId; if (!map[k]) map[k] = m; });
   const bids = [...new Set(Object.values(map).map(m => m.buyerId))];
@@ -1490,15 +1450,14 @@ async function loadChatsList() {
 function subscribeProducts() {
   if (productsRealtime) return;
   productsRealtime = supabase.channel('products-live')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' },
-      async () => { products = await loadProducts(); renderProducts(); renderTabs(); renderRecos(); })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => { products = await loadProducts(); renderProducts(); renderTabs(); renderRecos(); })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, async () => { products = await loadProducts(); renderProducts(); renderTabs(); renderRecos(); })
     .subscribe();
 }
 function subscribeChatsList() {
   if (chatsListRealtime) return;
   chatsListRealtime = supabase.channel('chats-list-live')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' },
-      () => { if ($('chatsListModal').classList.contains('open')) renderChatsList(); })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => { if ($('chatsListModal').classList.contains('open')) renderChatsList(); })
     .subscribe();
 }
 function subscribeChat(pid, bid) {
@@ -1514,6 +1473,22 @@ function escapeHtml(s) {
 }
 function isMine(p) { return p.custom && p.ownerId === MY_ID; }
 function canDelete(p) { return isMine(p) || MY_ADMIN; }
+
+// Функция для отрисовки звезд (возвращает строку со звездами)
+function renderStars(rating) {
+  let stars = '';
+  for (let i = 1; i <= 5; i++) {
+    stars += i <= Math.round(rating) ? '★' : '☆';
+  }
+  return stars;
+}
+
+// Вычисление среднего рейтинга
+function calcAvgRating(reviews) {
+  if (!reviews || !reviews.length) return 0;
+  const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+  return sum / reviews.length;
+}
 
 function renderTabs() {
   const total = products.length;
@@ -1531,8 +1506,7 @@ $('tabsWrap').addEventListener('click', e => {
   const t = e.target.closest('.tab');
   if (!t) return;
   currentCat = t.getAttribute('data-cat');
-  renderTabs();
-  renderProducts();
+  renderTabs(); renderProducts();
 });
 
 function filtered() {
@@ -1566,6 +1540,13 @@ function cardHtml(p) {
     ? `<button class="card-del${(!isMine(p) && MY_ADMIN) ? ' admin' : ''}" data-del="${p.id}" title="Удалить" type="button">🗑️</button>`
     : '';
 
+  // Рейтинг
+  const avg = calcAvgRating(p.reviews);
+  const reviewCount = p.reviews.length;
+  const ratingHtml = avg > 0 
+    ? `<div class="card-rating">${renderStars(avg)} <span class="count">(${reviewCount})</span></div>`
+    : `<div class="card-rating" style="color:var(--text-3);font-size:12px;">Нет отзывов</div>`;
+
   return `<article class="card" data-id="${p.id}">
     ${del}
     <div class="card-img" data-open="${p.id}">
@@ -1579,6 +1560,7 @@ function cardHtml(p) {
         <strong title="${escapeHtml(ownerName)}">${escapeHtml(ownerName)}</strong>
       </div>
       <div class="card-title" data-open="${p.id}">${escapeHtml(p.title)}</div>
+      ${ratingHtml}
       <div class="card-desc">${escapeHtml(p.desc)}</div>
       <div class="card-actions">
         <button class="chat" data-chat="${p.id}" title="Написать" type="button">💬</button>
@@ -1614,8 +1596,7 @@ function renderRecos() {
 document.addEventListener('click', async e => {
   const del = e.target.closest('[data-del]');
   if (del) {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     const id = Number(del.getAttribute('data-del'));
     const p = products.find(x => x.id === id);
     if (!p) return;
@@ -1636,30 +1617,144 @@ document.addEventListener('click', async e => {
   if (like) { addToCart(Number(like.getAttribute('data-like'))); return; }
 });
 
+// ============================================
+// МОДАЛКА ТОВАРА С ОТЗЫВАМИ
+// ============================================
 function openProduct(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
+  
   const ownerName = getOwnerDisplay(p);
   const img = p.image ? `<img src="${p.image}" alt="" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:80px;opacity:0.4;">🆕</div>`;
+  
+  // Сортируем отзывы (сначала новые)
+  const sortedReviews = (p.reviews || []).sort((a, b) => b.createdAt - a.createdAt);
+  const avg = calcAvgRating(p.reviews);
+
+  // Блок с отзывами
+  let reviewsHtml = '';
+  if (sortedReviews.length) {
+    reviewsHtml = sortedReviews.map(r => `
+      <div class="review-item">
+        <div class="review-header">
+          <div class="review-author">${escapeHtml(r.username)}</div>
+          <div class="review-stars">${renderStars(r.rating)}</div>
+        </div>
+        <div class="review-text">${escapeHtml(r.text)}</div>
+      </div>
+    `).join('');
+  } else {
+    reviewsHtml = `<p style="color:var(--text-3);font-size:13px;text-align:center;margin:10px 0;">Отзывов пока нет. Будьте первым!</p>`;
+  }
+
+  // Форма добавления отзыва (только если авторизован, это не свой товар, и еще не оставлял отзыв)
+  let formHtml = '';
+  const alreadyReviewed = sortedReviews.some(r => r.userId === MY_ID);
+  
+  if (!MY_ID) {
+    formHtml = `<p style="font-size:12px;color:var(--text-3);text-align:center;margin-top:10px;">Войдите, чтобы оставить отзыв.</p>`;
+  } else if (p.ownerId === MY_ID) {
+    formHtml = `<p style="font-size:12px;color:var(--text-3);text-align:center;margin-top:10px;">Вы не можете оставить отзыв на свой товар.</p>`;
+  } else if (alreadyReviewed) {
+    formHtml = `<p style="font-size:12px;color:var(--purple-light);text-align:center;margin-top:10px;">Вы уже оставили отзыв на этот товар.</p>`;
+  } else {
+    currentReviewRating = 0; // сбрасываем
+    formHtml = `
+      <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:8px;">Оставить отзыв</div>
+        <div class="star-input" id="starInput">
+          <span data-val="1">★</span>
+          <span data-val="2">★</span>
+          <span data-val="3">★</span>
+          <span data-val="4">★</span>
+          <span data-val="5">★</span>
+        </div>
+        <textarea id="reviewText" style="width:100%;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px;color:#fff;font-family:inherit;resize:none;height:60px;margin-bottom:10px;" placeholder="Поделитесь впечатлением..."></textarea>
+        <button type="button" class="btn-primary" style="width:100%;padding:10px;border-radius:10px;" id="submitReviewBtn" data-pid="${p.id}">Отправить отзыв</button>
+      </div>
+    `;
+  }
+
   $('productModalBody').innerHTML = `
     <div style="margin:-32px -32px 20px;height:240px;background:linear-gradient(135deg,rgba(55,25,100,0.6),rgba(20,8,35,0.8));display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:26px 26px 0 0;">
       ${img}
     </div>
     <div class="modal-sub" style="margin-bottom:6px;">${escapeHtml(catLabel(p))}</div>
-    <div class="modal-title" style="margin-bottom:14px;">${escapeHtml(p.title)}</div>
-    <div class="card-author" style="margin-bottom:16px;">
-      <span class="dot"></span>
-      <span class="lbl">Автор:</span>
-      <strong>${escapeHtml(ownerName)}</strong>
+    <div class="modal-title" style="margin-bottom:10px;">${escapeHtml(p.title)}</div>
+    
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div class="card-author">
+        <span class="dot"></span>
+        <span class="lbl">Автор:</span>
+        <strong>${escapeHtml(ownerName)}</strong>
+      </div>
+      ${avg > 0 ? `<div class="review-stars">${renderStars(avg)} <span style="color:var(--text-3);font-size:12px;">(${sortedReviews.length})</span></div>` : ''}
     </div>
-    <p style="color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:22px;">${escapeHtml(p.desc)}</p>
-    <div class="modal-actions">
+
+    <p style="color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:16px;">${escapeHtml(p.desc)}</p>
+    
+    <div class="modal-actions" style="margin-bottom: 20px;">
       <button type="button" class="btn-primary" data-like="${p.id}" style="justify-content:center;">❤️ Нравится</button>
       <button type="button" class="btn-ghost" data-chat="${p.id}">💬 Написать</button>
     </div>
+
+    <div class="reviews-section">
+      <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#fff;">Отзывы</div>
+      <div id="reviewsList">${reviewsHtml}</div>
+      ${formHtml}
+    </div>
   `;
+  
   $('productModal').classList.add('open');
+
+  // Обработчики для звездочек в модалке
+  const starInput = document.getElementById('starInput');
+  if (starInput) {
+    const spans = starInput.querySelectorAll('span');
+    spans.forEach(span => {
+      span.addEventListener('click', () => {
+        currentReviewRating = Number(span.getAttribute('data-val'));
+        spans.forEach(s => {
+          s.classList.toggle('active', Number(s.getAttribute('data-val')) <= currentReviewRating);
+        });
+      });
+      // Ховер-эффект
+      span.addEventListener('mouseenter', () => {
+        const val = Number(span.getAttribute('data-val'));
+        spans.forEach(s => s.classList.toggle('active', Number(s.getAttribute('data-val')) <= val));
+      });
+    });
+    starInput.addEventListener('mouseleave', () => {
+      spans.forEach(s => s.classList.toggle('active', Number(s.getAttribute('data-val')) <= currentReviewRating));
+    });
+  }
+
+  // Обработчик кнопки "Отправить отзыв"
+  const submitBtn = document.getElementById('submitReviewBtn');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      if (currentReviewRating === 0) { toast('Выберите оценку (звезды)', true); return; }
+      const text = document.getElementById('reviewText').value.trim();
+      if (!text) { toast('Напишите текст отзыва', true); return; }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Отправка...';
+      try {
+        await addReview(p.id, currentReviewRating, text);
+        toast('⭐ Отзыв добавлен!');
+        // Обновляем локальный массив и перерисовываем
+        products = await loadProducts();
+        renderProducts();
+        openProduct(p.id); // перерисовываем модалку с новым отзывом
+      } catch (err) {
+        toast('❌ ' + err.message, true);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Отправить отзыв';
+      }
+    });
+  }
 }
+
 $('productModal').addEventListener('click', e => {
   if (e.target === $('productModal')) $('productModal').classList.remove('open');
   const like = e.target.closest('[data-like]');
@@ -1776,6 +1871,7 @@ $('addSubmit').addEventListener('click', async () => {
     };
     const saved = await createProduct(np);
     np.id = saved.id;
+    np.reviews = [];
     products.unshift(np);
     $('addModal').classList.remove('open');
     resetAddForm();
@@ -1937,7 +2033,6 @@ $('chatModal').addEventListener('click', e => { if (e.target === $('chatModal'))
 
 async function renderAdmin() {
   $('adminUsers').innerHTML = '<p style="color:#aaa;">Загрузка...</p>';
-  // Запрашиваем email вместе с остальными данными
   const { data, error } = await supabase.from('profiles').select('id, username, email, is_admin, is_blocked, "createdAt"').order('createdAt', { ascending: true });
   if (error) { $('adminUsers').innerHTML = `<p style="color:#f87171;">${error.message}</p>`; return; }
   if (!data?.length) { $('adminUsers').innerHTML = '<p style="color:#aaa;">Нет пользователей</p>'; return; }
@@ -1954,7 +2049,6 @@ async function renderAdmin() {
     const admBtn = u.is_admin
       ? `<button class="demote" data-a="demote" data-id="${u.id}" ${isMe ? 'disabled style="opacity:0.4"' : ''}>Снять админа</button>`
       : `<button class="promote" data-a="promote" data-id="${u.id}">Сделать админом</button>`;
-      
     return `<div class="user-row ${u.is_blocked ? 'blocked' : ''}">
       <div class="av">${escapeHtml(String(u.username || '?')[0].toUpperCase())}</div>
       <div class="info">
