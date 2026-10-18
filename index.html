@@ -988,6 +988,18 @@
   </div>
 </div>
 
+<!-- НОВОЕ МОДАЛЬНОЕ ОКНО: Кто сейчас онлайн (только для админов) -->
+<div class="modal-overlay" id="onlineUsersModal">
+  <div class="modal">
+    <div class="modal-title">🟢 Кто сейчас на сайте</div>
+    <div class="modal-sub">Список активных пользователей</div>
+    <div class="users-list" id="onlineUsersList" style="max-height: 50vh; overflow-y: auto;"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" style="flex:1;justify-content:center;" id="onlineUsersClose">Закрыть</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay cart-modal" id="cartModal">
   <div class="modal">
     <div class="modal-title">❤️ Понравившиеся</div>
@@ -1090,24 +1102,47 @@ async function trackPresence() {
   });
 }
 
-// Клик по счетчику - показать кто онлайн
+// Клик по счетчику - показать кто онлайн (только для админов)
 document.addEventListener('DOMContentLoaded', () => {
   const onlineBtn = document.getElementById('onlineBtn');
   if (onlineBtn) {
     onlineBtn.addEventListener('click', () => {
       if (!presenceChannel) return;
+      
+      // Проверка прав администратора
+      if (!MY_ADMIN) {
+        toast('Список онлайн-пользователей доступен только администраторам', true);
+        return;
+      }
+
       const state = presenceChannel.presenceState();
       const users = Object.values(state).flat().map(u => u.username).filter(Boolean);
+      const uniqueUsers = [...new Set(users)];
       
-      if (!users.length) {
+      if (!uniqueUsers.length) {
         toast('Никого нет онлайн');
         return;
       }
       
-      const uniqueUsers = [...new Set(users)];
-      toast('🟢 Сейчас онлайн: ' + uniqueUsers.join(', '));
+      // Формируем список для модального окна
+      $('onlineUsersList').innerHTML = uniqueUsers.map(name => `
+        <div class="user-row" style="padding: 10px; border-radius: 10px;">
+          <div class="av">${escapeHtml(String(name)[0].toUpperCase())}</div>
+          <div class="info">
+            <div class="name">${escapeHtml(name)}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      $('onlineUsersModal').classList.add('open');
     });
   }
+});
+
+// Обработчики закрытия модалки онлайна
+$('onlineUsersClose').addEventListener('click', () => $('onlineUsersModal').classList.remove('open'));
+$('onlineUsersModal').addEventListener('click', e => {
+  if (e.target === $('onlineUsersModal')) $('onlineUsersModal').classList.remove('open');
 });
 
 /* ============================================================
