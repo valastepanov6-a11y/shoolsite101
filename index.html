@@ -109,7 +109,7 @@
   .brand-title { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
   .brand-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
   
-  /* Обновленный стиль счетчика */
+  /* Счётчик онлайн */
   .online {
     display: flex; align-items: center; gap: 8px;
     font-size: 13px; color: var(--text-2); margin-left: 8px;
@@ -1321,7 +1321,7 @@ async function onAuthed() {
   let { data: prof } = await supabase.from('profiles').select('username, is_admin, is_blocked').eq('id', MY_ID).maybeSingle();
   if (!prof) {
     const nick = (session.user.email || '').split('@')[0];
-    await supabase.from('profiles').insert([{ id: MY_ID, username: nick }]);
+    await supabase.from('profiles').insert([{ id: MY_ID, username: nick, email: session.user.email }]);
     prof = { username: nick, is_admin: false, is_blocked: false };
   }
   if (prof.is_blocked) {
@@ -1895,7 +1895,8 @@ $('chatModal').addEventListener('click', e => { if (e.target === $('chatModal'))
 
 async function renderAdmin() {
   $('adminUsers').innerHTML = '<p style="color:#aaa;">Загрузка...</p>';
-  const { data, error } = await supabase.from('profiles').select('id, username, is_admin, is_blocked, "createdAt"').order('createdAt', { ascending: true });
+  // Запрашиваем email вместе с остальными данными
+  const { data, error } = await supabase.from('profiles').select('id, username, email, is_admin, is_blocked, "createdAt"').order('createdAt', { ascending: true });
   if (error) { $('adminUsers').innerHTML = `<p style="color:#f87171;">${error.message}</p>`; return; }
   if (!data?.length) { $('adminUsers').innerHTML = '<p style="color:#aaa;">Нет пользователей</p>'; return; }
   $('adminUsers').innerHTML = data.map(u => {
@@ -1911,10 +1912,12 @@ async function renderAdmin() {
     const admBtn = u.is_admin
       ? `<button class="demote" data-a="demote" data-id="${u.id}" ${isMe ? 'disabled style="opacity:0.4"' : ''}>Снять админа</button>`
       : `<button class="promote" data-a="promote" data-id="${u.id}">Сделать админом</button>`;
+      
     return `<div class="user-row ${u.is_blocked ? 'blocked' : ''}">
       <div class="av">${escapeHtml(String(u.username || '?')[0].toUpperCase())}</div>
       <div class="info">
         <div class="name">${escapeHtml(u.username)}</div>
+        <div class="email" style="font-size:11px; color:var(--text-2); margin: 2px 0; word-break: break-all;">${escapeHtml(u.email || 'Нет email')}</div>
         <div class="meta">${metaStr}</div>
       </div>
       <div class="acts">${blockBtn}${admBtn}</div>
@@ -1949,7 +1952,7 @@ function toast(msg, err = false) {
 
 async function init() {
   loadCartLocal();
-  setupRealtimePresence(); // Инициализация реального онлайна
+  setupRealtimePresence(); 
   
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.user) await onAuthed();
