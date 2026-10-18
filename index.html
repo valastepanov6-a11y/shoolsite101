@@ -104,7 +104,6 @@
   .brand-title { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
   .brand-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
   
-  /* Счётчик онлайн */
   .online {
     display: flex; align-items: center; gap: 8px;
     font-size: 13px; color: var(--text-2); margin-left: 8px;
@@ -307,8 +306,7 @@
   .card-title:hover { color: var(--purple-light); }
   .card-desc { font-size: 13px; color: var(--text-2); margin-bottom: 14px; flex: 1; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   
-  /* Новые стили для рейтинга на карточке */
-  .card-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #fbbf24; margin-bottom: 8px; }
+  .card-rating { display: flex; align-items: center; gap: 4px; font-size: 14px; color: #fbbf24; margin-bottom: 8px; }
   .card-rating span.count { color: var(--text-3); font-size: 12px; margin-left: 2px; }
 
   .card-actions { display: flex; gap: 8px; margin-top: auto; }
@@ -466,13 +464,13 @@
   .review-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
   .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .review-author { font-size: 13px; font-weight: 700; color: var(--purple-light); }
-  .review-stars { color: #fbbf24; font-size: 14px; }
+  .review-stars { color: #fbbf24; font-size: 14px; letter-spacing: 2px; }
   .review-text { font-size: 13px; color: var(--text); line-height: 1.4; }
   
   /* Звездный рейтинг (кликабельный) */
-  .star-input { display: flex; gap: 6px; font-size: 28px; cursor: pointer; color: #4b5563; margin-bottom: 10px; }
+  .star-input { display: flex; gap: 6px; font-size: 32px; cursor: pointer; color: #4b5563; margin-bottom: 6px; }
   .star-input span { transition: color 0.1s; }
-  .star-input span.active { color: #fbbf24; }
+  .star-input span:hover, .star-input span.active { color: #fbbf24; }
   
   .upload {
     position: relative; height: 200px;
@@ -1075,38 +1073,23 @@ function resizeImage(file, maxSize = 900, quality = 0.75) {
 }
 
 /* ============================================================
-   РЕАЛЬНЫЙ ОНЛАЙН-СЧЁТЧИК (Supabase Realtime Presence)
+   РЕАЛЬНЫЙ ОНЛАЙН-СЧЁТЧИК
    ============================================================ */
 function setupRealtimePresence() {
   if (presenceChannel) return;
-
-  presenceChannel = supabase.channel('site-online-users', {
-    config: {
-      presence: {
-        key: MY_ID || Math.random().toString(36).slice(2),
-      },
-    },
-  });
-
+  presenceChannel = supabase.channel('site-online-users', { config: { presence: { key: MY_ID || Math.random().toString(36).slice(2) } } });
   presenceChannel
     .on('presence', { event: 'sync' }, () => {
       const state = presenceChannel.presenceState();
-      const count = Object.keys(state).length;
-      $('onlineCount').textContent = count;
+      $('onlineCount').textContent = Object.keys(state).length;
     })
     .subscribe(async (status) => {
-      if (status === 'SUBSCRIBED') {
-        await trackPresence();
-      }
+      if (status === 'SUBSCRIBED') await trackPresence();
     });
 }
-
 async function trackPresence() {
   if (!presenceChannel) return;
-  await presenceChannel.track({
-    online_at: new Date().toISOString(),
-    username: MY_NAME || 'Гость',
-  });
+  await presenceChannel.track({ online_at: new Date().toISOString(), username: MY_NAME || 'Гость' });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1114,39 +1097,23 @@ document.addEventListener('DOMContentLoaded', () => {
   if (onlineBtn) {
     onlineBtn.addEventListener('click', () => {
       if (!presenceChannel) return;
-      
-      if (!MY_ADMIN) {
-        toast('Список онлайн-пользователей доступен только администраторам', true);
-        return;
-      }
-
+      if (!MY_ADMIN) { toast('Список онлайн-пользователей доступен только администраторам', true); return; }
       const state = presenceChannel.presenceState();
       const users = Object.values(state).flat().map(u => u.username).filter(Boolean);
       const uniqueUsers = [...new Set(users)];
-      
-      if (!uniqueUsers.length) {
-        toast('Никого нет онлайн');
-        return;
-      }
-      
+      if (!uniqueUsers.length) { toast('Никого нет онлайн'); return; }
       $('onlineUsersList').innerHTML = uniqueUsers.map(name => `
         <div class="user-row" style="padding: 10px; border-radius: 10px;">
           <div class="av">${escapeHtml(String(name)[0].toUpperCase())}</div>
-          <div class="info">
-            <div class="name">${escapeHtml(name)}</div>
-          </div>
+          <div class="info"><div class="name">${escapeHtml(name)}</div></div>
         </div>
       `).join('');
-      
       $('onlineUsersModal').classList.add('open');
     });
   }
 });
-
 $('onlineUsersClose').addEventListener('click', () => $('onlineUsersModal').classList.remove('open'));
-$('onlineUsersModal').addEventListener('click', e => {
-  if (e.target === $('onlineUsersModal')) $('onlineUsersModal').classList.remove('open');
-});
+$('onlineUsersModal').addEventListener('click', e => { if (e.target === $('onlineUsersModal')) $('onlineUsersModal').classList.remove('open'); });
 
 /* ============================================================
    АВТОРИЗАЦИЯ
@@ -1159,9 +1126,7 @@ let regCodeValue = '';
 function showAuthErr(m) { $('authErr').textContent = m; $('authErr').classList.add('show'); }
 function hideAuthErr()  { $('authErr').classList.remove('show'); $('authErr').textContent = ''; }
 
-function stepMap(s) {
-  return { login: 'loginForm', reg1: 'regForm1', reg2: 'regForm2', reg3: 'regForm3' }[s];
-}
+function stepMap(s) { return { login: 'loginForm', reg1: 'regForm1', reg2: 'regForm2', reg3: 'regForm3' }[s]; }
 
 function setAuthStep(step) {
   authStep = step;
@@ -1189,7 +1154,6 @@ function setAuthStep(step) {
     footer.style.display = 'none';
     setTimeout(() => $('regNick').focus(), 100);
   }
-
   const sw = $('authSwitch');
   if (sw) sw.addEventListener('click', () => setAuthStep(step === 'login' ? 'reg1' : 'login'));
   hideAuthErr();
@@ -1198,11 +1162,7 @@ function setAuthStep(step) {
 async function callFn(name, body) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-    },
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
@@ -1211,13 +1171,11 @@ async function callFn(name, body) {
 }
 
 $('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  hideAuthErr();
+  e.preventDefault(); hideAuthErr();
   const email = $('loginEmail').value.trim().toLowerCase();
   const pass  = $('loginPass').value;
   if (!email || !pass) { showAuthErr('Заполните все поля'); return; }
-  const btn = $('loginSubmit');
-  btn.disabled = true; btn.textContent = 'Вход...';
+  const btn = $('loginSubmit'); btn.disabled = true; btn.textContent = 'Вход...';
   try {
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
     if (error) throw new Error('Неверный email или пароль');
@@ -1227,32 +1185,25 @@ $('loginForm').addEventListener('submit', async (e) => {
 });
 
 $('regForm1').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  hideAuthErr();
+  e.preventDefault(); hideAuthErr();
   const email = $('regEmail').value.trim().toLowerCase();
   const pass  = $('regPass').value;
   if (!/^[\w.+-]+@gmail\.com$/i.test(email)) { showAuthErr('Нужен Gmail-адрес'); return; }
   if (pass.length < 6) { showAuthErr('Пароль минимум 6 символов'); return; }
-  const btn = $('regSubmit1');
-  btn.disabled = true; btn.textContent = 'Отправка...';
+  const btn = $('regSubmit1'); btn.disabled = true; btn.textContent = 'Отправка...';
   try {
     await callFn('register-start', { email, password: pass });
-    regEmailValue = email;
-    regPassValue  = pass;
-    $('regCode').value = '';
-    setAuthStep('reg2');
-    toast('📧 Код отправлен на ' + email);
+    regEmailValue = email; regPassValue = pass; $('regCode').value = '';
+    setAuthStep('reg2'); toast('📧 Код отправлен на ' + email);
   } catch (err) { showAuthErr(err.message); }
   finally { btn.disabled = false; btn.textContent = 'Отправить код'; }
 });
 
 $('regForm2').addEventListener('submit', (e) => {
-  e.preventDefault();
-  hideAuthErr();
+  e.preventDefault(); hideAuthErr();
   const code = $('regCode').value.trim();
   if (!/^\d{4}$/.test(code)) { showAuthErr('Код — 4 цифры'); return; }
-  regCodeValue = code;
-  setAuthStep('reg3');
+  regCodeValue = code; setAuthStep('reg3');
 });
 
 $('regCode').addEventListener('input', (e) => {
@@ -1261,30 +1212,24 @@ $('regCode').addEventListener('input', (e) => {
 });
 
 $('regResend').addEventListener('click', async () => {
-  hideAuthErr();
-  const btn = $('regResend');
-  btn.disabled = true; btn.textContent = 'Отправка...';
+  hideAuthErr(); const btn = $('regResend'); btn.disabled = true; btn.textContent = 'Отправка...';
   try {
     await callFn('register-start', { email: regEmailValue, password: regPassValue });
-    $('regCode').value = '';
-    toast('📧 Код отправлен повторно');
+    $('regCode').value = ''; toast('📧 Код отправлен повторно');
   } catch (err) { showAuthErr(err.message); }
   finally { btn.disabled = false; btn.textContent = 'Отправить снова'; }
 });
 
 $('regForm3').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  hideAuthErr();
+  e.preventDefault(); hideAuthErr();
   const nick = $('regNick').value.trim();
   if (!/^[a-zA-Z0-9_]{3,20}$/.test(nick)) { showAuthErr('Ник: 3–20 символов, латиница, цифры, _'); return; }
-  const btn = $('regSubmit3');
-  btn.disabled = true; btn.textContent = 'Создание...';
+  const btn = $('regSubmit3'); btn.disabled = true; btn.textContent = 'Создание...';
   try {
     await callFn('register-verify', { email: regEmailValue, code: regCodeValue, username: nick });
     const { error: sErr } = await supabase.auth.signInWithPassword({ email: regEmailValue, password: regPassValue });
     if (sErr) throw new Error('Аккаунт создан, но войти не удалось.');
-    toast('✅ Добро пожаловать, ' + nick);
-    await onAuthed();
+    toast('✅ Добро пожаловать, ' + nick); await onAuthed();
   } catch (err) {
     showAuthErr(err.message);
     if (/код/i.test(err.message)) setAuthStep('reg2');
@@ -1318,20 +1263,14 @@ async function onAuthed() {
     prof = { username: nick, is_admin: false, is_blocked: false };
   }
   if (prof.is_blocked) {
-    await supabase.auth.signOut();
-    setAuthStep('login');
-    $('authModal').classList.add('open');
-    showAuthErr('🚫 Ваш аккаунт заблокирован');
-    return;
+    await supabase.auth.signOut(); setAuthStep('login'); $('authModal').classList.add('open');
+    showAuthErr('🚫 Ваш аккаунт заблокирован'); return;
   }
-  MY_NAME = prof.username;
-  MY_ADMIN = !!prof.is_admin;
+  MY_NAME = prof.username; MY_ADMIN = !!prof.is_admin;
   profilesCache[MY_ID] = MY_NAME;
-  $('authModal').classList.remove('open');
-  renderTopbarUser();
+  $('authModal').classList.remove('open'); renderTopbarUser();
   $('loadingBadge').classList.remove('visible');
-  await bootApp();
-  trackPresence();
+  await bootApp(); trackPresence();
 }
 
 function renderTopbarUser() {
@@ -1352,34 +1291,41 @@ function renderTopbarUser() {
   if (MY_ADMIN) $('adminBtn').addEventListener('click', () => { renderAdmin(); $('adminModal').classList.add('open'); });
   $('logoutBtn').addEventListener('click', async () => {
     if (!confirm('Выйти?')) return;
-    await supabase.auth.signOut();
-    location.reload();
+    await supabase.auth.signOut(); location.reload();
   });
 }
 
 let booted = false;
 async function bootApp() {
   if (booted) { products = await loadProducts(); renderAll(); return; }
-  booted = true;
-  loadCartLocal();
-  products = await loadProducts();
-  renderAll();
-  subscribeProducts();
-  subscribeChatsList();
+  booted = true; loadCartLocal();
+  products = await loadProducts(); renderAll(); subscribeProducts(); subscribeChatsList();
 }
 function renderAll() { renderTabs(); renderProducts(); renderRecos(); }
 
 async function loadProducts() {
-  // Подтягиваем сразу и отзывы!
-  const { data, error } = await supabase.from('products').select('*, reviews(*)').order('createdAt', { ascending: false });
-  if (error) { console.error(error); return []; }
-  return (data || []).map(r => ({
+  // 1. Загружаем товары
+  const { data: prods, error: pErr } = await supabase.from('products').select('*').order('createdAt', { ascending: false });
+  if (pErr) { console.error(pErr); return []; }
+  
+  // 2. Загружаем отзывы отдельно (надежнее, чем вложенный select)
+  const { data: revs, error: rErr } = await supabase.from('reviews').select('*');
+  
+  const reviewsMap = {};
+  if (!rErr && revs) {
+    revs.forEach(r => {
+      if (!reviewsMap[r.productId]) reviewsMap[r.productId] = [];
+      reviewsMap[r.productId].push(r);
+    });
+  }
+
+  return (prods || []).map(r => ({
     id: r.id, title: r.title, desc: r.description,
     category: r.category, categoryName: r.categoryName,
     rating: r.rating, badge: r.badge, custom: r.custom,
     image: r.image, ownerId: r.ownerId, ownerName: r.ownerName,
     createdAt: r.createdAt,
-    reviews: r.reviews || []
+    reviews: reviewsMap[r.id] || []
   }));
 }
 
@@ -1395,18 +1341,11 @@ async function createProduct(p) {
   if (error) throw new Error(error.message);
   return data;
 }
-async function deleteProduct(id) {
-  await supabase.from('products').delete().eq('id', id);
-}
+async function deleteProduct(id) { await supabase.from('products').delete().eq('id', id); }
 
 async function addReview(pid, rating, text) {
   const { data, error } = await supabase.from('reviews').insert([{
-    productId: pid,
-    userId: MY_ID,
-    username: MY_NAME,
-    rating: rating,
-    text: text,
-    createdAt: Date.now()
+    productId: pid, userId: MY_ID, username: MY_NAME, rating: rating, text: text, createdAt: Date.now()
   }]).select().single();
   if (error) throw new Error(error.message);
   return data;
@@ -1421,9 +1360,8 @@ async function loadHistory(pid, bid) {
   const { data } = await supabase.from('messages').select('*').eq('productId', pid).eq('buyerId', bid).order('time', { ascending: true });
   return data || [];
 }
-async function clearChat(pid, bid) {
-  await supabase.from('messages').delete().eq('productId', pid).eq('buyerId', bid);
-}
+async function clearChat(pid, bid) { await supabase.from('messages').delete().eq('productId', pid).eq('buyerId', bid); }
+
 async function loadChatsList() {
   const { data: prods } = await supabase.from('products').select('id, title, image, ownerId');
   const pm = {}; (prods || []).forEach(p => { pm[p.id] = p; });
@@ -1474,16 +1412,12 @@ function escapeHtml(s) {
 function isMine(p) { return p.custom && p.ownerId === MY_ID; }
 function canDelete(p) { return isMine(p) || MY_ADMIN; }
 
-// Функция для отрисовки звезд (возвращает строку со звездами)
 function renderStars(rating) {
   let stars = '';
-  for (let i = 1; i <= 5; i++) {
-    stars += i <= Math.round(rating) ? '★' : '☆';
-  }
+  for (let i = 1; i <= 5; i++) stars += i <= Math.round(rating) ? '★' : '☆';
   return stars;
 }
 
-// Вычисление среднего рейтинга
 function calcAvgRating(reviews) {
   if (!reviews || !reviews.length) return 0;
   const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
@@ -1540,7 +1474,6 @@ function cardHtml(p) {
     ? `<button class="card-del${(!isMine(p) && MY_ADMIN) ? ' admin' : ''}" data-del="${p.id}" title="Удалить" type="button">🗑️</button>`
     : '';
 
-  // Рейтинг
   const avg = calcAvgRating(p.reviews);
   const reviewCount = p.reviews.length;
   const ratingHtml = avg > 0 
@@ -1627,11 +1560,9 @@ function openProduct(id) {
   const ownerName = getOwnerDisplay(p);
   const img = p.image ? `<img src="${p.image}" alt="" style="width:100%;height:100%;object-fit:cover;">` : `<div style="font-size:80px;opacity:0.4;">🆕</div>`;
   
-  // Сортируем отзывы (сначала новые)
   const sortedReviews = (p.reviews || []).sort((a, b) => b.createdAt - a.createdAt);
   const avg = calcAvgRating(p.reviews);
 
-  // Блок с отзывами
   let reviewsHtml = '';
   if (sortedReviews.length) {
     reviewsHtml = sortedReviews.map(r => `
@@ -1647,28 +1578,25 @@ function openProduct(id) {
     reviewsHtml = `<p style="color:var(--text-3);font-size:13px;text-align:center;margin:10px 0;">Отзывов пока нет. Будьте первым!</p>`;
   }
 
-  // Форма добавления отзыва (только если авторизован, это не свой товар, и еще не оставлял отзыв)
+  // Форма (или причина, почему её нет)
   let formHtml = '';
   const alreadyReviewed = sortedReviews.some(r => r.userId === MY_ID);
   
   if (!MY_ID) {
-    formHtml = `<p style="font-size:12px;color:var(--text-3);text-align:center;margin-top:10px;">Войдите, чтобы оставить отзыв.</p>`;
+    formHtml = `<p style="font-size:12px;color:var(--text-2);text-align:center;margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">Войдите в аккаунт, чтобы оставить отзыв.</p>`;
   } else if (p.ownerId === MY_ID) {
-    formHtml = `<p style="font-size:12px;color:var(--text-3);text-align:center;margin-top:10px;">Вы не можете оставить отзыв на свой товар.</p>`;
+    formHtml = `<p style="font-size:12px;color:var(--text-2);text-align:center;margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">Это ваш товар. Вы не можете оставить отзыв на самого себя.</p>`;
   } else if (alreadyReviewed) {
-    formHtml = `<p style="font-size:12px;color:var(--purple-light);text-align:center;margin-top:10px;">Вы уже оставили отзыв на этот товар.</p>`;
+    formHtml = `<p style="font-size:12px;color:var(--purple-light);text-align:center;margin-top:10px;padding:10px;background:rgba(0,0,0,0.2);border-radius:8px;">Вы уже оставили отзыв на этот товар. Спасибо!</p>`;
   } else {
-    currentReviewRating = 0; // сбрасываем
+    currentReviewRating = 0;
     formHtml = `
       <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.1);padding-top:16px;">
-        <div style="font-size:14px;font-weight:700;margin-bottom:8px;">Оставить отзыв</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#fff;">Оставить отзыв</div>
         <div class="star-input" id="starInput">
-          <span data-val="1">★</span>
-          <span data-val="2">★</span>
-          <span data-val="3">★</span>
-          <span data-val="4">★</span>
-          <span data-val="5">★</span>
+          <span data-val="1">★</span><span data-val="2">★</span><span data-val="3">★</span><span data-val="4">★</span><span data-val="5">★</span>
         </div>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;">Кликните на звезду, чтобы поставить оценку</div>
         <textarea id="reviewText" style="width:100%;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px;color:#fff;font-family:inherit;resize:none;height:60px;margin-bottom:10px;" placeholder="Поделитесь впечатлением..."></textarea>
         <button type="button" class="btn-primary" style="width:100%;padding:10px;border-radius:10px;" id="submitReviewBtn" data-pid="${p.id}">Отправить отзыв</button>
       </div>
@@ -1699,7 +1627,7 @@ function openProduct(id) {
     </div>
 
     <div class="reviews-section">
-      <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#fff;">Отзывы</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#fff;">Отзывы (${sortedReviews.length})</div>
       <div id="reviewsList">${reviewsHtml}</div>
       ${formHtml}
     </div>
@@ -1707,18 +1635,14 @@ function openProduct(id) {
   
   $('productModal').classList.add('open');
 
-  // Обработчики для звездочек в модалке
   const starInput = document.getElementById('starInput');
   if (starInput) {
     const spans = starInput.querySelectorAll('span');
     spans.forEach(span => {
       span.addEventListener('click', () => {
         currentReviewRating = Number(span.getAttribute('data-val'));
-        spans.forEach(s => {
-          s.classList.toggle('active', Number(s.getAttribute('data-val')) <= currentReviewRating);
-        });
+        spans.forEach(s => s.classList.toggle('active', Number(s.getAttribute('data-val')) <= currentReviewRating));
       });
-      // Ховер-эффект
       span.addEventListener('mouseenter', () => {
         const val = Number(span.getAttribute('data-val'));
         spans.forEach(s => s.classList.toggle('active', Number(s.getAttribute('data-val')) <= val));
@@ -1729,7 +1653,6 @@ function openProduct(id) {
     });
   }
 
-  // Обработчик кнопки "Отправить отзыв"
   const submitBtn = document.getElementById('submitReviewBtn');
   if (submitBtn) {
     submitBtn.addEventListener('click', async () => {
@@ -1737,19 +1660,14 @@ function openProduct(id) {
       const text = document.getElementById('reviewText').value.trim();
       if (!text) { toast('Напишите текст отзыва', true); return; }
       
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Отправка...';
+      submitBtn.disabled = true; submitBtn.textContent = 'Отправка...';
       try {
         await addReview(p.id, currentReviewRating, text);
         toast('⭐ Отзыв добавлен!');
-        // Обновляем локальный массив и перерисовываем
-        products = await loadProducts();
-        renderProducts();
-        openProduct(p.id); // перерисовываем модалку с новым отзывом
+        products = await loadProducts(); renderProducts(); openProduct(p.id);
       } catch (err) {
         toast('❌ ' + err.message, true);
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Отправить отзыв';
+        submitBtn.disabled = false; submitBtn.textContent = 'Отправить отзыв';
       }
     });
   }
@@ -1769,14 +1687,12 @@ function addToCart(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
   if (!cart.find(i => i.id === id)) cart.push({ id });
-  saveCart();
-  toast('❤️ Добавлено в избранное');
+  saveCart(); toast('❤️ Добавлено в избранное');
 }
 function renderCart() {
   if (!cart.length) {
     $('cartItems').innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-3);">
-      <div style="font-size:48px;margin-bottom:10px;opacity:0.5;">🤍</div>
-      <p>Пока пусто</p>
+      <div style="font-size:48px;margin-bottom:10px;opacity:0.5;">🤍</div><p>Пока пусто</p>
     </div>`;
     return;
   }
@@ -1818,19 +1734,12 @@ function resetAddForm() {
   ['addTitle','addDesc','addCat'].forEach(id => $(id).classList.remove('invalid'));
 }
 function setUpload(d) {
-  uploaded = d;
-  $('uploadPreview').src = d;
-  $('uploadPreview').classList.add('visible');
-  $('upload').classList.add('has-image');
-  $('upload').classList.remove('invalid');
-  $('errPhoto').style.display = 'none';
+  uploaded = d; $('uploadPreview').src = d; $('uploadPreview').classList.add('visible');
+  $('upload').classList.add('has-image'); $('upload').classList.remove('invalid'); $('errPhoto').style.display = 'none';
 }
 function clearUpload() {
-  uploaded = null;
-  $('fileInput').value = '';
-  $('uploadPreview').src = '';
-  $('uploadPreview').classList.remove('visible');
-  $('upload').classList.remove('has-image');
+  uploaded = null; $('fileInput').value = ''; $('uploadPreview').src = '';
+  $('uploadPreview').classList.remove('visible'); $('upload').classList.remove('has-image');
 }
 $('fileInput').addEventListener('change', async e => {
   const f = e.target.files?.[0];
@@ -1839,12 +1748,8 @@ $('fileInput').addEventListener('change', async e => {
   if (f.size > 15 * 1024 * 1024) { toast('❌ Максимум 15 МБ', true); $('fileInput').value = ''; return; }
   try {
     $('errPhoto').textContent = 'Сжатие...'; $('errPhoto').style.display = 'block';
-    const r = await resizeImage(f, 900, 0.75);
-    setUpload(r);
-  } catch (err) {
-    toast('❌ Не удалось обработать фото', true);
-    $('fileInput').value = '';
-  }
+    setUpload(await resizeImage(f, 900, 0.75));
+  } catch (err) { toast('❌ Не удалось обработать фото', true); $('fileInput').value = ''; }
 });
 $('uploadRm').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); clearUpload(); });
 
@@ -1857,25 +1762,17 @@ $('addSubmit').addEventListener('click', async () => {
   const cat = CATS.find(c => c.key === $('addCat').value);
   if (!cat) { $('addCat').classList.add('invalid'); $('errCat').classList.add('show'); ok = false; }
   if (!ok) return;
-  const btn = $('addSubmit');
-  btn.disabled = true;
+  const btn = $('addSubmit'); btn.disabled = true;
   try {
     const np = {
-      title: $('addTitle').value.trim(),
-      desc: $('addDesc').value.trim(),
-      category: cat.key,
-      categoryName: cat.name,
-      image: uploaded,
-      ownerId: MY_ID,
-      ownerName: MY_NAME
+      title: $('addTitle').value.trim(), desc: $('addDesc').value.trim(),
+      category: cat.key, categoryName: cat.name,
+      image: uploaded, ownerId: MY_ID, ownerName: MY_NAME
     };
     const saved = await createProduct(np);
-    np.id = saved.id;
-    np.reviews = [];
+    np.id = saved.id; np.reviews = [];
     products.unshift(np);
-    $('addModal').classList.remove('open');
-    resetAddForm();
-    currentCat = 'all';
+    $('addModal').classList.remove('open'); resetAddForm(); currentCat = 'all';
     renderTabs(); renderProducts(); renderRecos();
     toast('📡 Объявление опубликовано');
   } catch (err) { toast('❌ ' + err.message, true); }
@@ -1891,8 +1788,7 @@ async function handleChatClick(pid) {
 function openChatsList(filterPid) {
   chatsFilterPid = filterPid || null;
   $('chatsListTitle').textContent = chatsFilterPid ? '💬 Покупатели' : '💬 Все чаты';
-  renderChatsList();
-  $('chatsListModal').classList.add('open');
+  renderChatsList(); $('chatsListModal').classList.add('open');
 }
 $('chatsListClose').addEventListener('click', () => $('chatsListModal').classList.remove('open'));
 $('chatsListModal').addEventListener('click', e => { if (e.target === $('chatsListModal')) $('chatsListModal').classList.remove('open'); });
@@ -1915,11 +1811,7 @@ async function renderChatsList() {
     const prefix = r.lastFrom === 'seller' ? 'Продавец: ' : (r.lastFrom === 'buyer' ? 'Покупатель: ' : '');
     return `<div class="chat-row" data-chat-id="${r.productId}" data-buyer-id="${escapeHtml(r.buyerId)}">
       <div class="img">${img}</div>
-      <div class="info">
-        <div class="t">${escapeHtml(r.title)}</div>
-        ${sub}
-        <div class="last">${escapeHtml(prefix + r.lastText)}</div>
-      </div>
+      <div class="info"><div class="t">${escapeHtml(r.title)}</div>${sub}<div class="last">${escapeHtml(prefix + r.lastText)}</div></div>
     </div>`;
   }).join('');
 }
@@ -1937,35 +1829,29 @@ async function openChat(pid, bid) {
   const p = products.find(x => x.id === pid);
   if (!p) return;
   if (p.ownerId === MY_ID) {
-    currentChatRole = 'seller';
-    currentChatBid = bid;
+    currentChatRole = 'seller'; currentChatBid = bid;
     if (!currentChatBid) { openChatsList(pid); return; }
   } else {
-    currentChatRole = 'buyer';
-    currentChatBid = MY_ID;
+    currentChatRole = 'buyer'; currentChatBid = MY_ID;
   }
-  currentChatPid = pid;
-  lastMsgHash = '';
+  currentChatPid = pid; lastMsgHash = '';
   $('chatPic').innerHTML = p.image ? `<img src="${p.image}" alt="">` : '🏪';
   $('chatTitle').textContent = p.title;
   $('chatRole').textContent = currentChatRole === 'seller' ? '🏪 Вы — Продавец' : '👤 Вы — Покупатель';
   $('chatRole').className = 'role ' + currentChatRole;
   $('chatModal').classList.add('open');
   $('chatBody').innerHTML = `<div class="chat-placeholder"><div class="i">💬</div><p>Загрузка...</p></div>`;
-  subscribeChat(pid, currentChatBid);
-  await refreshChat();
+  subscribeChat(pid, currentChatBid); await refreshChat();
   setTimeout(() => $('chatInput').focus(), 200);
 }
 async function refreshChat() {
   if (currentChatPid === null || !currentChatBid) return;
-  const msgs = await loadHistory(currentChatPid, currentChatBid);
-  renderMsgs(msgs);
+  const msgs = await loadHistory(currentChatPid, currentChatBid); renderMsgs(msgs);
 }
 function renderMsgs(msgs) {
   if (!msgs || !msgs.length) {
     $('chatBody').innerHTML = `<div class="chat-placeholder"><div class="i">💬</div><p>Здесь пока пусто</p></div>`;
-    lastMsgHash = '';
-    return;
+    lastMsgHash = ''; return;
   }
   const h = JSON.stringify(msgs.map(m => [m.id, m.role, m.text]));
   if (h === lastMsgHash) return;
@@ -1993,8 +1879,7 @@ $('chatForm').addEventListener('submit', async e => {
   if (currentChatPid === null || !currentChatRole || !currentChatBid) return;
   const text = $('chatInput').value.trim();
   if (!text) return;
-  $('chatInput').value = '';
-  $('chatSend').disabled = true;
+  $('chatInput').value = ''; $('chatSend').disabled = true;
   try {
     const saved = await sendMsg(currentChatPid, currentChatBid, currentChatRole, text);
     const ph = $('chatBody').querySelector('.chat-placeholder');
@@ -2002,12 +1887,9 @@ $('chatForm').addEventListener('submit', async e => {
     const mine = saved.role === currentChatRole;
     const cls = mine ? 'me' : 'unit' + (saved.role === 'seller' ? ' from-seller' : ' from-buyer');
     const el = document.createElement('div');
-    el.className = 'msg ' + cls;
-    el.setAttribute('data-id', saved.id);
+    el.className = 'msg ' + cls; el.setAttribute('data-id', saved.id);
     el.innerHTML = `<span class="t">${escapeHtml(saved.text)}</span><span class="time">${fmtTime(saved.time)}</span>`;
-    $('chatBody').appendChild(el);
-    $('chatBody').scrollTop = $('chatBody').scrollHeight;
-    lastMsgHash = '';
+    $('chatBody').appendChild(el); $('chatBody').scrollTop = $('chatBody').scrollHeight; lastMsgHash = '';
   } catch (err) { toast('❌ ' + err.message, true); }
   finally { $('chatSend').disabled = false; $('chatInput').focus(); }
 });
@@ -2017,8 +1899,7 @@ $('chatClear').addEventListener('click', async () => {
   try {
     await clearChat(currentChatPid, currentChatBid);
     $('chatBody').innerHTML = `<div class="chat-placeholder"><div class="i">💬</div><p>Здесь пока пусто</p></div>`;
-    lastMsgHash = '';
-    toast('Очищено');
+    lastMsgHash = ''; toast('Очищено');
   } catch (err) { toast('❌ ' + err.message, true); }
 });
 function closeChatModal() {
@@ -2069,8 +1950,7 @@ $('adminUsers').addEventListener('click', async e => {
     if (a === 'unblock') await supabase.from('profiles').update({ is_blocked: false }).eq('id', id);
     if (a === 'promote') await supabase.from('profiles').update({ is_admin: true }).eq('id', id);
     if (a === 'demote')  await supabase.from('profiles').update({ is_admin: false }).eq('id', id);
-    await renderAdmin();
-    toast('✅ Готово');
+    await renderAdmin(); toast('✅ Готово');
   } catch (err) { toast('❌ ' + err.message, true); }
 });
 $('adminClose').addEventListener('click', () => $('adminModal').classList.remove('open'));
@@ -2079,22 +1959,18 @@ $('adminModal').addEventListener('click', e => { if (e.target === $('adminModal'
 let toastTimer = null;
 function toast(msg, err = false) {
   const t = $('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (err ? ' error' : '');
+  t.textContent = msg; t.className = 'toast' + (err ? ' error' : '');
   t.classList.add('show');
   if (toastTimer) clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
 async function init() {
-  loadCartLocal();
-  setupRealtimePresence(); 
-  
+  loadCartLocal(); setupRealtimePresence(); 
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.user) await onAuthed();
   else {
-    setAuthStep('login');
-    $('authModal').classList.add('open');
+    setAuthStep('login'); $('authModal').classList.add('open');
     $('loadingBadge').classList.remove('visible');
   }
   supabase.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') location.reload(); });
