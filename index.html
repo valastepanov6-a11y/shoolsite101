@@ -306,45 +306,36 @@
   .card-title:hover { color: var(--purple-light); }
   .card-desc { font-size: 13px; color: var(--text-2); margin-bottom: 14px; flex: 1; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   
-  /* Прозрачная строка отзывов под карточкой */
-  .card-review-row {
-    display: flex;
+  /* Плашка "Меняю на..." */
+  .card-exchange-pill {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 10px;
-    padding: 8px 10px;
+    gap: 6px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #fbbf24;
+    color: #fbbf24;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
     margin-bottom: 12px;
-    cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.05);
+    max-width: 100%;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .card-exchange-pill .icon { font-size: 14px; }
+  .card-exchange-pill .text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .card-review-row {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(0,0,0,0.2); border-radius: 10px;
+    padding: 8px 10px; margin-bottom: 12px;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.05);
     transition: 0.15s;
   }
-  .card-review-row:hover {
-    background: rgba(168,85,247,0.15);
-    border-color: rgba(168,85,247,0.3);
-  }
-  .cr-stars {
-    color: #fbbf24;
-    font-size: 14px;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-  }
-  .cr-count {
-    color: var(--text-3);
-    font-size: 11px;
-    margin-left: 2px;
-  }
-  .cr-text {
-    font-size: 12px;
-    color: var(--text-2);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-style: italic;
-    flex: 1;
-  }
+  .card-review-row:hover { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); }
+  .cr-stars { color: #fbbf24; font-size: 14px; white-space: nowrap; display: flex; align-items: center; gap: 2px; }
+  .cr-count { color: var(--text-3); font-size: 11px; margin-left: 2px; }
+  .cr-text { font-size: 12px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; flex: 1; }
 
   .card-actions { display: flex; gap: 8px; margin-top: auto; }
   .chat {
@@ -448,11 +439,8 @@
   .auth-err.show { display: block; }
 
   .code-input {
-    text-align: center;
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: 12px;
-    padding: 16px 12px 16px 24px;
+    text-align: center; font-size: 28px; font-weight: 800;
+    letter-spacing: 12px; padding: 16px 12px 16px 24px;
     font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
   }
 
@@ -496,15 +484,12 @@
   .modal-actions .btn-primary { flex: 1; padding: 13px; justify-content: center; font-size: 15px; }
   .modal-actions .btn-ghost { padding: 13px 20px; font-size: 15px; }
 
-  /* Стили для отзывов в модалке */
   .reviews-section { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 10px; }
   .review-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
   .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
   .review-author { font-size: 13px; font-weight: 700; color: var(--purple-light); }
   .review-stars { color: #fbbf24; font-size: 14px; letter-spacing: 2px; }
   .review-text { font-size: 13px; color: var(--text); line-height: 1.4; }
-  
-  /* Кнопка удаления отзыва */
   .review-del-btn {
     background: none; border: none; cursor: pointer;
     font-size: 14px; padding: 2px 6px; border-radius: 6px;
@@ -512,7 +497,6 @@
   }
   .review-del-btn:hover { opacity: 1; background: rgba(239,68,68,0.2); color: #ef4444; }
 
-  /* Звездный рейтинг (кликабельный) */
   .star-input { display: flex; gap: 6px; font-size: 32px; cursor: pointer; color: #4b5563; margin-bottom: 6px; }
   .star-input span { transition: color 0.1s; }
   .star-input span:hover, .star-input span.active { color: #fbbf24; }
@@ -784,18 +768,7 @@
     .hero-decor { display: none; }
     .section-title { font-size: 24px; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-    
-    .online { 
-      display: flex; 
-      padding: 6px 14px; 
-      font-size: 12px; 
-      margin-left: 0; 
-      margin-top: 10px; 
-      width: 100%; 
-      justify-content: center;
-      order: 3;
-    }
-    
+    .online { display: none; }
     .brand-sub { display: none; }
     .chat-content-modal { height: 92vh; max-height: none; border-radius: 16px; }
     .modal { padding: 24px 20px; }
@@ -851,7 +824,6 @@
       </div>
     </a>
     
-    <!-- Кнопка реального онлайна -->
     <div class="online" id="onlineBtn" title="Показать, кто на сайте">
       <span class="online-dot"></span>
       Сейчас на сайте: <strong id="onlineCount">0</strong>
@@ -969,6 +941,11 @@
       <label>Название</label>
       <input type="text" id="addTitle" placeholder="Например: скетчбук А5" maxlength="60">
       <div class="err" id="errTitle">Введите название</div>
+    </div>
+    <div class="field">
+      <label>На что меняете? (Обязательно)</label>
+      <input type="text" id="addExchange" placeholder="Например: на прах кобильджона" maxlength="60">
+      <div class="err" id="errExchange">Укажите, на что хотите обменять</div>
     </div>
     <div class="field">
       <label>Описание</label>
@@ -1366,6 +1343,7 @@ async function loadProducts() {
     category: r.category, categoryName: r.categoryName,
     rating: r.rating, badge: r.badge, custom: r.custom,
     image: r.image, ownerId: r.ownerId, ownerName: r.ownerName,
+    exchangeFor: r.exchangeFor, // <-- ДОБАВЛЕНО
     createdAt: r.createdAt,
     reviews: reviewsMap[r.id] || []
   }));
@@ -1377,6 +1355,7 @@ async function createProduct(p) {
     category: p.category, categoryName: p.categoryName,
     rating: 5, badge: 'НОВОЕ', custom: true,
     image: p.image, ownerId: p.ownerId, ownerName: p.ownerName,
+    exchangeFor: p.exchangeFor, // <-- ДОБАВЛЕНО
     createdAt: Date.now()
   };
   const { data, error } = await supabase.from('products').insert([row]).select().single();
@@ -1540,6 +1519,14 @@ function cardHtml(p) {
     </div>
   `;
 
+  // Плашка обмена
+  const exchangeHtml = p.exchangeFor ? `
+    <div class="card-exchange-pill">
+      <span class="icon">⇄</span>
+      <span class="text">Меняю на ${escapeHtml(p.exchangeFor)}</span>
+    </div>
+  ` : '';
+
   return `<article class="card" data-id="${p.id}">
     ${del}
     <div class="card-img" data-open="${p.id}">
@@ -1554,7 +1541,8 @@ function cardHtml(p) {
       </div>
       <div class="card-title" data-open="${p.id}">${escapeHtml(p.title)}</div>
       
-      <!-- Строка отзывов под карточкой -->
+      ${exchangeHtml}
+
       ${reviewRowHtml}
 
       <div class="card-desc">${escapeHtml(p.desc)}</div>
@@ -1613,9 +1601,6 @@ document.addEventListener('click', async e => {
   if (like) { addToCart(Number(like.getAttribute('data-like'))); return; }
 });
 
-// ============================================
-// МОДАЛКА ТОВАРА С ОТЗЫВАМИ
-// ============================================
 function openProduct(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
@@ -1629,7 +1614,6 @@ function openProduct(id) {
   let reviewsHtml = '';
   if (sortedReviews.length) {
     reviewsHtml = sortedReviews.map(r => {
-      // Проверяем, может ли текущий юзер удалить этот отзыв
       const canDelRev = (r.userId === MY_ID) || MY_ADMIN;
       const delBtn = canDelRev ? `<button class="review-del-btn" data-review-del="${r.id}" title="Удалить отзыв">🗑️</button>` : '';
       
@@ -1673,6 +1657,13 @@ function openProduct(id) {
     `;
   }
 
+  const exchangeHtml = p.exchangeFor ? `
+    <div class="card-exchange-pill" style="margin-bottom:16px;">
+      <span class="icon">⇄</span>
+      <span class="text">Меняю на ${escapeHtml(p.exchangeFor)}</span>
+    </div>
+  ` : '';
+
   $('productModalBody').innerHTML = `
     <div style="margin:-32px -32px 20px;height:240px;background:linear-gradient(135deg,rgba(55,25,100,0.6),rgba(20,8,35,0.8));display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:26px 26px 0 0;">
       ${img}
@@ -1688,6 +1679,8 @@ function openProduct(id) {
       </div>
       ${avg > 0 ? `<div class="review-stars">${renderStars(avg)} <span style="color:var(--text-3);font-size:12px;">(${sortedReviews.length})</span></div>` : ''}
     </div>
+
+    ${exchangeHtml}
 
     <p style="color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:16px;">${escapeHtml(p.desc)}</p>
     
@@ -1705,7 +1698,6 @@ function openProduct(id) {
   
   $('productModal').classList.add('open');
 
-  // Обработчик удаления отзывов
   document.querySelectorAll('[data-review-del]').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('Удалить этот отзыв?')) return;
@@ -1715,7 +1707,7 @@ function openProduct(id) {
         toast('🗑️ Отзыв удалён');
         products = await loadProducts();
         renderProducts();
-        openProduct(p.id); // Перерисовываем модалку
+        openProduct(p.id); 
       } catch (err) {
         toast('❌ ' + err.message, true);
       }
@@ -1814,11 +1806,11 @@ $('addCancel').addEventListener('click', () => { $('addModal').classList.remove(
 $('addModal').addEventListener('click', e => { if (e.target === $('addModal')) { $('addModal').classList.remove('open'); resetAddForm(); } });
 
 function resetAddForm() {
-  $('addTitle').value = ''; $('addDesc').value = ''; $('addCat').value = '';
+  $('addTitle').value = ''; $('addDesc').value = ''; $('addCat').value = ''; $('addExchange').value = '';
   clearUpload();
-  ['errTitle','errDesc','errCat'].forEach(id => $(id).classList.remove('show'));
+  ['errTitle','errDesc','errCat','errExchange'].forEach(id => $(id).classList.remove('show'));
   $('errPhoto').style.display = 'none';
-  ['addTitle','addDesc','addCat'].forEach(id => $(id).classList.remove('invalid'));
+  ['addTitle','addDesc','addCat','addExchange'].forEach(id => $(id).classList.remove('invalid'));
 }
 function setUpload(d) {
   uploaded = d; $('uploadPreview').src = d; $('uploadPreview').classList.add('visible');
@@ -1845,6 +1837,7 @@ $('addSubmit').addEventListener('click', async () => {
   let ok = true;
   if (!uploaded) { $('upload').classList.add('invalid'); $('errPhoto').style.display = 'block'; ok = false; }
   if (!$('addTitle').value.trim()) { $('addTitle').classList.add('invalid'); $('errTitle').classList.add('show'); ok = false; }
+  if (!$('addExchange').value.trim()) { $('addExchange').classList.add('invalid'); $('errExchange').classList.add('show'); ok = false; } // ПРОВЕРКА ОБМЕНА
   if (!$('addDesc').value.trim()) { $('addDesc').classList.add('invalid'); $('errDesc').classList.add('show'); ok = false; }
   const cat = CATS.find(c => c.key === $('addCat').value);
   if (!cat) { $('addCat').classList.add('invalid'); $('errCat').classList.add('show'); ok = false; }
@@ -1852,7 +1845,9 @@ $('addSubmit').addEventListener('click', async () => {
   const btn = $('addSubmit'); btn.disabled = true;
   try {
     const np = {
-      title: $('addTitle').value.trim(), desc: $('addDesc').value.trim(),
+      title: $('addTitle').value.trim(), 
+      desc: $('addDesc').value.trim(),
+      exchangeFor: $('addExchange').value.trim(), // СОХРАНЯЕМ ОБМЕН
       category: cat.key, categoryName: cat.name,
       image: uploaded, ownerId: MY_ID, ownerName: MY_NAME
     };
