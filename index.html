@@ -298,31 +298,32 @@
   .card-del.admin:hover { background: #f59e0b; }
 
   .card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
-  .card-author { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-bottom: 8px; }
+  .card-author { display: flex; align-items: center; gap: 6px; font-size: 12px; margin-top: 12px; }
   .card-author .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); flex-shrink: 0; }
   .card-author .lbl { color: var(--text-3); }
   .card-author strong { color: var(--purple-light); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
   .card-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; cursor: pointer; line-height: 1.35; }
   .card-title:hover { color: var(--purple-light); }
-  .card-desc { font-size: 13px; color: var(--text-2); margin-bottom: 14px; flex: 1; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-desc { font-size: 13px; color: var(--text-3); margin-bottom: 12px; flex: 1; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   
-  /* Плашка "Меняю на..." */
+  /* ТА САМАЯ ПЛАШКА ОБМЕНА */
   .card-exchange-pill {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid #fbbf24;
-    color: #fbbf24;
-    padding: 6px 12px;
-    border-radius: 8px;
+    gap: 8px;
+    background: #111827; 
+    border: 1px solid #d97706;
+    color: #f59e0b;
+    padding: 8px 14px;
+    border-radius: 10px;
     font-size: 13px;
     font-weight: 600;
     margin-bottom: 12px;
+    width: fit-content;
     max-width: 100%;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
   }
-  .card-exchange-pill .icon { font-size: 14px; }
+  .card-exchange-pill .icon { font-size: 16px; font-weight: 900; }
   .card-exchange-pill .text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .card-review-row {
@@ -1343,7 +1344,7 @@ async function loadProducts() {
     category: r.category, categoryName: r.categoryName,
     rating: r.rating, badge: r.badge, custom: r.custom,
     image: r.image, ownerId: r.ownerId, ownerName: r.ownerName,
-    exchangeFor: r.exchangeFor, // <-- ДОБАВЛЕНО
+    exchangeFor: r.exchangeFor,
     createdAt: r.createdAt,
     reviews: reviewsMap[r.id] || []
   }));
@@ -1355,7 +1356,7 @@ async function createProduct(p) {
     category: p.category, categoryName: p.categoryName,
     rating: 5, badge: 'НОВОЕ', custom: true,
     image: p.image, ownerId: p.ownerId, ownerName: p.ownerName,
-    exchangeFor: p.exchangeFor, // <-- ДОБАВЛЕНО
+    exchangeFor: p.exchangeFor,
     createdAt: Date.now()
   };
   const { data, error } = await supabase.from('products').insert([row]).select().single();
@@ -1519,7 +1520,6 @@ function cardHtml(p) {
     </div>
   `;
 
-  // Плашка обмена
   const exchangeHtml = p.exchangeFor ? `
     <div class="card-exchange-pill">
       <span class="icon">⇄</span>
@@ -1534,21 +1534,22 @@ function cardHtml(p) {
       <div class="card-cat">${escapeHtml(cat)}</div>
     </div>
     <div class="card-body">
-      <div class="card-author">
-        <span class="dot"></span>
-        <span class="lbl">Автор:</span>
-        <strong title="${escapeHtml(ownerName)}">${escapeHtml(ownerName)}</strong>
-      </div>
       <div class="card-title" data-open="${p.id}">${escapeHtml(p.title)}</div>
+      <div class="card-desc">${escapeHtml(p.desc)}</div>
       
       ${exchangeHtml}
 
       ${reviewRowHtml}
 
-      <div class="card-desc">${escapeHtml(p.desc)}</div>
       <div class="card-actions">
         <button class="chat" data-chat="${p.id}" title="Написать" type="button">💬</button>
         <button class="like" data-like="${p.id}" type="button">❤️ Нравится</button>
+      </div>
+
+      <div class="card-author">
+        <span class="dot"></span>
+        <span class="lbl">Автор:</span>
+        <strong title="${escapeHtml(ownerName)}">${escapeHtml(ownerName)}</strong>
       </div>
     </div>
   </article>`;
@@ -1672,7 +1673,7 @@ function openProduct(id) {
     <div class="modal-title" style="margin-bottom:10px;">${escapeHtml(p.title)}</div>
     
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-      <div class="card-author">
+      <div class="card-author" style="margin-top:0;">
         <span class="dot"></span>
         <span class="lbl">Автор:</span>
         <strong>${escapeHtml(ownerName)}</strong>
@@ -1680,9 +1681,9 @@ function openProduct(id) {
       ${avg > 0 ? `<div class="review-stars">${renderStars(avg)} <span style="color:var(--text-3);font-size:12px;">(${sortedReviews.length})</span></div>` : ''}
     </div>
 
-    ${exchangeHtml}
-
     <p style="color:var(--text-2);font-size:14px;line-height:1.6;margin-bottom:16px;">${escapeHtml(p.desc)}</p>
+
+    ${exchangeHtml}
     
     <div class="modal-actions" style="margin-bottom: 20px;">
       <button type="button" class="btn-primary" data-like="${p.id}" style="justify-content:center;">❤️ Нравится</button>
@@ -1837,7 +1838,7 @@ $('addSubmit').addEventListener('click', async () => {
   let ok = true;
   if (!uploaded) { $('upload').classList.add('invalid'); $('errPhoto').style.display = 'block'; ok = false; }
   if (!$('addTitle').value.trim()) { $('addTitle').classList.add('invalid'); $('errTitle').classList.add('show'); ok = false; }
-  if (!$('addExchange').value.trim()) { $('addExchange').classList.add('invalid'); $('errExchange').classList.add('show'); ok = false; } // ПРОВЕРКА ОБМЕНА
+  if (!$('addExchange').value.trim()) { $('addExchange').classList.add('invalid'); $('errExchange').classList.add('show'); ok = false; }
   if (!$('addDesc').value.trim()) { $('addDesc').classList.add('invalid'); $('errDesc').classList.add('show'); ok = false; }
   const cat = CATS.find(c => c.key === $('addCat').value);
   if (!cat) { $('addCat').classList.add('invalid'); $('errCat').classList.add('show'); ok = false; }
@@ -1847,7 +1848,7 @@ $('addSubmit').addEventListener('click', async () => {
     const np = {
       title: $('addTitle').value.trim(), 
       desc: $('addDesc').value.trim(),
-      exchangeFor: $('addExchange').value.trim(), // СОХРАНЯЕМ ОБМЕН
+      exchangeFor: $('addExchange').value.trim(),
       category: cat.key, categoryName: cat.name,
       image: uploaded, ownerId: MY_ID, ownerName: MY_NAME
     };
